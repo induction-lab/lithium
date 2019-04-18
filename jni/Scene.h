@@ -225,6 +225,32 @@ private:
     std::function<void()> clickFunction;
 };
 
+// Animation class.
+class Animation: public Widget {
+public:
+    Animation(int frames, float delay):
+        frames(frames),
+        delay(delay),
+        completed(false),
+        started(false) {
+        //
+    };
+    void update() {
+        if (!started) {
+            TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 1.2f, Ease::Linear)->target(frames)->remove(true)
+                ->onComplete(std::bind(&Animation::onComplete, this))->start(delay);
+            started = true;
+        }
+    };
+    void onComplete() {
+        completed = true;
+    };
+    int frames;
+    float delay;
+    bool completed;
+    bool started;
+};
+
 // Base Scene.
 class Scene: public InputListener {
 public:
@@ -272,19 +298,27 @@ public:
         widgets.push_back(background);
         return background;
     };
-    /*
-    Bonus* addBonus(const char* path, int width, int height, Vector2 location) {
-        LOG_INFO("Creating new 'Bonus' widget.");
-        Bonus* bonus = new Bonus();
-        bonus->setSprite(spriteBatch->registerSprite(path, width, height), location);
-        bonus->spriteBatch = spriteBatch;
-        widgets.push_back(bonus);
-        return bonus;
-    };
-    */
+    Animation* addAnimation(const char* path, int width, int height, Vector2 location, int frames, float delay) {
+        LOG_DEBUG("Creating new animation.");
+        Animation* animation = new Animation(frames, delay);
+        animation->setSprite(spriteBatch->registerSprite(path, width, height), location);
+        animation->sprite->order = 1;
+        animation->spriteBatch = spriteBatch;
+        animations.push_back(animation);
+        return animation;
+    };    
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();
+        }
+        for (std::vector<Animation*>::iterator it = animations.begin(); it < animations.end(); ++it) {
+            (*it)->update();
+            if ((*it)->completed) {
+                // Delete animation
+                LOG_DEBUG("Delete animation.");
+                spriteBatch->unregisterSprite((*it)->sprite);
+                animations.erase(std::remove(animations.begin(), animations.end(), *it), animations.end());
+            }
         }
     };
     virtual status start(void) = 0;
@@ -294,6 +328,7 @@ public:
     bool created;
 private:
     std::vector<Widget*> widgets;
+    std::vector<Animation*> animations;
 };
 
-#endif
+#endif // __SCENE_H__
