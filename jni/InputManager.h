@@ -25,8 +25,8 @@ class Touch {
 public:
     static const unsigned int MAX_TOUCH_POINTS = 10; // Maximum simultaneous touch points supported.
     enum TouchEvent {
-        TOUCH_PRESS,
-        TOUCH_RELEASE,
+        TOUCH_DOWN,
+        TOUCH_UP,
         TOUCH_MOVE
     };
 private:
@@ -49,7 +49,8 @@ static const int SWIPE_DIRECTION_RIGHT  = 1 << 3;   // the right direction for a
 
 class InputListener {
 public:
-    virtual ~InputListener(void) {};
+    InputListener(void);
+    virtual ~InputListener(void);
     virtual void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {};
     virtual void gestureDragEvent(int x, int y) {};
     virtual void gestureDropEvent(int x, int y) {};
@@ -137,7 +138,7 @@ public:
             pointer0.y = y;
             gesturePointer0CurrentPosition = gesturePointer0LastPosition = std::pair<int, int>(x, y);
             // Primary pointer down.
-            onTouchEvent(Touch::TOUCH_PRESS, x, y, pointerId);
+            onTouchEvent(Touch::TOUCH_DOWN, x, y, pointerId);
             primaryTouchId = pointerId;
             break;
         case AMOTION_EVENT_ACTION_UP:
@@ -147,7 +148,7 @@ public:
             // Gestures.
             gestureDetected = false;
             if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
-                onTouchEvent(Touch::TOUCH_RELEASE, x, y, pointerId);
+                onTouchEvent(Touch::TOUCH_UP, x, y, pointerId);
             }
             if (pointer0.pressed &&  pointer0.pointerId == pointerId) {
                 int deltaX = x - pointer0.x;
@@ -202,7 +203,7 @@ public:
             gesturePointer1CurrentPosition = gesturePointer1LastPosition = std::pair<int, int>(x, y);
             // Non-primary pointer down.
             if (MULTI_TOUTCH) {
-                onTouchEvent(Touch::TOUCH_PRESS, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
+                onTouchEvent(Touch::TOUCH_DOWN, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
             }
             break;
         case AMOTION_EVENT_ACTION_POINTER_UP:
@@ -212,7 +213,7 @@ public:
             y = AMotionEvent_getY(event, pointerIndex);
             gestureDetected = false;
             if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId) ) {
-                onTouchEvent(Touch::TOUCH_RELEASE, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
+                onTouchEvent(Touch::TOUCH_UP, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
             }
             if (pointer1.pressed &&  pointer1.pointerId == pointerId) {
                 int deltaX = x - pointer1.x;
@@ -374,52 +375,52 @@ public:
     };
 private:
     void onTouchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->touchEvent(event, x, y, pointerId);
         }
     };
     void onGestureDragEvent(int x, int y) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gestureDragEvent(x, y);
         }
     };
     void onGestureDropEvent(int x, int y) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gestureDropEvent(x, y);
         }
     };
     void onGestureSwipeEvent(int x, int y, int direction) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gestureSwipeEvent(x, y, direction);
         }
     };
     void onGestureTapEvent(int x, int y) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gestureTapEvent(x, y);
         }
     };
     void onGestureLongTapEvent(int x, int y, float time) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gestureLongTapEvent(x, y, time);
         }
     };
     void onGesturePinchEvent(int x, int y, float scale) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->gesturePinchEvent(x, y, scale);
         }
     };
     void onBackEvent() {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->backEvent();
         }
     };
     void onKeyDownEvent(int keyCode) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->keyDownEvent(keyCode);
         }
     };
     void onKeyUpEvent(int keyCode) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->keyUpEvent(keyCode);
         }
     }; 
@@ -436,6 +437,14 @@ private:
     std::pair<int, int> gesturePinchCentroid;
     int gesturePointer0Delta, gesturePointer1Delta;
     std::vector<InputListener*> listeners;
+};
+
+InputListener::InputListener(void) {
+    InputManager::getInstance()->registerListener(this);
+};
+
+InputListener::~InputListener(void) {
+    InputManager::getInstance()->unregisterListener(this);
 };
 
 #endif // __INPUTMANAGER_H__

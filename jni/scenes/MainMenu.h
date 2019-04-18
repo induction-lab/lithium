@@ -6,6 +6,7 @@ private:
     Activity* activity;
 public:
     MainMenu(Activity* activity):
+        Scene(),
         activity(activity) {
         LOG_INFO("Scene MainMenu created.");
     };
@@ -14,56 +15,70 @@ public:
     };
     status start() {
         LOG_INFO("Start MainMenu scene.");
-        InputManager::getInstance()->registerListener(this);
+        spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
-        SpriteBatch *spriteBatch = new SpriteBatch();
-        Sprite* background = spriteBatch->registerSprite("textures/Background.png", 360, 640);
-        background->setLocation(renderWidth / 2, renderHeight / 2);
-        Sprite* gameBox = spriteBatch->registerSprite("textures/GameBox.png", 360, 380);
-        gameBox->setLocation(renderWidth / 2, renderHeight / 2);
-        sprite = spriteBatch->registerSprite("textures/Play.png", 104, 100);
-        sprite->setLocation(renderWidth / 2, renderHeight / 2 - 80.0f);
-        Tween* t0 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
+        float halfWidth = renderWidth / 2;
+        float halfHeight = renderHeight / 2;
+        background = addBackground("textures/Background.png", 360, 640, Location(halfWidth, halfHeight));
+        gameBox = addBackground("textures/GameBox.png", 360, 380, Location(halfWidth, halfHeight));
+        gameBox->sprite->opaque = 0.0f;
+        Tween* t0 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::OPAQUE, 0.7f, Ease::Sinusoidal::InOut)
+                    ->target(1.0f)->remove(true)->start();
+        Tween* t1 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start();
-        Tween* t1 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
+        Tween* t2 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
-        Tween* t = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(0.3f)->remove(false)->loop()->reverse()->start();
-		soundPress = SoundManager::getInstance()->registerSound("sounds/SoundPress.wav");
-        soundRelease = SoundManager::getInstance()->registerSound("sounds/SoundRelease.wav");
+        exitButton = addButton("textures/Exit.png", 80, 78, Location(halfWidth - 90, halfHeight - 80));
+		exitButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        exitButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
+        exitButton->setClickFunction(std::bind(&MainMenu::onExitButtonClick, this));
+        playButton = addButton("textures/Play.png", 104, 100, Location(halfWidth, halfHeight - 100));
+		playButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        playButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
+        playButton->setClickFunction(std::bind(&MainMenu::onPlayButtonClick, this));
+        muteCheckBox = addCheckBox("textures/Mute.png", 80, 78, Location(halfWidth + 90, halfHeight - 80));
+		muteCheckBox->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        muteCheckBox->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
+        muteCheckBox->setClickFunction(std::bind(&MainMenu::onMuteCheckBoxClick, this));
+        muteCheckBox->setChecked(true);
+		soundButtonDown = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
+        soundButtonUp = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
-        SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
         return STATUS_OK;
     };
     void update() {
-        //
+        Scene::update();
     };
-    void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        Location location = GraphicsManager::getInstance()->screenToRender((float)x, (float)y);
-        switch (event) {
-        case Touch::TOUCH_PRESS:
-            if (sprite->pointInSprite(location)) {
-                SoundManager::getInstance()->playSound(soundPress);
-            }        
-            break;
-        case Touch::TOUCH_RELEASE:
-            if (sprite->pointInSprite(location)) {
-                SoundManager::getInstance()->playSound(soundRelease);
-                InputManager::getInstance()->unregisterListener(this);
-                activity->changeScene(new Gameplay(activity));
-            }
-            break;
-        default:
-            break;
+	void onAnyButtonDown() {
+        SoundManager::getInstance()->playSound(soundButtonDown);
+	};
+	void onAnyButtonUp() {
+        SoundManager::getInstance()->playSound(soundButtonUp);
+	};
+    void onExitButtonClick() {
+        activity->quit = true;
+    }
+	void onPlayButtonClick() {
+        activity->changeScene(new Gameplay(activity));
+	};
+	void onMuteCheckBoxClick() {
+        if (muteCheckBox->getChecked()) {
+            SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
+        } else {
+            SoundManager::getInstance()->stopMusic();
         }
-    };
+	};
     void backEvent() {
         activity->quit = true;
     };
-    Sprite* sprite;
-    Sound* soundPress;
-    Sound* soundRelease;
+    Background* background;
+    Background* gameBox;
+    Button* exitButton;
+    Button* playButton;
+    CheckBox* muteCheckBox;
+    Sound* soundButtonDown;
+    Sound* soundButtonUp;
 };
 
 #endif // __MAINMENU_H__

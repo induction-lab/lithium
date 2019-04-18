@@ -1,7 +1,7 @@
 #ifndef __GAMEPLAY_H__
 #define __GAMEPLAY_H__
 
-class Gameplay : public Scene {
+class Gameplay: public Scene {
 private:
     Activity* activity;
 public:
@@ -14,32 +14,21 @@ public:
     };
     status start() {
         LOG_DEBUG("Start Gameplay scene.");
-        InputManager::getInstance()->registerListener(this);
+        spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
-        SpriteBatch* spriteBatch = new SpriteBatch();
-        Sprite* background = spriteBatch->registerSprite("textures/Background_temp.png", 360, 640);
-        background->setLocation(renderWidth / 2, renderHeight / 2);
+        float halfWidth = renderWidth / 2;
+        float halfHeight = renderHeight / 2;
+        background = addBackground("textures/Background_temp.png", 360, 640, Location(halfWidth, halfHeight));
         return STATUS_OK;
     };
     void update() {
-        //
-    };
-    void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        Location location = GraphicsManager::getInstance()->screenToRender((float)x, (float)y);
-        switch (event) {
-        case Touch::TOUCH_RELEASE:
-            // InputManager::getInstance()->unregisterListener(this);
-            // activity->setStartScene();
-            break;
-        default:
-            break;
-        }
+        Scene::update();
     };
     void backEvent() {
-        InputManager::getInstance()->unregisterListener(this);
         activity->setStartScene();
-    }
+    };
+    Background* background;
 };
 
 #endif

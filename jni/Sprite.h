@@ -107,14 +107,6 @@ public:
     Location getLocation() {
         return location;
     };
-    bool pointInSprite(Location point) {
-        float halfWidth = (float)spriteWidth * 0.5f;
-        float halfHeight = (float)spriteHeight * 0.5f;
-        return ((point.x > location.x - halfWidth ) &&
-                (point.x < location.x + halfWidth ) &&
-                (point.y > location.y - halfHeight) &&
-                (point.y < location.y + halfHeight));
-    };
 protected:
     friend class SpriteBatch;
     status load() {

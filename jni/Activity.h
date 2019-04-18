@@ -1,12 +1,7 @@
 #ifndef __ACTIVITY_H__
 #define __ACTIVITY_H__
 
-class Scene: public InputListener {
-public:
-    virtual ~Scene(void) {};
-    virtual status start(void) = 0;
-    virtual void update(void) = 0;
-};
+#include "Scene.h"
 
 class Activity: public ActivityHandler {
 private:
@@ -18,7 +13,7 @@ private:
         if (scene != NULL) {
             TimeManager::getInstance()->reset();
             GraphicsManager::getInstance()->reset();
-            SoundManager::getInstance()->reset();
+            //SoundManager::getInstance()->reset();
             TweenManager::getInstance()->reset();
             SAFE_DELETE(scene);            
         }

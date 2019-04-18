@@ -18,6 +18,7 @@ public:
         playerObj(NULL),
         playerPlay(NULL),
         playerSeek(NULL),
+        playedMusic(NULL),
         soundQueues(),
         currentQueue(0),
         sounds() {
@@ -52,7 +53,7 @@ public:
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
         if (loadResources() != STATUS_OK) goto ERROR;
-        if (playedMusic != "") playMusic(playedMusic);
+        if (playedMusic != NULL) playMusic(playedMusic);
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting SoundManager.");
@@ -165,7 +166,7 @@ ERROR:
         soundQueue.playSound(sound);
     };
 private:
-    const char* playedMusic = ""; // temporary pump...
+    const char* playedMusic = NULL; // temporary pump...
     // OpenSL ES engine.
     SLObjectItf engineObj;
     SLEngineItf engine;

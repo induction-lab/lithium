@@ -47,7 +47,6 @@ static android_app* application;
 #include "GraphicsManager.h"
 #include "InputManager.h"
 #include "SoundManager.h"
-#include "Interface.h"
 #include "EventLoop.h"
 #include "Activity.h"
 
