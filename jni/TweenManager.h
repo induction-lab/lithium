@@ -68,10 +68,17 @@ public:
     };
     void remove(Tween* t) {
         std::list<Tween*>::iterator it = find(tweens.begin(), tweens.end(), t);
-        if (it != tweens.end()) tweens.erase(it);
+        if (it != tweens.end()) {
+            SAFE_DELETE(*it);            
+            tweens.erase(it);
+        }
     };
     void reset() {
         tweens.clear();
+    };
+    // Debug.
+    int getTweensCount() {
+        return tweens.size();
     };
 private:
     bool started;

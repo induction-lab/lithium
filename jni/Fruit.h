@@ -7,6 +7,17 @@
 #include "GraphicsManager.h"
 #include "SpriteBatch.h"
 
+// Some black magic.
+Vector2 getSkrewedLocation(int X, int Y) {
+    float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+    float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
+    float halfWidth = renderWidth / 2;
+    float halfHeight = renderHeight / 2;
+    float dy = (X * 2.0f) - (0.2f * GRID_SIZE * Y);
+    float dx = (Y * 2.0f);
+    return Vector2(halfWidth + X * 42 - 100 - dx, halfHeight - Y * 42 + 110 - dy);
+};
+
 // Fruit.
 class Fruit: public InputListener {
 public:
@@ -15,16 +26,19 @@ public:
         alive(true), dead(false),                              // dead state
         animated(false), selected(false),                      // selected state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
+        moveTween(NULL),                                       // move animation tween
         index(Vector2()),                                      // index on board
+        prevIndex(Vector2()),                                  // prevision index on board
         clickFunction(NULL),
-        deadFunction(NULL) {
+        deadFunction(NULL),
+        movedFunction(NULL) {
         // LOG_DEBUG("Create Fruit.");
     };
     ~Fruit() {
         // LOG_DEBUG("Delete Fruit.");
     };
     int gestureTapEvent(int x, int y) {
-        if (!alive) return false;
+        if (!alive) return 0;
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (sprite->pointInSprite(point.x, point.y)) {
             if (!animated) {
@@ -34,6 +48,7 @@ public:
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(0.2f);
                 animated = true;
             }
+            //selected = true;
             if (clickFunction != NULL) clickFunction((int)index.x, (int)index.y);
             return 1;
         }
@@ -67,8 +82,20 @@ public:
         dead = true;
         if (deadFunction != NULL) deadFunction(index.x, index.y);
     };
-    void moveTo(Vector2 location, float delay = 0.0f) {
-        TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
+    void onMoved() {
+        if (movedFunction != NULL) movedFunction(index.x, index.y);
+    };
+    void moveTo(int x, int y, float delay = 0.0f) {
+        index = Vector2(x, y);
+        Vector2 location = getSkrewedLocation(x, y);
+        moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
+            ->target(location.x, location.y)->remove(true)->start(delay)
+            ->onComplete(std::bind(&Fruit::onMoved, this));
+        selected = false;
+    };
+    void moveBack(float delay = 0.0f) {
+        Vector2 location = getSkrewedLocation((int)prevIndex.x, (int)prevIndex.y);
+        moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
             ->target(location.x, location.y)->remove(true)->start(delay);
     };
     int type;
@@ -76,13 +103,16 @@ public:
     bool animated, selected;
     Tween* xScaleTween;
     Tween* yScaleTween;
-    Vector2 index;
+    Tween* moveTween;
+    Vector2 index, prevIndex;
     Sprite* sprite;
     void setClickFunction(std::function<void(int, int)> callback) { clickFunction = callback; };
     void setDeadFunction(std::function<void(int, int)> callback) { deadFunction = callback; };
+    void setMovedFunction(std::function<void(int, int)> callback) { movedFunction = callback; };
 private:
     std::function<void(int, int)> clickFunction;
     std::function<void(int, int)> deadFunction;
+    std::function<void(int, int)> movedFunction;
 };
 
 #endif

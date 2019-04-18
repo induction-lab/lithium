@@ -11,7 +11,6 @@ private:
     // Change current scene.
     status setScene(Scene *scn) {
         if (scene != NULL) {
-            TimeManager::getInstance()->reset();
             GraphicsManager::getInstance()->reset();
             SoundManager::getInstance()->reset();
             TweenManager::getInstance()->reset();

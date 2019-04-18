@@ -35,12 +35,14 @@ public:
         delayAmount(0.0f),
         elapsed(0.0f),
         repeat(0) {
+        // LOG_DEBUG("Create tween.");
         startValues = new float[combinedAttrsLimit];
         targetValues = new float[combinedAttrsLimit];
         accessorBuffer = new float[combinedAttrsLimit];
         accessorBufferSize = combinedAttrsLimit;
     };
     ~Tween() {
+        // LOG_DEBUG("Delete tween.");
         delete startValues;
         delete targetValues;
         delete accessorBuffer;
@@ -107,6 +109,9 @@ public:
     bool getCompleted() {
         return complited;
     };
+    bool getPlaying() {
+        return playing;
+    };    
     // Changes the limit for combined attributes. Defaults to 3 to reduce memory footprint.
     static void setCombinedAttributesLimit(int limit) {
         Tween::combinedAttrsLimit = limit;
@@ -157,6 +162,8 @@ public:
                     started = complited = false;
                     startTime = endTime + delayAmount;
                     endTime = startTime + duration;
+                } else {
+                    playing = false;
                 }
                 // Reverse.
                 if (isReverseFlag) {

@@ -62,6 +62,7 @@ struct ConfigData {
     int musicVolume = 50;
     int fruitsType[GRID_SIZE][GRID_SIZE];
     int ScorePoints = 0;
+    int missStep = 0;
 };
 ConfigData* configData;
 
@@ -79,12 +80,12 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - font fix
-// - font scale
 // - particle system
-// - save state
+// - new logo
 // - music pause
 // - test for swap
+// - time manager test
+// - Alex, where my music?
 
 // Android entry point.
 void android_main(android_app* app) {
