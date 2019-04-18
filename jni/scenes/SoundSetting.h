@@ -70,6 +70,7 @@ public:
         configData->soundVolume = volume;
     };
     void onSoundSliderUp() {
+        if (musicSlider->getChanged()) return;
         SoundManager::getInstance()->playSound(volumeSound);
     };
     void onMusicSliderSlide(int volume) {

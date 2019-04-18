@@ -49,10 +49,10 @@ public:
                 sprite->setFrame(text[count]);
                 sprite->location = l;
                 animated++;
-                Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.15f, Ease::Sinusoidal::InOut)
+                Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.1f, Ease::Sinusoidal::InOut)
                     ->target(1.5f, 1.5f)->remove(true)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
                 animated++;
-                Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.3f, Ease::Sinusoidal::InOut)
+                Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Sinusoidal::InOut)
                     ->target(1.0f, 1.0f)->remove(true)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));;
                 t1->addChain(t2)->start();
                 if (q) {

@@ -11,6 +11,7 @@ public:
         GLfloat x, y, u, v;
     };
     Sprite(const char* texturePath, int width, int height):
+        order(0),
         location(),
         angle(0.0f),
         scale(Vector2(1.0f, 1.0f)),
@@ -161,6 +162,7 @@ protected:
     };
 public:
     // Tratsormations.
+    int order;    
     Vector2 location;
     Vector2 scale;
     float angle;

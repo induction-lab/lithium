@@ -89,6 +89,8 @@ ERROR:
         return STATUS_ERROR;
     };
     void draw() {
+        // Sort by order.
+        std::sort(sprites.begin(), sprites.end(), sort());
         // Selects sprite shader and passes its parameters.
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, GraphicsManager::getInstance()->getProjectionMatrix());
@@ -140,6 +142,12 @@ ERROR:
         glDisable(GL_BLEND);
     };
 private:
+    // Sort order.
+    struct sort { 
+        bool operator() (Sprite* a, Sprite* b) const { 
+            return a->order < b->order;
+        }
+    };
     const int indexPerSprite = 6;
     const int vertexPerSprite = 4;
     std::vector<Sprite*> sprites;

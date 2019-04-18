@@ -184,11 +184,11 @@ public:
         return gestureTapEvent(x, y);
     };
     int gestureDragEvent(int x, int y) {
-        float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
-        float maxPosition = sprite->location.x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;        
-        float clampX = CLAMP(x, minPosition, maxPosition);
-        return gestureTapEvent(clampX, y);
-    };    
+        return gestureTapEvent(x, y);
+    };
+    bool getChanged() {
+        return changed;
+    };
     int precent;
     void setSlideFunction(std::function<void(float)> callback) { slideFunction = callback; };
     void setUpFunction(std::function<void()> callback) { upFunction = callback; };
@@ -207,11 +207,11 @@ class Scene: public InputListener {
 public:
     Scene():
     created(false) {
-        LOG_DEBUG("Scene created.");
+        LOG_DEBUG("Create scene.");
     }
     virtual ~Scene() {
         LOG_DEBUG("Delete scene.");
-        LOG_DEBUG("Found %d widgets.", widgets.size());
+        LOG_DEBUG("Delete %d widgets.", widgets.size());
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             SAFE_DELETE(*it);
         }
@@ -249,6 +249,13 @@ public:
         widgets.push_back(background);
         return background;
     };
+    Background* addBackground() {
+        LOG_INFO("Creating new 'Background' widget.");
+        Background* background = new Background();
+        background->spriteBatch = spriteBatch;
+        widgets.push_back(background);
+        return background;
+    };    
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();

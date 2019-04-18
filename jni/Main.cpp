@@ -52,8 +52,9 @@ const status STATUS_EXIT   = -2;
 static android_app* application;
 
 // Base 'match three' game params.
-#define GRID_SIZE 6         // optimal for watch screen
-#define MIN_MATCH_COUNT 3   // minimal match fruits
+#define GRID_SIZE 6             // optimal for watch screen
+#define MIN_MATCH_COUNT 3       // minimal match fruits
+#define MIN_MATCH_WOW_COUNT 5   // minimal match fruits for wow bonus
 
 // Application default config.
 struct ConfigData {
@@ -78,9 +79,9 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - rasterfont for scores
 // - save state
 // - music pause
+// - test for swap
 
 // Android entry point.
 void android_main(android_app* app) {
