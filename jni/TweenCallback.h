@@ -3,28 +3,32 @@
 
 #include <functional>
 
+class Tweenable {
+public:
+    virtual int getValues(int tweenType, float* returnValues) = 0;
+    virtual void setValues(int tweenType, float* newValues) = 0;
+};
+
 class TweenCallback {
 private:
     // Depricated ...
     // void (*callbackFunc)(void*);
     // void* pointer;
-    std::function<void()> callbackFunc;
+    std::function<void(Tweenable*)> callbackFunc;
 public:
-    TweenCallback(std::function<void()> callback = NULL):
+    TweenCallback(std::function<void(Tweenable*)> callback = NULL):
         callbackFunc(callback) {
         //
     };
     ~TweenCallback() {};
-    void set(std::function<void()> callback) {
+    void set(std::function<void(Tweenable*)> callback) {
         callbackFunc = callback;
     };
     void clear() {
         callbackFunc = NULL;
     };
-    void call() {
-        if (callbackFunc != NULL) {
-            callbackFunc();
-        }
+    void call(Tweenable* t) {
+        if (callbackFunc != NULL) callbackFunc(t);
     };
 };
 

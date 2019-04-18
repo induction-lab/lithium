@@ -12,12 +12,6 @@ static T lerp(T a, T b, float k) {
     return a * (1.0f - k) + b * k;
 };
 
-class Tweenable {
-public:
-    virtual int getValues(int tweenType, float* returnValues) = 0;
-    virtual void setValues(int tweenType, float* newValues) = 0;
-};
-
 class Tween {
 private:
     static int combinedAttrsLimit;
@@ -54,15 +48,15 @@ public:
         chains.clear();
         return this;
     };
-    Tween* onStart(std::function<void()> onStartFunc) {
+    Tween* onStart(std::function<void(Tweenable*)> onStartFunc) {
         onStartCallback.set(onStartFunc);
         return this;
     };
-    Tween* onUpdate(std::function<void()> onUpdateFunc) {
+    Tween* onUpdate(std::function<void(Tweenable*)> onUpdateFunc) {
         onUpdateCallback.set(onUpdateFunc);
         return this;
     };
-    Tween* onComplete(std::function<void()> onCompleteFunc) {
+    Tween* onComplete(std::function<void(Tweenable*)> onCompleteFunc) {
         onCompleteCallback.set(onCompleteFunc);
         return this;
     };
@@ -146,7 +140,7 @@ public:
         if (!started) {
             started = true;
             complited = false;
-            onStartCallback.call();
+            onStartCallback.call(targetObj);
         }
         // Progress.
         elapsed = (t - startTime) / duration;
@@ -176,12 +170,12 @@ public:
                 // Start any chains.
                 for (std::list<Tween*>::reverse_iterator it = chains.rbegin(); it != chains.rend(); ++it) (*it)->start();
                 // Complete callback.
-                onCompleteCallback.call();
+                onCompleteCallback.call(targetObj);
             } else {
                 // Update it.
                 for (int i = 0; i < combinedAttrsCnt; i++) accessorBuffer[i] = lerp(startValues[i], targetValues[i], easing(elapsed));
                 targetObj->setValues(type, accessorBuffer);
-                onUpdateCallback.call();
+                onUpdateCallback.call(targetObj);
             }
         }
     };
@@ -195,7 +189,7 @@ protected:
     EaseFunc easing;
     int repeat;
     // Main.
-    Tweenable *targetObj;
+    Tweenable* targetObj;
     int type;
     // Values.
     float* startValues;

@@ -11,6 +11,7 @@
 class Widget: public InputListener {
 public:
     Widget():
+        dead(false),
         sprite(NULL),
         spriteBatch(NULL) {
         // LOG_DEBUG("Create widget.");
@@ -23,6 +24,10 @@ public:
         this->sprite = sprite;
         sprite->location = location;
     };
+    virtual void onDead(Tweenable* t) {
+        dead = true;
+    };    
+    bool dead;    
     Sprite* sprite;
 protected:
     friend class Scene;
@@ -232,24 +237,20 @@ public:
         frames(frames),
         duration(duration),
         delay(delay),
-        completed(false),
         started(false) {
         //
     };
     void update() {
         if (!started) {
             TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, duration, Ease::Linear)->target(frames)->remove(true)
-                ->onComplete(std::bind(&Animation::onComplete, this))->start(delay);
+                ->onComplete(std::bind(&Widget::onDead, this, std::placeholders::_1))
+                ->start(delay);
             started = true;
         }
-    };
-    void onComplete() {
-        completed = true;
     };
     int frames;
     float duration;
     float delay;
-    bool completed;
     bool started;
 };
 
@@ -257,7 +258,6 @@ public:
 class BonusText: public Widget {
 public:
     BonusText(int frame):
-        completed(false),
         started(false) {
         //
     };
@@ -269,15 +269,15 @@ public:
             Tween* t4 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.5f);
             t2->addChain(t3);
             t2->addChain(t4);
-            t3->onComplete(std::bind(&BonusText::onComplete, this));
+            t3->onComplete(std::bind(&Widget::onDead, this, std::placeholders::_1));
             t2->start();
             started = true;
         }
     };
-    void onComplete() {
-        completed = true;
+    void onDead(Tweenable* t) {
+        Widget::onDead(t);
+        // ??? ...
     };
-    bool completed;
     bool started;
 };
 
@@ -334,7 +334,7 @@ public:
         animation->setSprite(spriteBatch->registerSprite(path, width, height), location);
         animation->sprite->order = 1;
         animation->spriteBatch = spriteBatch;
-        animations.push_back(animation);
+        widgets.push_back(animation);
         return animation;
     };
     BonusText* addBonusText(const char* path, int width, int height, Vector2 location, int frame) {
@@ -346,31 +346,19 @@ public:
         bonusText->sprite->opaque = 0.0f;
         bonusText->sprite->setFrame(frame);            
         bonusText->spriteBatch = spriteBatch;
-        bonusTexts.push_back(bonusText);
+        widgets.push_back(bonusText);
         return bonusText;
     };
     virtual void update() {
-        for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
+        for (std::vector<Widget*>::reverse_iterator it = widgets.rbegin(); it < widgets.rend(); ++it) {
             (*it)->update();
-        }
-        for (std::vector<Animation*>::const_reverse_iterator it = animations.rbegin(); it < animations.rend(); ++it) {
-            (*it)->update();
-            if ((*it)->completed) {
+            if ((*it)->dead) {
                 // Delete animation.
                 LOG_DEBUG("Delete animation.");
                 spriteBatch->unregisterSprite((*it)->sprite);
-                animations.erase(std::remove(animations.begin(), animations.end(), *it), animations.end());
-            }
+                widgets.erase(std::remove(widgets.begin(), widgets.end(), *it), widgets.end());
+            }            
         }
-        for (std::vector<BonusText*>::const_reverse_iterator it = bonusTexts.rbegin(); it < bonusTexts.rend(); ++it) {
-            (*it)->update();
-            if ((*it)->completed) {
-                // Delete bonusText.
-                LOG_DEBUG("Delete bonusText.");
-                spriteBatch->unregisterSprite((*it)->sprite);
-                bonusTexts.erase(std::remove(bonusTexts.begin(), bonusTexts.end(), *it), bonusTexts.end());
-            }
-        }        
     };
     virtual status start(void) = 0;
     virtual void pause(void) {};
@@ -379,8 +367,6 @@ public:
     bool created;
 private:
     std::vector<Widget*> widgets;
-    std::vector<Animation*> animations;
-    std::vector<BonusText*> bonusTexts;
 };
 
 #endif // __SCENE_H__

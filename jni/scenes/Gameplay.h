@@ -19,7 +19,7 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             SAFE_DELETE(fruits[x][y]);
         }
-        if (scoreText != NULL) SAFE_DELETE(scoreText);
+        // if (scoreText != NULL) SAFE_DELETE(scoreText);
         if (changedScoreText != NULL) SAFE_DELETE(changedScoreText);
         if (particleSystem != NULL) SAFE_DELETE(particleSystem);
     };
@@ -77,7 +77,7 @@ public:
         bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
-        scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
+        /// scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
         changedScoreText = new RasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
         changedScoreText->scale = Vector2(0.7f, 0.7f);
         scores = configData->ScorePoints;
@@ -120,7 +120,7 @@ public:
     // New fruit.
     void addFruit(int x, int y, int fruitType = -1) {
         // LOG_DEBUG("Creating new fruit.");
-        if (fruitType == -1) fruitType = (int)frand(7);
+        if (fruitType == -1) fruitType = (int)frand(3);
         Fruit* fruit = new Fruit(fruitType);
         const char* fruitTextures[8] = {
             "textures/AppleFruit.png",
@@ -165,7 +165,7 @@ public:
                 updateScore(-1);
             }
         }
-        if (scoreText != NULL) scoreText->update();
+        /// if (scoreText != NULL) scoreText->update();
         if (changedScoreText != NULL) changedScoreText->update();
         particleSystem->update();        
     };
@@ -390,7 +390,6 @@ public:
                 if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
             for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f)
                 if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
-            matchStep = 1;
             updateScore(dyingFruits);
         }
         if (killType == FruitKillType::DEAD) dyingFruits++;
@@ -482,7 +481,7 @@ public:
         }
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
-        scoreText->setText(str.c_str());
+        /// scoreText->setText(str.c_str());
     };
     // Back to main scene.
     int backEvent() {
