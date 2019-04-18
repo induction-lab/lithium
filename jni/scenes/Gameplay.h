@@ -54,6 +54,12 @@ public:
 
         line = new Line(5.0f);
         line->color = Vector(0.2f, 1.0f, 0.4f);
+        
+        grub01 = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
+        grub02 = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
+        grub03 = SoundManager::getInstance()->registerSound("sounds/Grub03.wav");
+        SoundManager::getInstance()->loadResources();
+        
         created = true;
         return STATUS_OK;
     };
@@ -69,14 +75,17 @@ public:
     };
     void onAppleClick() {
         apple->alive = false;
+        SoundManager::getInstance()->playSound(grub01);
         LOG_DEBUG("Kill aplle.");
     };    
     void onTomatoClick() {
         tomato->alive = false;
+        SoundManager::getInstance()->playSound(grub02);
         LOG_DEBUG("Kill tomato.");
     };
     void onPearClick() {
         pear->alive = false;
+        SoundManager::getInstance()->playSound(grub03);
         LOG_DEBUG("Kill pear.");
     };
     void backEvent() {
@@ -91,6 +100,9 @@ public:
     Fruit* tomato;
     Fruit* pear;
     Line* line;
+    Sound* grub01;
+    Sound* grub02;
+    Sound* grub03;
 };
 
 #endif

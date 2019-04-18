@@ -50,7 +50,7 @@ public:
         result = (*engine)->CreateOutputMix(engine, &outputMixObj, outputMixIIDCount, outputMixIIDs, outputMixReqs);
         result = (*outputMixObj)->Realize(outputMixObj, SL_BOOLEAN_FALSE);
         // Set-up sound player.
-        LOG_INFO("Starting sound player with %d SoundQueue.", QUEUE_COUNT);
+        LOG_DEBUG("Starting sound player with %d SoundQueue.", QUEUE_COUNT);
         for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
@@ -97,6 +97,10 @@ ERROR:
     };
     void reset() {
         stopMusic(false);
+        if (engine == NULL) return;
+        for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
+            soundQueues[i].reset();
+        }
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
             (*it)->unload();
             SAFE_DELETE(*it);
@@ -141,7 +145,7 @@ ERROR:
         return STATUS_ERROR;
     };
     void stopMusic(bool paused = true) {
-        LOG_INFO("Stopping Music.");
+        LOG_DEBUG("Stopping Music.");
         if (playerPlay != NULL) {
             SLuint32 playerState;
             (*playerObj)->GetState(playerObj, &playerState);

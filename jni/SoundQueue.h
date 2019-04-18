@@ -13,7 +13,7 @@ public:
         //
     };
     status initialize(SLEngineItf engine, SLObjectItf outputMixObj) {
-        LOG_INFO("Starting SoundQueue.");
+        LOG_DEBUG("Starting SoundQueue.");
         SLresult result;
         // Set-up sound audio source.
         SLDataLocator_AndroidSimpleBufferQueue dataLocatorIn;
@@ -59,7 +59,7 @@ ERROR:
         return STATUS_ERROR;
     };
     void finalize() {
-        LOG_INFO("Stopping SoundQueue.");
+        LOG_DEBUG("Stopping SoundQueue.");
         // Destroys sound player.
         if (playerObj != NULL) {
             (*playerObj)->Destroy(playerObj);
@@ -67,6 +67,11 @@ ERROR:
             playerPlay = NULL;
             playerQueue = NULL;
         }
+    };
+    void reset() {
+        SLuint32 playerState;
+        (*playerObj)->GetState(playerObj, &playerState);
+        if (playerState == SL_OBJECT_STATE_REALIZED) (*playerQueue)->Clear(playerQueue);
     };
     void playSound(Sound* sound) {
         SLresult result;

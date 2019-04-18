@@ -181,10 +181,10 @@ class Scene: public InputListener {
 public:
     Scene():
     created(false) {
-        LOG_INFO("Scene created.");
+        LOG_DEBUG("Scene created.");
     }
     virtual ~Scene() {
-        LOG_INFO("Delete scene.");
+        LOG_DEBUG("Delete scene.");
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             SAFE_DELETE(*it);
         }
