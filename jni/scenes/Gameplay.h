@@ -3,7 +3,7 @@
 
 #include "Line.h"
 
-#define GRID_SIZE 8
+#define GRID_SIZE 6
 
 class Gameplay: public Scene {
 private:
@@ -36,20 +36,19 @@ public:
         // Create fruits.
         float dx = 0.0f;
         float dy = 0.0f;
+        const char* fruitTextures[7] = {
+            "textures/AppleFruit.png",
+            "textures/BannanaFruit.png",
+            "textures/CarrotFruit.png",
+            "textures/GrapesFruit.png",
+            "textures/OrangeFruit.png",
+            "textures/PearFruit.png",
+            "textures/TomatoFruit.png"
+        };
         for (int j = 0; j < GRID_SIZE; j++) {
             for (int i = 0; i < GRID_SIZE; i++) {
-                const char* fruitTextures[7] = {
-                    "textures/AppleFruit.png",
-                    "textures/BannanaFruit.png",
-                    "textures/CarrotFruit.png",
-                    "textures/GrapesFruit.png",
-                    "textures/OrangeFruit.png",
-                    "textures/PearFruit.png",
-                    "textures/TomatoFruit.png"
-                };
-                int n = (int)frand(6);
-                fruits[i][j] = addFruit(fruitTextures[n], 64, 64, Location(i * 32 + 72 - dx, renderHeight - j * 32 - 64 - dy));
-                fruits[i][j]->sprite->scale = Vector2(0.7f, 0.7f);
+                fruits[i][j] = addFruit(fruitTextures[(int)frand(6)], 64, 64, Location(i * 42 + 78 - dx, renderHeight - j * 42 - 68 - dy));
+                fruits[i][j]->sprite->scale = Vector2(0.9f, 0.9f);
                 fruits[i][j]->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1));
                 dy += 2.0f;
             }
@@ -72,7 +71,7 @@ public:
     int gestureTapEvent(int x, int y) {
         if (!created) return false;
         Location point = GraphicsManager::getInstance()->screenToRender(x, y);
-        line->addPoint(Vector(point.x, point.y, 0.0f));
+        // line->addPoint(Vector(point.x, point.y, 0.0f));
         return 0;
     };
     void update() {

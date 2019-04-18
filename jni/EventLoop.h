@@ -219,7 +219,6 @@ ERROR:
             LOG_DEBUG("[onDestroyWindow]");
             activityHandler->onDestroyWindow();
             writeConfig(); // save config data ...
-            deactivate();
             break;
         default:
             break;

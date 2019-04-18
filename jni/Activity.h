@@ -76,7 +76,7 @@ protected:
         if (scene != NULL) scene->resume();
     };
     void onDeactivate() {
-        LOG_INFO("Dectivating Engine.");
+        LOG_INFO("Deactivating Engine.");
     };
     void onDestroy() {
         if (scene != NULL) SAFE_DELETE(scene);

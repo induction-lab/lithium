@@ -43,9 +43,9 @@
 
 // Stuff for status state.
 typedef unsigned long int status;
-const status STATUS_OK         =  0;
-const status STATUS_ERROR      = -1;
-const status STATUS_EXIT       = -2;
+const status STATUS_OK     =  0;
+const status STATUS_ERROR  = -1;
+const status STATUS_EXIT   = -2;
 
 // Base native app glue.
 #include <android_native_app_glue.h>
@@ -58,7 +58,7 @@ struct ConfigData {
 };
 ConfigData* configData;
 
-// Type of ui mode (for Google Wear 2.0 support).
+// Type of ui mode (for Google Wear 2.0 swipe back support).
 #include "android/configuration.h"
 static int32_t uiModeType;
 
@@ -72,8 +72,10 @@ static int32_t uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - onSaveInstanceState ...
-// - Activity -> Scenes(name) ?
+// - work on Gameplay
+// - rasterfont
+// - music pause
+// - save state
 
 // Android entry point.
 void android_main(android_app* app) {

@@ -142,6 +142,7 @@ public:
         precent(0),
         changed(false),
         slideFunction(NULL),
+        sliderHandle(NULL),
         upFunction(NULL) {
         //
     };
