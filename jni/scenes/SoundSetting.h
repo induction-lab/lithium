@@ -31,25 +31,61 @@ public:
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Animated leafs.
         if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) {
-            leaf01 = addBackground("textures/Leaf01.png", 360, 239, Vector2(halfWidth + 35.0f, renderHeight - 40.0f));
-            leaf01->sprite->pivot = Vector(0.0f, 120.0f, 0.0f);
+            //  ____
+            // |   |
+            // |__·|
+            //           
+            leaf01 = addBackground("textures/Leafs.png", 327, 287, Vector2(renderWidth - 105.0f, 90.0f));
+            leaf01->sprite->setFrame(0);
+            leaf01->sprite->order = 1;
+            leaf01->sprite->pivot = Vector(162.0f, -142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf01->sprite);
-            leaf02 = addBackground("textures/Leaf02.png", 159, 157, Vector2(60.0f, renderHeight - 70.0f));
-            leaf02->sprite->pivot = Vector(-80.0f, 78.0f, 0.0f);
+            //  ____
+            // |   |
+            // |·__|
+            //      
+            leaf02 = addBackground("textures/Leafs.png", 327, 287, Vector2(30.0f, 30.0f));
+            leaf02->sprite->setFrame(1);
+            leaf02->sprite->order = 1;
+            leaf02->sprite->pivot = Vector(-162.0f, -142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf02->sprite);
-            leaf03 = addBackground("textures/Leaf03.png", 239, 211, Vector2(renderWidth - 65.0f, renderHeight - 100.0f));
-            leaf03->sprite->pivot = Vector(120.0f, 105.0f, 0.0f);
+            //  ____
+            // |   |
+            // |_·_|
+            //
+            leaf03 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 45.0f, 20.0f));
+            leaf03->sprite->setFrame(2);
+            leaf03->sprite->order = 0;
+            leaf03->sprite->pivot = Vector(0.0f, -142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf03->sprite);
-            leaf04 = addBackground("textures/Leaf04.png", 286, 225, Vector2(halfWidth, 90.0f));
-            leaf04->sprite->pivot = Vector(0.0f, -112.0f, 0.0f);
+            //  ____
+            // |·  |
+            // |___|
+            //            
+            leaf04 = addBackground("textures/Leafs.png", 327, 287, Vector2(130.0f, renderHeight - 120.0f));
+            leaf04->sprite->setFrame(3);
+            leaf04->sprite->order = 1;
+            leaf04->sprite->pivot = Vector(-162.0f, 142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf04->sprite);
-            leaf05 = addBackground("textures/Leaf05.png", 230, 210, Vector2(60.0f, 90.0f));
-            leaf05->sprite->pivot = Vector(-115.0f, -105.0f, 0.0f);
+            //  ____
+            // |  ·|
+            // |___|
+            //            
+            leaf05 = addBackground("textures/Leafs.png", 327, 287, Vector2(renderWidth - 10.0f, renderHeight - 60.0f));
+            leaf05->sprite->setFrame(4);
+            leaf05->sprite->order = 1;
+            leaf05->sprite->pivot = Vector(162.0f, 142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf05->sprite);
-            leaf06 = addBackground("textures/Leaf06.png", 164, 223, Vector2(renderWidth - 65.0f, 90.0f));
-            leaf06->sprite->pivot = Vector(82.0f, -110.0f, 0.0f);
+            //  ____
+            // | · |
+            // |___|
+            //            
+            leaf06 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 50.0f, renderHeight - 120.0f));
+            leaf06->sprite->setFrame(5);
+            leaf06->sprite->order = 0;
+            leaf06->sprite->pivot = Vector(0.0f, 142.0f, 0.0f);
             onLeafTweenComplete((Tweenable*)leaf06->sprite);
-        }            
+        }
         sounds = addBackground("textures/SoundPanel.png", 268, 239, Vector2(halfWidth, halfHeight));
         okButton = addButton("textures/OkButton.png", 80, 78, Vector2(halfWidth + 70, halfHeight - 100));
         okButton->setDownFunction(std::bind(&SoundSetting::onAnyButtonDown, this));
@@ -81,7 +117,7 @@ public:
     // Repeat leaf animation.
     void onLeafTweenComplete(Tweenable* leaf) {
         TweenManager::getInstance()->addTween((Sprite*)leaf, TweenType::ROTATION_CW, 1.5f, Ease::Sinusoidal::InOut)
-            ->target(frand(4.0f) - 2.0f)->remove(true)->reverse()
+            ->target(frand(4.0f) - 2.0f)->remove(true)
             ->onComplete(std::bind(&SoundSetting::onLeafTweenComplete, this, std::placeholders::_1))
             ->start();
     };
