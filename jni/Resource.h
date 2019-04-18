@@ -4,53 +4,53 @@
 #include <android_native_app_glue.h>
 
 struct ResourceDescriptor {
-	int32_t mDescriptor;
-	off_t mStart;
-	off_t mLength;
+	int32_t descriptor;
+	off_t start;
+	off_t length;
 };
 
 class Resource {
 public:
-    Resource() {};
-	Resource(android_app* application, const char* path) :
-        mAssetManager(application->activity->assetManager),
-        mPath(path),
-        mAsset(NULL) {
+	Resource() {};
+	Resource(const char* path) :
+		assetManager(application->activity->assetManager),
+		filePath(path),
+		asset(NULL) {
 		//
 	}
 	status open() {
-        mAsset = AAssetManager_open(mAssetManager, mPath, AASSET_MODE_UNKNOWN);
-        return (mAsset != NULL) ? STATUS_OK : STATUS_ERROR;
-    }
-    const char* getPath() {
-        return mPath;
-    }
-    status read(void* buffer, size_t count) {
-        int32_t readCount = AAsset_read(mAsset, (char*)buffer, count);
-        return (readCount == count) ? STATUS_OK : STATUS_ERROR;
-    }
-    void close() {
-        if (mAsset != NULL) {
-            AAsset_close(mAsset);
-            mAsset = NULL;
-        }
-    }
-	ResourceDescriptor descript() {
-		ResourceDescriptor descriptor = { -1, 0, 0 };
-		AAsset* asset = AAssetManager_open(mAssetManager, mPath, AASSET_MODE_UNKNOWN);
+		asset = AAssetManager_open(assetManager, filePath, AASSET_MODE_UNKNOWN);
+		return (asset != NULL) ? STATUS_OK : STATUS_ERROR;
+	}
+	const char* getPath() {
+		return filePath;
+	}
+	status read(void* buffer, size_t count) {
+		int32_t readCount = AAsset_read(asset, (char*)buffer, count);
+		return (readCount == count) ? STATUS_OK : STATUS_ERROR;
+	}
+	void close() {
 		if (asset != NULL) {
-			descriptor.mDescriptor = AAsset_openFileDescriptor(asset, &descriptor.mStart, &descriptor.mLength);
+			AAsset_close(asset);
+			asset = NULL;
+		}
+	}
+	ResourceDescriptor descript() {
+		ResourceDescriptor rd = { -1, 0, 0 };
+		AAsset* asset = AAssetManager_open(assetManager, filePath, AASSET_MODE_UNKNOWN);
+		if (asset != NULL) {
+			rd.descriptor = AAsset_openFileDescriptor(asset, &rd.start, &rd.length);
 			AAsset_close(asset);
 		}
-		return descriptor;
-	}	
-    off_t getLength() {
-        return AAsset_getLength(mAsset);
-    }
+		return rd;
+	}
+	off_t getLength() {
+		return AAsset_getLength(asset);
+	}
 private:
-    const char* mPath;
-    AAssetManager* mAssetManager;
-    AAsset* mAsset;
+	const char* filePath;
+	AAssetManager* assetManager;
+	AAsset* asset;
 };
 
 #endif

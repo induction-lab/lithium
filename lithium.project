@@ -584,6 +584,7 @@
         <File name="build.cmd" />
         <File name="build.xml" />
         <File name="lithium.keystore" />
+        <File name="lithium.project" />
         <File name="local.properties" />
         <File name="proguard-project.txt" />
         <File name="project.properties" />

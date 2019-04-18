@@ -15,44 +15,27 @@ const status STATUS_OK         =  0;
 const status STATUS_ERROR      = -1;
 const status STATUS_EXIT       = -2;
 
-// Basic context services
-class GraphicsManager;
-class InputManager;
-class SoundManager;
-class TimeManager;
+#include <android_native_app_glue.h>
+static android_app* application;
 
-struct Context {
-    GraphicsManager* mGraphicsManager;
-    InputManager*    mInputManager;
-    SoundManager*    mSoundManager; 
-    TimeManager*     mTimeManager;
-};
-
-#include "EventLoop.h"
 #include "TimeManager.h"
 #include "InputManager.h"
 #include "SoundManager.h"
 #include "GraphicsManager.h"
-#include "Engine.h"
-
-#include <android_native_app_glue.h>
+#include "EventLoop.h"
+#include "Activity.h"
 
 // Android entry point
 void android_main(android_app* app) {
 	LOG_INFO("--- Let's go full native! ---");
 	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	
-	EventLoop eventLoop(app);
-    // Creates services.
-    TimeManager timeManager;
-    GraphicsManager graphicsManager(app);
-    InputManager inputManager(app);
-    SoundManager soundManager(app);
-    // Fills the context.
-    Context context = { &graphicsManager, &inputManager, &soundManager, &timeManager };
     // Toggle fullscreen.
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
+	// Application details provided by Android.
+	application = app;
     // Starts the game loop.
-    Engine engine(&context);
-    eventLoop.run(&engine, &inputManager);
+	EventLoop eventLoop;
+	Activity lithium;
+    eventLoop.run(&lithium);
 	LOG_INFO("--- Bye! ---");
 }

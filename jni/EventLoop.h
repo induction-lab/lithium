@@ -6,19 +6,11 @@
 #include <android/input.h>
 #include <android/sensor.h>
 
-class InputHandler {
-public:
-    virtual ~InputHandler() {};
-    virtual bool onTouchEvent(AInputEvent* event) = 0;
-    virtual bool onKeyboardEvent(AInputEvent* event) = 0;
-    virtual bool onTrackballEvent(AInputEvent* event) = 0;
-    virtual bool onAccelerometerEvent(ASensorEvent* event) = 0;
-};
-
 class ActivityHandler {
 public:
     virtual ~ActivityHandler() {};
-    virtual status onActivate() = 0;
+    virtual status onFirstStart() = 0;
+	virtual status onActivate() = 0;
     virtual void onDeactivate() = 0;
     virtual status onStep() = 0;
     virtual void onStart() {};
@@ -37,127 +29,168 @@ public:
 
 class EventLoop {
 public:
-    EventLoop(android_app* application) :
-        mEnabled(false), mQuit(false),
-        mApplication(application),
-        mActivityHandler(NULL),
-		mInputHandler(NULL),
-        mSensorPollSource(),
-		mSensorManager(NULL),
-        mSensorEventQueue(NULL) {
-        mApplication->userData = this;
-        mApplication->onAppCmd = callback_event;
-        mApplication->onInputEvent = callback_input;
-    }
-    void run(ActivityHandler* activityHandler, InputHandler* inputHandler) {
+    EventLoop() :
+        isEnabled(false), isQuit(false), isFirstStart(true),
+        activityHandler(NULL),
+        sensorPollSource(),
+		sensorManager(NULL),
+        sensorEventQueue(NULL) {
+        LOG_INFO("Creating Engine");
+        application->userData = this;
+        application->onAppCmd = callback_event;
+        application->onInputEvent = callback_input;
+		LOG_INFO("Create services");
+		new TimeManager;	
+		new InputManager;
+		new GraphicsManager;
+		new SoundManager;
+	}
+    void run(ActivityHandler* activity) {
         int32_t result;
         int32_t events;
         android_poll_source* source;
         // Makes sure native glue is not stripped by the linker.
         app_dummy();
-        mActivityHandler = activityHandler;
-        mInputHandler    = inputHandler;
+        activityHandler = activity;
         LOG_INFO("Starting event loop");
         while (true) {
             // Event processing loop.
-            while ((result = ALooper_pollAll(mEnabled ? 0 : -1, NULL, &events, (void**) &source)) >= 0) {
+            while ((result = ALooper_pollAll(isEnabled ? 0 : -1, NULL, &events, (void**) &source)) >= 0) {
                 // An event has to be processed.
                 if (source != NULL) {
-                    source->process(mApplication, source);
+                    source->process(application, source);
                 }
                 // Application is getting destroyed.
-                if (mApplication->destroyRequested) {
+                if (application->destroyRequested) {
                     LOG_INFO("Exiting event loop");
                     return;
                 }
             }
             // Steps the application.
-            if ((mEnabled) && (!mQuit)) {
-                if (mActivityHandler->onStep() != STATUS_OK) {
-                    mQuit = true;
-                    ANativeActivity_finish(mApplication->activity);
+            if ((isEnabled) && (!isQuit)) {
+                if (update() != STATUS_OK) {
+                    isQuit = true;
+                    ANativeActivity_finish(application->activity);
                 }
             }
         }
     }
 protected:
+	status update() {
+		// Updates services.
+		TimeManager::getInstance().update();
+		if (InputManager::getInstance().update() != STATUS_OK) return STATUS_ERROR;
+		if (GraphicsManager::getInstance().update() != STATUS_OK) return STATUS_ERROR;
+		if (activityHandler->onStep() != STATUS_OK) return STATUS_ERROR;
+		return STATUS_OK;
+	}
     void activate() {
         // Enables activity only if a window is available.
-        if ((!mEnabled) && (mApplication->window != NULL)) {
+        if ((!isEnabled) && (application->window != NULL)) {
             // Registers sensor queue.
-            mSensorPollSource.id = LOOPER_ID_USER;
-            mSensorPollSource.app = mApplication;
-            mSensorPollSource.process = callback_sensor;
-            mSensorManager = ASensorManager_getInstance();
-            if (mSensorManager != NULL) {
-                mSensorEventQueue = ASensorManager_createEventQueue(mSensorManager, mApplication->looper, LOOPER_ID_USER, NULL, &mSensorPollSource);
-                if (mSensorEventQueue == NULL) goto ERROR;
+            sensorPollSource.id = LOOPER_ID_USER;
+            sensorPollSource.app = application;
+            sensorPollSource.process = callback_sensor;
+            sensorManager = ASensorManager_getInstance();
+            if (sensorManager != NULL) {
+                sensorEventQueue = ASensorManager_createEventQueue(sensorManager, application->looper, LOOPER_ID_USER, NULL, &sensorPollSource);
+                if (sensorEventQueue == NULL) goto ERROR;
             }
             activateAccelerometer();
-            mQuit = false;
-            mEnabled = true;
-            if (mActivityHandler->onActivate() != STATUS_OK) {
-                goto ERROR;
-            }
+            isQuit = false;
+            isEnabled = true;
+			// Starts services.
+			LOG_INFO("Activating services");
+			TimeManager::getInstance().start();
+			if (InputManager::getInstance().start() != STATUS_OK) goto ERROR;
+			if (GraphicsManager::getInstance().start() != STATUS_OK) goto ERROR;
+			if (SoundManager::getInstance().start() != STATUS_OK) goto ERROR;
+			if (isFirstStart) {
+				if (activityHandler->onFirstStart() != STATUS_OK) goto ERROR;
+				isFirstStart = false;
+			}			
+            if (activityHandler->onActivate() != STATUS_OK) goto ERROR;
+			// Load resources.
+			GraphicsManager::getInstance().loadResources();
+			SoundManager::getInstance().loadResources();			
         }
         return;
 ERROR:
-        mQuit = true;
+        isQuit = true;
         deactivate();
-        ANativeActivity_finish(mApplication->activity);
+        ANativeActivity_finish(application->activity);
     }
     void deactivate() {
-        if (mEnabled) {
+        if (isEnabled) {
             deactivateAccelerometer();
-            if (mSensorEventQueue != NULL) {
-                ASensorManager_destroyEventQueue(mSensorManager, mSensorEventQueue);
-                mSensorEventQueue = NULL;
+            if (sensorEventQueue != NULL) {
+                ASensorManager_destroyEventQueue(sensorManager, sensorEventQueue);
+                sensorEventQueue = NULL;
             }
-            mSensorManager = NULL;
-            mActivityHandler->onDeactivate();
-            mEnabled = false;
+            sensorManager = NULL;
+            activityHandler->onDeactivate();
+			// Stop services.
+			LOG_INFO("Deactivating services");
+			GraphicsManager::getInstance().stop();
+			InputManager::getInstance().stop();
+			SoundManager::getInstance().stop();
+			TimeManager::getInstance().stop();			
+            isEnabled = false;
         }
     }
-    void processApevent(int32_t command) {
+	
+    void processAppEvent(int32_t command) {
         switch (command) {
         case APP_CMD_CONFIG_CHANGED:
-            mActivityHandler->onConfigurationChanged();
+			LOG_INFO("onConfigurationChanged");
+            activityHandler->onConfigurationChanged();
             break;
         case APP_CMD_INIT_WINDOW:
-            mActivityHandler->onCreateWindow();
+			LOG_INFO("onCreateWindow");
+            activityHandler->onCreateWindow();
             break;
         case APP_CMD_DESTROY:
-            mActivityHandler->onDestroy();
+			LOG_INFO("onDestroy");
+            activityHandler->onDestroy();
             break;
         case APP_CMD_GAINED_FOCUS:
+			LOG_INFO("onGainFocus");		
             activate();
-            mActivityHandler->onGainFocus();
+            activityHandler->onGainFocus();
             break;
         case APP_CMD_LOST_FOCUS:
-            mActivityHandler->onLostFocus();
+			LOG_INFO("onLostFocus");		
+            activityHandler->onLostFocus();
             deactivate();
             break;
         case APP_CMD_LOW_MEMORY:
-            mActivityHandler->onLowMemory();
+			LOG_INFO("onLowMemory");
+            activityHandler->onLowMemory();
             break;
         case APP_CMD_PAUSE:
-            mActivityHandler->onPause();
+			LOG_INFO("onPause");		
+            activityHandler->onPause();
             deactivate();
             break;
         case APP_CMD_RESUME:
-            mActivityHandler->onResume();
+			LOG_INFO("onResume");		
+            activityHandler->onResume();
             break;
         case APP_CMD_SAVE_STATE:
-            mActivityHandler->onSaveInstanceState(&mApplication->savedState, &mApplication->savedStateSize);
+			LOG_INFO("onSaveInstanceState");
+            activityHandler->onSaveInstanceState(&application->savedState, &application->savedStateSize);
             break;
         case APP_CMD_START:
-            mActivityHandler->onStart();
+			LOG_INFO("onStart");
+            activityHandler->onStart();
             break;
         case APP_CMD_STOP:
-            mActivityHandler->onStop();
+			LOG_INFO("onStop");
+            activityHandler->onStop();
             break;
         case APP_CMD_TERM_WINDOW:
-            mActivityHandler->onDestroyWindow();
+			LOG_INFO("onDestroyWindow");
+            activityHandler->onDestroyWindow();
             deactivate();
             break;
         default:
@@ -170,26 +203,26 @@ ERROR:
         case AINPUT_EVENT_TYPE_MOTION:
             switch (AInputEvent_getSource(event)) {
             case AINPUT_SOURCE_TOUCHSCREEN:
-                return mInputHandler->onTouchEvent(event);
+                return InputManager::getInstance().onTouchEvent(event);
                 break;
             case AINPUT_SOURCE_TRACKBALL:
-                return mInputHandler->onTrackballEvent(event);
+                return InputManager::getInstance().onTrackballEvent(event);
                 break;
             }
             break;
         case AINPUT_EVENT_TYPE_KEY:
-            return mInputHandler->onKeyboardEvent(event);
+            return InputManager::getInstance().onKeyboardEvent(event);
             break;
         }
         return 0;
     }
     void processSensorEvent() {
-		if (mSensorEventQueue != NULL) {
+		if (sensorEventQueue != NULL) {
 			ASensorEvent event;			
-			while (ASensorEventQueue_getEvents(mSensorEventQueue, &event, 1) > 0) {
+			while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0) {
 				switch (event.type) {
 				case ASENSOR_TYPE_ACCELEROMETER:
-					mInputHandler->onAccelerometerEvent(&event);
+					InputManager::getInstance().onAccelerometerEvent(&event);
 					break;
 				}
 			}
@@ -199,7 +232,7 @@ private:
     // Private callbacks handling events occuring in the thread loop.
     static void callback_event(android_app* application, int32_t command) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
-        eventLoop.processApevent(command);
+        eventLoop.processAppEvent(command);
     }
     static int32_t callback_input(android_app* application, AInputEvent* event) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
@@ -211,23 +244,23 @@ private:
     }
 private:
     void activateAccelerometer() {
-        mAccelerometer = ASensorManager_getDefaultSensor(mSensorManager, ASENSOR_TYPE_ACCELEROMETER);
-        if (mAccelerometer != NULL) {
-            if (ASensorEventQueue_enableSensor(mSensorEventQueue, mAccelerometer) < 0) {
+        accelerometer = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+        if (accelerometer != NULL) {
+            if (ASensorEventQueue_enableSensor(sensorEventQueue, accelerometer) < 0) {
                 LOG_ERROR("Could not enable accelerometer");
                 return;
             }
-            const char* name = ASensor_getName(mAccelerometer);
-            const char* vendor = ASensor_getVendor(mAccelerometer);
-            float resolution = ASensor_getResolution(mAccelerometer);
-            int32_t minDelay = ASensor_getMinDelay(mAccelerometer);
+            const char* name = ASensor_getName(accelerometer);
+            const char* vendor = ASensor_getVendor(accelerometer);
+            float resolution = ASensor_getResolution(accelerometer);
+            int32_t minDelay = ASensor_getMinDelay(accelerometer);
             LOG_INFO("Activating accelerometer:");
             LOG_INFO("Name       : %s", name);
             LOG_INFO("Vendor     : %s", vendor);
             LOG_INFO("Resolution : %f", resolution);
             LOG_INFO("Min Delay  : %d", minDelay);
             // Uses maximum refresh rate.
-            if (ASensorEventQueue_setEventRate(mSensorEventQueue, mAccelerometer, minDelay) < 0) {
+            if (ASensorEventQueue_setEventRate(sensorEventQueue, accelerometer, minDelay) < 0) {
                 LOG_ERROR("Could not set accelerometer rate");
             }
         } else {
@@ -235,29 +268,27 @@ private:
         }
     }
     void deactivateAccelerometer() {
-        if (mAccelerometer != NULL) {
-            if (ASensorEventQueue_disableSensor(mSensorEventQueue, mAccelerometer) < 0) {
+        if (accelerometer != NULL) {
+            if (ASensorEventQueue_disableSensor(sensorEventQueue, accelerometer) < 0) {
                 LOG_ERROR("Error while deactivating accelerometer.");
             }
-            mAccelerometer = NULL;
+            accelerometer = NULL;
         }
     }
 private:
     // Saves application state when application is active/paused.
-    bool mEnabled;
+    bool isEnabled;
     // Indicates if the event handler wants to exit.
-    bool mQuit;
-    // Application details provided by Android.
-    android_app* mApplication;
+    bool isQuit;
+	// Indicates if application is launched for the first time.
+	bool isFirstStart;
     // Activity event observer.
-    ActivityHandler* mActivityHandler;
-    // Input event observer.
-    InputHandler* mInputHandler;
+    ActivityHandler* activityHandler;
     // Sensors
-    ASensorManager* mSensorManager;
-    ASensorEventQueue* mSensorEventQueue;
-    android_poll_source mSensorPollSource;
-    const ASensor* mAccelerometer;
+    ASensorManager* sensorManager;
+    ASensorEventQueue* sensorEventQueue;
+    android_poll_source sensorPollSource;
+    const ASensor* accelerometer;
 };
 
 #endif

@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "Singleton.h"
+
 // Build date.
 char BuildDate[64];
-const char* GetBuildDate() { 
+const char* GetBuildDate() {
 	int month, day, year;
 	const char* buff[255];
 	static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
@@ -19,98 +21,90 @@ const char* GetBuildDate() {
 
 // Platform-dependent function to get the current time (in seconds).
 float PlatformGetTime() {
-    // Retrieves current time with a monotonic clock to ensure
-    // time goes forward and is not subject to system changes.
-    timespec timeVal;
-    clock_gettime(CLOCK_MONOTONIC, &timeVal);
-    return timeVal.tv_sec + (timeVal.tv_nsec * 1.0e-9);	
+	// Retrieves current time with a monotonic clock to ensure
+	// time goes forward and is not subject to system changes.
+	timespec timeVal;
+	clock_gettime(CLOCK_MONOTONIC, &timeVal);
+	return timeVal.tv_sec + (timeVal.tv_nsec * 1.0e-9);
 }
 
-class TimeManager {
+class TimeManager: public Singleton<TimeManager> {
 public:
 	TimeManager() {
 		LOG_INFO("Creating TimeManager");
-		mInstance = this;
-		mLastTime = PlatformGetTime();
-        mFrameRate[0] = '\0';
-        mFPS = 0.0f;
-        mFrameRateTime = mLastTime;
-        mFrame = 0;
-        reset();
-	}
-	static TimeManager* getPtr() {
-		return mInstance;
+		lastTime = PlatformGetTime();
+		frameRate[0] = '\0';
+		fps = 0.0f;
+		frameRateTime = lastTime;
+		frame = 0;
+		reset();
 	}
 	~TimeManager() {
 		LOG_INFO("Destructing TimeManager");
-		mInstance = 0;
 	}
-    float start() {
+	float start() {
 		LOG_INFO("Starting TimeManager");
-        mRunning = true;
-        mStartTime = PlatformGetTime();
-        return mTotalTimeBeforeLastStart;
-    };
-    float stop() {
+		running = true;
+		startTime = PlatformGetTime();
+		return totalTimeBeforeLastStart;
+	};
+	float stop() {
 		LOG_INFO("Stopping TimeManager");
-        mRunning = false;
-        float timeSinceLastStart = PlatformGetTime() - mStartTime;
-        mTotalTimeBeforeLastStart += timeSinceLastStart;
-        return mTotalTimeBeforeLastStart;
-    }	
+		running = false;
+		float timeSinceLastStart = PlatformGetTime() - startTime;
+		totalTimeBeforeLastStart += timeSinceLastStart;
+		return timeSinceLastStart;
+	}
 	void reset() {
 		LOG_INFO("Resetting TimeManager");
-        mRunning = false;
-        mTotalTimeBeforeLastStart = 0.0f;
-        mStartTime = 0.0f;
-        mElapsedTime = 0.0f;
+		running = false;
+		totalTimeBeforeLastStart = 0.0f;
+		startTime = 0.0f;
+		elapsedTime = 0.0f;
 	}
-    float getTime() {
-        if(mRunning) {
-            float timeSinceLastStart = PlatformGetTime() - mStartTime;
-            return mTotalTimeBeforeLastStart + timeSinceLastStart;
-        }
-        return mTotalTimeBeforeLastStart;
-    }
-    float getFrameTime() {
-        return mLastTime;
-    }
-    float getFrameElapsedTime() {
-        return mElapsedTime;
-    }	
+	float getTime() {
+		if(running) {
+			float timeSinceLastStart = PlatformGetTime() - startTime;
+			return totalTimeBeforeLastStart + timeSinceLastStart;
+		}
+		return totalTimeBeforeLastStart;
+	}
+	float getFrameTime() {
+		return lastTime;
+	}
+	float getFrameElapsedTime() {
+		return elapsedTime;
+	}
 	void update() {
-        mFrame++;
-        float currentTime = PlatformGetTime();
-        mElapsedTime = currentTime - mLastTime;
-        mLastTime = currentTime;
+		frame++;
+		float currentTime = PlatformGetTime();
+		elapsedTime = currentTime - lastTime;
+		lastTime = currentTime;
 	}
-    float getFrameRate()  {
-        float currentTime = PlatformGetTime();
-        if(currentTime - mFrameRateTime > 1.0f) {
-            mFPS = mFrame / (currentTime - mFrameRateTime);
-            mFrameRateTime = currentTime;
-            mFrame = 0;
-            return mFPS;
-        }
-        return mFPS;
-    }
-    const char* getFrameRateStr() {
-        sprintf(mFrameRate, "%3.0f fps\n", getFrameRate());
-        return mFrameRate;
-    }
+	float getFrameRate()  {
+		float currentTime = PlatformGetTime();
+		if(currentTime - frameRateTime > 1.0f) {
+			fps = frame / (currentTime - frameRateTime);
+			frameRateTime = currentTime;
+			frame = 0;
+			return fps;
+		}
+		return fps;
+	}
+	const char* getFrameRateStr() {
+		sprintf(frameRate, "%3.0f fps\n", getFrameRate());
+		return frameRate;
+	}
 private:
-	static TimeManager* mInstance;
-    bool    mRunning;
-    float 	mTotalTimeBeforeLastStart;
-    float 	mStartTime;
-    float 	mElapsedTime;
-    float 	mLastTime;
-    char    mFrameRate[20];
-    float 	mFPS;
-    float 	mFrameRateTime;
-    unsigned int mFrame;
+	bool running;
+	float totalTimeBeforeLastStart;
+	float startTime;
+	float elapsedTime;
+	float lastTime;
+	char frameRate[20];
+	float fps;
+	float frameRateTime;
+	unsigned int frame;
 };
-
-TimeManager* TimeManager::mInstance = 0;
 
 #endif

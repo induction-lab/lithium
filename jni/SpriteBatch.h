@@ -14,131 +14,127 @@ public:
         GLfloat x, y, u, v;
     };
     Sprite(const char* texturePath, int32_t width, int32_t height) :
-		mLocation(),
-		mTexturePath(texturePath), mTexture(0),
-		mSheetWidth(0), mSheetHeight(0),
-		mSpriteWidth(width), mSpriteHeight(height),
-		mFrameCount(0), mFrameXCount(0), mFrameYCount(0),
-		mAnimStartFrame(0), mAnimFrameCount(1),
-		mAnimSpeed(0.0f), mAnimFrame(0.0f), mAnimLoop(false) {
+		location(),
+		texturePath(texturePath), textureId(0),
+		sheetWidth(0), sheetHeight(0),
+		spriteWidth(width), spriteHeight(height),
+		frameCount(0), frameXCount(0), frameYCount(0),
+		animStartFrame(0), animFrameCount(1),
+		animSpeed(0.0f), animFrame(0.0f), animLoop(false) {
 		//
 	}	
     void setFrames(int32_t startFrame, int32_t frameCount, float speed, bool loop) {
-		mAnimStartFrame = startFrame;
-		mAnimFrame = 0.0f, mAnimSpeed = speed, mAnimLoop = loop;
-		mAnimFrameCount = frameCount;
+		animStartFrame = startFrame;
+		animFrame = 0.0f, animSpeed = speed, animLoop = loop;
+		animFrameCount = frameCount;
 	}
-    bool animationEnded() { return mAnimFrame > (mAnimFrameCount-1); }
-    void setLocation(Location location) { mLocation = location; }
-	Location getLocation() { return mLocation; }
-	int32_t getSpriteHeight() { return mSpriteHeight; }
-	int32_t getSpriteWidth() { return mSpriteWidth; }
+    bool animationEnded() { return animFrame > (animFrameCount-1); }
+    void setLocation(float x, float y) { location = Location(x, y); }
+	Location getLocation() { return location; }
+	int32_t getSpriteHeight() { return spriteHeight; }
+	int32_t getSpriteWidth() { return spriteWidth; }
 protected:
     friend class SpriteBatch;
     status load() {
-		Texture* texture = GraphicsManager::getPtr()->loadTexture(mTexturePath);
-		mTexture = texture->getId();
-		mSheetWidth = texture->getWidth();
-		mSheetHeight = texture->getHeight();
-		mFrameXCount = mSheetWidth / mSpriteWidth;
-		mFrameYCount = mSheetHeight / mSpriteHeight;
-		mFrameCount = (mSheetHeight / mSpriteHeight) * (mSheetWidth / mSpriteWidth);
+		Texture* texture = GraphicsManager::getInstance().loadTexture(texturePath);
+		textureId = texture->getId();
+		sheetWidth = texture->getWidth();
+		sheetHeight = texture->getHeight();
+		frameXCount = sheetWidth / spriteWidth;
+		frameYCount = sheetHeight / spriteHeight;
+		frameCount = (sheetHeight / spriteHeight) * (sheetWidth / spriteWidth);
 		return STATUS_OK;
 	}
-    void draw(Vertex pVertices[4], float pTimeStep) {
-		if (mSheetWidth == 0 || mSheetHeight == 0) return;
+    void draw(Vertex vertices[4], float pTimeStep) {
+		if (sheetWidth == 0 || sheetHeight == 0) return;
 		int32_t currentFrame, currentFrameX, currentFrameY;
 		// Updates animation in loop mode.
-		mAnimFrame += pTimeStep * mAnimSpeed;
-		if (mAnimLoop) {
-			currentFrame = (mAnimStartFrame + int32_t(mAnimFrame) % mAnimFrameCount);
+		animFrame += pTimeStep * animSpeed;
+		if (animLoop) {
+			currentFrame = (animStartFrame + int32_t(animFrame) % animFrameCount);
 		} else {
 			// Updates animation in one-shot mode.
 			if (animationEnded()) {
-				currentFrame = mAnimStartFrame + (mAnimFrameCount-1);
+				currentFrame = animStartFrame + (animFrameCount-1);
 			} else {
-				currentFrame = mAnimStartFrame + int32_t(mAnimFrame);
+				currentFrame = animStartFrame + int32_t(animFrame);
 			}
 		}
 		// Computes frame X and Y indexes from its id.
-		currentFrameX = currentFrame % mFrameXCount;
+		currentFrameX = currentFrame % frameXCount;
 		// currentFrameY is converted from OpenGL coordinates to top-left coordinates.
-		currentFrameY = mFrameYCount - 1 - (currentFrame / mFrameXCount);
+		currentFrameY = frameYCount - 1 - (currentFrame / frameXCount);
 		// Draws selected frame.
-		GLfloat posX1 = mLocation.x - float(mSpriteWidth / 2);
-		GLfloat posY1 = mLocation.y - float(mSpriteHeight / 2);
-		GLfloat posX2 = posX1 + mSpriteWidth;
-		GLfloat posY2 = posY1 + mSpriteHeight;
-		GLfloat u1 = GLfloat(currentFrameX * mSpriteWidth) / GLfloat(mSheetWidth);
-		GLfloat u2 = GLfloat((currentFrameX + 1) * mSpriteWidth) / GLfloat(mSheetWidth);
-		GLfloat v1 = GLfloat(currentFrameY * mSpriteHeight) / GLfloat(mSheetHeight);
-		GLfloat v2 = GLfloat((currentFrameY + 1) * mSpriteHeight) / GLfloat(mSheetHeight);
-		pVertices[0].x = posX1; pVertices[0].y = posY1;
-		pVertices[0].u = u1;    pVertices[0].v = v1;		
-		pVertices[1].x = posX1; pVertices[1].y = posY2;
-		pVertices[1].u = u1;    pVertices[1].v = v2;
-		pVertices[2].x = posX2; pVertices[2].y = posY1;
-		pVertices[2].u = u2;    pVertices[2].v = v1;
-		pVertices[3].x = posX2; pVertices[3].y = posY2;
-		pVertices[3].u = u2;    pVertices[3].v = v2;
+		GLfloat posX1 = location.x - float(spriteWidth / 2);
+		GLfloat posY1 = location.y - float(spriteHeight / 2);
+		GLfloat posX2 = posX1 + spriteWidth;
+		GLfloat posY2 = posY1 + spriteHeight;
+		GLfloat u1 = GLfloat(currentFrameX * spriteWidth) / GLfloat(sheetWidth);
+		GLfloat u2 = GLfloat((currentFrameX + 1) * spriteWidth) / GLfloat(sheetWidth);
+		GLfloat v1 = GLfloat(currentFrameY * spriteHeight) / GLfloat(sheetHeight);
+		GLfloat v2 = GLfloat((currentFrameY + 1) * spriteHeight) / GLfloat(sheetHeight);
+		vertices[0].x = posX1; vertices[0].y = posY1;
+		vertices[0].u = u1;    vertices[0].v = v1;		
+		vertices[1].x = posX1; vertices[1].y = posY2;
+		vertices[1].u = u1;    vertices[1].v = v2;
+		vertices[2].x = posX2; vertices[2].y = posY1;
+		vertices[2].u = u2;    vertices[2].v = v1;
+		vertices[3].x = posX2; vertices[3].y = posY2;
+		vertices[3].u = u2;    vertices[3].v = v2;
 	}
 private:
-    const char* mTexturePath;
-    GLuint mTexture;
-	Location mLocation;
+    const char* texturePath;
+    GLuint textureId;
+	Location location;
     // Frame.
-    int32_t mSheetHeight, mSheetWidth;
-    int32_t mSpriteHeight, mSpriteWidth;
-    int32_t mFrameXCount, mFrameYCount, mFrameCount;
+    int32_t sheetHeight, sheetWidth;
+    int32_t spriteHeight, spriteWidth;
+    int32_t frameXCount, frameYCount, frameCount;
     // Animation.
-    int32_t mAnimStartFrame, mAnimFrameCount;
-    float mAnimSpeed, mAnimFrame;
-    bool mAnimLoop;
+    int32_t animStartFrame, animFrameCount;
+    float animSpeed, animFrame;
+    bool animLoop;
 };
 
 class SpriteBatch : public GraphicsComponent {
 public:
     SpriteBatch():
-		mSprites(), mVertices(), mIndexes(),
-		mShaderProgram(0),
+		sprites(), vertices(), indexes(),
+		shaderProgram(0),
 		aPosition(-1), aTexture(-1), uProjection(-1), uTexture(-1) {
-		GraphicsManager::getPtr()->registerComponent(this);
+		GraphicsManager::getInstance().registerComponent(this);
 	}
     ~SpriteBatch() {
-		clear();
-		GraphicsManager::getPtr()->unregisterComponent(this);
-	}
-	void clear() {
-		for (std::vector<Sprite*>::iterator it = mSprites.begin(); it < mSprites.end(); ++it) {
+		for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
 			delete (*it);
 		}
-		mSprites.clear();		
+		sprites.clear();		
 	}
     Sprite* registerSprite(const char* texturePath, int32_t width, int32_t height) {
-		int32_t spriteCount = mSprites.size();
+		int32_t spriteCount = sprites.size();
 		int32_t index = spriteCount * 4; // Points to 1st vertex.
 		// Precomputes the index buffer.
-		mIndexes.push_back(index+0); mIndexes.push_back(index+1);
-		mIndexes.push_back(index+2); mIndexes.push_back(index+2);
-		mIndexes.push_back(index+1); mIndexes.push_back(index+3);
+		indexes.push_back(index+0); indexes.push_back(index+1);
+		indexes.push_back(index+2); indexes.push_back(index+2);
+		indexes.push_back(index+1); indexes.push_back(index+3);
 		for (int i = 0; i < 4; ++i) {
-			mVertices.push_back(Sprite::Vertex());
+			vertices.push_back(Sprite::Vertex());
 		}
 		// Appends a new sprite to the sprite array.
 		Sprite* sprite = new Sprite(texturePath, width, height);
-		mSprites.push_back(sprite);
+		sprites.push_back(sprite);
 		return sprite;
 	}
     status load() {
 		// Creates and retrieves shader attributes and uniforms.
-		Shader* shader = GraphicsManager::getPtr()->loadShader("shaders/Sprite.shader");
-		mShaderProgram = shader->getProgram();
-		aPosition = glGetAttribLocation(mShaderProgram, "aPosition");
-		aTexture = glGetAttribLocation(mShaderProgram, "aTexture");
-		uProjection = glGetUniformLocation(mShaderProgram, "uProjection");
-		uTexture = glGetUniformLocation(mShaderProgram, "u_texture");
+		Shader* shader = GraphicsManager::getInstance().loadShader("shaders/Sprite.shader");
+		shaderProgram = shader->getProgram();
+		aPosition = glGetAttribLocation(shaderProgram, "aPosition");
+		aTexture = glGetAttribLocation(shaderProgram, "aTexture");
+		uProjection = glGetUniformLocation(shaderProgram, "uProjection");
+		uTexture = glGetUniformLocation(shaderProgram, "u_texture");
 		// Loads sprites.
-		for (std::vector<Sprite*>::iterator it = mSprites.begin(); it < mSprites.end(); ++it) {
+		for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
 			if ((*it)->load() != STATUS_OK) goto ERROR;
 		}
 		return STATUS_OK;
@@ -148,41 +144,41 @@ public:
 	}
     void draw() {
 		// Selects sprite shader and passes its parameters.
-		glUseProgram(mShaderProgram);
-		glUniformMatrix4fv(uProjection, 1, GL_FALSE, GraphicsManager::getPtr()->getProjectionMatrix());
+		glUseProgram(shaderProgram);
+		glUniformMatrix4fv(uProjection, 1, GL_FALSE, GraphicsManager::getInstance().getProjectionMatrix());
 		glUniform1i(uTexture, 0);
 		// Indicates to OpenGL how position and uv coordinates are stored.
 		glEnableVertexAttribArray(aPosition);
-		glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, sizeof(Sprite::Vertex), &(mVertices[0].x));
+		glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, sizeof(Sprite::Vertex), &(vertices[0].x));
 		glEnableVertexAttribArray(aTexture);
-		glVertexAttribPointer(aTexture, 2, GL_FLOAT, GL_FALSE, sizeof(Sprite::Vertex), &(mVertices[0].u));
+		glVertexAttribPointer(aTexture, 2, GL_FLOAT, GL_FALSE, sizeof(Sprite::Vertex), &(vertices[0].u));
 		// Activates transparency.
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		// Renders all sprites in batch.
 		const int32_t vertexPerSprite = 4;
 		const int32_t indexPerSprite = 6;
-		float timeStep = TimeManager::getPtr()->getFrameElapsedTime();
-		int32_t spriteCount = mSprites.size();
+		float timeStep = TimeManager::getInstance().getFrameElapsedTime();
+		int32_t spriteCount = sprites.size();
 		int32_t currentSprite = 0, firstSprite = 0;
 		while (bool canDraw = (currentSprite < spriteCount)) {
 			// Switches texture.
-			Sprite* sprite = mSprites[currentSprite];
-			GLuint currentTexture = sprite->mTexture;
+			Sprite* sprite = sprites[currentSprite];
+			GLuint currentTextureId = sprite->textureId;
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, sprite->mTexture);
+			glBindTexture(GL_TEXTURE_2D, sprite->textureId);
 			// Generate sprite vertices for current textures.
 			do {
-				sprite = mSprites[currentSprite];
-				if (sprite->mTexture == currentTexture) {
-					Sprite::Vertex* vertices = (&mVertices[currentSprite * 4]);
-					sprite->draw(vertices, timeStep);
+				sprite = sprites[currentSprite];
+				if (sprite->textureId == currentTextureId) {
+					Sprite::Vertex* spriteVertices = (&vertices[currentSprite * 4]);
+					sprite->draw(spriteVertices, timeStep);
 				} else {
 					break;
 				}
 			} while (canDraw == (++currentSprite < spriteCount));
 			// Renders sprites each time texture changes.
-			glDrawElements(GL_TRIANGLES, (currentSprite - firstSprite) * indexPerSprite, GL_UNSIGNED_SHORT, &mIndexes[firstSprite * indexPerSprite]);
+			glDrawElements(GL_TRIANGLES, (currentSprite - firstSprite) * indexPerSprite, GL_UNSIGNED_SHORT, &indexes[firstSprite * indexPerSprite]);
 			firstSprite = currentSprite;
 		}
 		// Cleans up OpenGL state.
@@ -194,10 +190,10 @@ public:
 private:
     SpriteBatch(const SpriteBatch&);
     void operator=(const SpriteBatch&);
-    std::vector<Sprite*> mSprites;
-    std::vector<Sprite::Vertex> mVertices;
-    std::vector<GLushort> mIndexes;
-    GLuint mShaderProgram;
+    std::vector<Sprite*> sprites;
+    std::vector<Sprite::Vertex> vertices;
+    std::vector<GLushort> indexes;
+    GLuint shaderProgram;
     GLuint aPosition; GLuint aTexture;
     GLuint uProjection; GLuint uTexture;
 };
