@@ -10,6 +10,7 @@ LOCAL_MODULE := lithium
 ALL_FILES = $(call walk, $(LOCAL_PATH))
 FILE_LIST := $(filter %.cpp, $(ALL_FILES))
 LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
+LOCAL_CPPFLAGS := -Werror
 LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2 -lOpenSLES -latomic
 LOCAL_STATIC_LIBRARIES := android_native_app_glue libpng
 include $(BUILD_SHARED_LIBRARY)

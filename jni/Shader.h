@@ -18,13 +18,13 @@ public:
     ~Shader() {
         if (programId != 0) {
             glDeleteProgram(programId);
-			LOG_DEBUG("Shader id:%d is dead.", programId);
+            LOG_DEBUG("Shader id:%d is dead.", programId);
             programId = 0;
         }
     }
     status loadFromFile(const char* path) {
         Resource resource(path);
-        LOG_DEBUG("Loading Shader: %s", resource.getPath());
+        LOG_INFO("Loading Shader: %s", resource.getPath());
         GLuint vertexShader, fragmentShader;
         GLint result;
         char infoLog[256];
@@ -85,7 +85,7 @@ public:
             LOG_ERROR("Shader program error: %s", infoLog);
             goto ERROR;
         }
-		LOG_DEBUG("Shader id:%d is available.", programId);
+        LOG_DEBUG("Shader id:%d is available.", programId);
         return STATUS_OK;
 ERROR:
         resource.close();
@@ -96,7 +96,7 @@ ERROR:
     }
     void apply() {
         glUseProgram(programId);
-    }	
+    }   
     GLuint getProgramId() {
         return programId;
     }

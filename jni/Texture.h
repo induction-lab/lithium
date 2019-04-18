@@ -10,7 +10,7 @@ class Texture {
 private:
     GLuint textureId;
     int32_t width, height;
-    GLint format;	
+    GLint format;
 public:
     Texture():
         textureId(0),
@@ -22,7 +22,7 @@ public:
     ~Texture() {
         if (textureId != 0) {
             glDeleteTextures(1, &textureId);
-			LOG_DEBUG("Texture id:%d is dead.", textureId);
+            LOG_DEBUG("Texture id:%d is dead.", textureId);
             textureId = 0;
         }
     }
@@ -32,11 +32,11 @@ public:
     int32_t getWidth() {
         return width;
     }
-	status createFromData(unsigned char* pixelData, int textureWidth, int textureHeight, GLint format, int filter, int wrapMode) {
+    status createFromData(unsigned char* pixelData, int textureWidth, int textureHeight, GLint format, int filter, int wrapMode) {
         LOG_DEBUG("Create %d x %d texture.", textureWidth, textureHeight);
-		width = textureWidth;
-		height = textureHeight;
-		// Creates a new OpenGL texture.
+        width = textureWidth;
+        height = textureHeight;
+        // Creates a new OpenGL texture.
         glGenTextures(1, &textureId);
         glBindTexture(GL_TEXTURE_2D, textureId);
         // Set-up texture properties.
@@ -50,15 +50,15 @@ public:
             LOG_ERROR("Error creating OpenGL texture.");
             return STATUS_ERROR;
         }
-		LOG_DEBUG("Texture id:%d is available.", textureId);
-		return STATUS_OK;
-	}	
+        LOG_DEBUG("Texture id:%d is available.", textureId);
+        return STATUS_OK;
+    }
     status loadFromFile(const char* path, int filter, int wrapMode) {
         uint8_t* pixelData = loadPNGImage(path);
         if (pixelData == NULL) return STATUS_ERROR;
-		status result = createFromData(pixelData, width, height, format, filter, wrapMode);
-		SAFE_DELETE(pixelData);
-		return result;
+        status result = createFromData(pixelData, width, height, format, filter, wrapMode);
+        SAFE_DELETE(pixelData);
+        return result;
     }
     void apply() {
         glActiveTexture(GL_TEXTURE0);
@@ -159,7 +159,6 @@ protected:
         resource.close();
         png_destroy_read_struct(&pngPtr, &infoPtr, NULL);
         SAFE_DELETE(rowPtrs);
-        LOG_INFO("Texture size: %d x %d", width, height);
         return imageBuffer;
 ERROR:
         LOG_ERROR("Error while reading PNG file");

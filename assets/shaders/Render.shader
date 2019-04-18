@@ -1,17 +1,17 @@
 #ifdef VERTEX
-attribute vec2 a_Position;
-attribute vec2 a_Texture;
-varying vec2 v_Texture;
+attribute vec2 aPosition;
+attribute vec2 aTexture;
+varying vec2 vTexture;
 void main() {
-    v_Texture = a_Texture;
-    gl_Position = vec4(a_Position, 1.0, 1.0);
+    vTexture = aTexture;
+    gl_Position = vec4(aPosition, 1.0, 1.0);
 }
 #endif
 #ifdef FRAGMENT
 precision mediump float;
-uniform sampler2D u_Texture;
-varying vec2 v_Texture;
+uniform sampler2D uTexture;
+varying vec2 vTexture;
 void main() {
-    gl_FragColor = texture2D(u_Texture, v_Texture);
+    gl_FragColor = texture2D(uTexture, vTexture);
 }
 #endif

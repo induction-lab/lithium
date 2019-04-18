@@ -27,14 +27,15 @@ const status STATUS_ERROR      = -1;
 const status STATUS_EXIT       = -2;
 
 #include <android_native_app_glue.h>
-android_app* application;
+static android_app* application;
 
 #include "Geometry.h"
-#include "Singleton.h"
 #include "TimeManager.h"
-#include "GraphicsManager.h"
 #include "InputManager.h"
-#include "Platform.h"
+#include "TweenManager.h"
+#include "GraphicsManager.h"
+#include "SoundManager.h"
+#include "EventLoop.h"
 #include "Activity.h"
 
 // Android entry point
@@ -42,12 +43,12 @@ void android_main(android_app* app) {
 	LOG_INFO("--- Let's go full native! ---");
 	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	
     // Toggle fullscreen.
-    // ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
+    ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
 	// Application details provided by Android.
 	application = app;
     // Starts the game loop.
-	Platform* platform = new Platform();
-	platform->run(new Activity);
-	SAFE_DELETE(platform);
+	EventLoop* eventLoop = new EventLoop();
+	eventLoop->run(new Activity);
+	SAFE_DELETE(eventLoop);
 	LOG_INFO("--- Bye! ---");
 }
