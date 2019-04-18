@@ -168,7 +168,7 @@ public:
         fruit->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1, std::placeholders::_2));
         fruit->setMoveFunction(std::bind(&Gameplay::onFruitMove, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setMovedFunction(std::bind(&Gameplay::onFruitMoved, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        fruit->setKillFunction(std::bind(&Gameplay::onFruitKill, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        fruit->setKillFunction(std::bind(&Gameplay::onFruitKill, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
         fruit->setDyingFunction(std::bind(&Gameplay::onFruitDying, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setDeadFunction(std::bind(&Gameplay::onFruitDead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         if (fruitType < FRUITS_COUNT) fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
@@ -245,7 +245,7 @@ public:
                 }
                 scoresPerSwap = 0;
                 // Add bonus fruit (shance 5).
-                if ((int)frand(0) == 0) {
+                if ((int)frand(5) == 0) {
                     int n = 0;
                     bool goodPlace = false;
                     while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
@@ -461,13 +461,19 @@ public:
         }
     };
     // Fruit callbacks.
-    void onFruitKill(int x, int y, FruitKillType killType) {
+    void onFruitKill(int x, int y, FruitKillType killType, float delay = 0.0f) {
         // reset time limit
         lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();        
         switch (killType) {
-            case FruitKillType::DEAD: 
-            case FruitKillType::DEAD_EXTRA: {
+            case FruitKillType::DEAD: {
                 dyingFruits++;                
+                break;                
+            }
+            case FruitKillType::DEAD_EXTRA: {
+                dyingFruits++;
+                Vector2 location = getSkrewedLocation(x, y);
+                Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f, delay);
+                a->sprite->angle = Deg(frand(360.0f));                
                 break;
             }
         }
@@ -475,13 +481,6 @@ public:
     void onFruitDying(int x, int y, FruitKillType killType) {
         switch(killType) {
             case FruitKillType::DEAD_EXTRA: {
-                if (!fruits[x][y]->dead) {
-                    Vector2 location;
-                    if (fruits[x][y]->prevIndex.y == y || fruits[x][y]->prevIndex.y == 0) location = getSkrewedLocation(x, y);
-                    else location = getSkrewedLocation(x, fruits[x][y]->prevIndex.y);
-                    Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
-                    a->sprite->angle = Deg(frand(360.0f));
-                }
                 if (fruits[x][y]->type >= FRUITS_COUNT) {
                     LOG_DEBUG("Kill bonus!!!");
                     for (int Y = 0; Y < GRID_SIZE; Y++)

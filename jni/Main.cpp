@@ -97,14 +97,14 @@ static int uiModeType;
 // TODO:
 // + no backswap with scores.
 // - redraw cherry bonus.
-// - fix upper kill animation (add delay? move to kill).
+// + fix upper kill animation.
 // - add bonus kill type.
 // - accent random time.
 // + bonus random time.
 // - game logo.
 // - music pause.
 // - tutorial.
-// + leafs for phone ui mode (fix aspect ratio?).
+// + leafs for phone ui mode.
 // - .. refactoring to c++ best practics.
 
 // Android entry point.

@@ -96,7 +96,7 @@ public:
         killType = fruitkillType;
         if (alive) {
             alive = false;
-            if (killFunction != NULL) killFunction(index.x, index.y, killType);
+            if (killFunction != NULL) killFunction(index.x, index.y, killType, delay);
         }
         if (dead) return;
         // Start dying
@@ -143,7 +143,7 @@ public:
     void setMovedFunction(std::function<void(int, int, FruitMoveType)> callback) {
         movedFunction = callback;
     };
-    void setKillFunction(std::function<void(int, int, FruitKillType)> callback) {
+    void setKillFunction(std::function<void(int, int, FruitKillType, float)> callback) {
         killFunction = callback;
     };
     void setDyingFunction(std::function<void(int, int, FruitKillType)> callback) {
@@ -166,7 +166,7 @@ private:
     std::function<void(int, int)> clickFunction;
     std::function<void(int, int, FruitMoveType)> moveFunction;
     std::function<void(int, int, FruitMoveType)> movedFunction;
-    std::function<void(int, int, FruitKillType)> killFunction;
+    std::function<void(int, int, FruitKillType, float)> killFunction;
     std::function<void(int, int, FruitKillType)> dyingFunction;
     std::function<void(int, int, FruitKillType)> deadFunction;
 };
