@@ -13,7 +13,7 @@
 #include <map>
 #include <vector>
 
-const int32_t DEFAULT_RENDER_WIDTH  = 360;
+const int DEFAULT_RENDER_WIDTH  = 360;
 
 class GraphicsComponent {
 public:
@@ -46,16 +46,16 @@ public:
         LOG_INFO("Destructing GraphicsManager.");
         reset();
     };
-    int32_t getRenderWidth() {
+    int getRenderWidth() {
         return renderWidth;
     };
-    int32_t getRenderHeight() {
+    int getRenderHeight() {
         return renderHeight;
     };
-    int32_t getScreenWidth() {
+    int getScreenWidth() {
         return screenWidth;
     };
-    int32_t getScreenHeight() {
+    int getScreenHeight() {
         return screenHeight;
     };
     Location screenToRender(int x, int y) {
@@ -325,7 +325,7 @@ ERROR:
         SAFE_DELETE(shader);
         return NULL;
     };
-    GLuint initVertexBuffer(const void* buffer, int32_t bufferSize) {
+    GLuint initVertexBuffer(const void* buffer, int bufferSize) {
         GLuint vertexBuffer;
         // Upload specified memory buffer into OpenGL.
         glGenBuffers(1, &vertexBuffer);
@@ -348,10 +348,10 @@ private:
         GLfloat x, y, u, v;
     };
     // Display properties.
-    int32_t renderWidth;
-    int32_t renderHeight;
-    int32_t screenWidth;
-    int32_t screenHeight;
+    int renderWidth;
+    int renderHeight;
+    int screenWidth;
+    int screenHeight;
     GLfloat projectionMatrix[4][4];
     EGLDisplay display;
     EGLSurface surface;

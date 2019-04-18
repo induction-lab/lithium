@@ -29,7 +29,7 @@ inline float Deg(float Radians) { return Radians * (180.0f / PI); };
 inline float sqr(float x) { return x * x; };
 
 // Calculates random 0 < x < 1
-inline float frand(float x = 1.0f) { return (float) rand() / RAND_MAX * x; };
+inline float frand(float x = 1.0f) { return (float)rand() / RAND_MAX * x; };
 
 //-----------------------------------------------------------------------------
 //  A vector in 3-space.

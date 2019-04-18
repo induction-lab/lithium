@@ -226,7 +226,7 @@ public:
         if (!alive) return false;
         Location point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (sprite->pointInSprite(point.x, point.y) && clickFunction != NULL) {
-            clickFunction();
+            clickFunction(this);
             return 1;
         }
         return 0;
@@ -252,9 +252,9 @@ public:
     bool alive;
     bool dies;
     bool dead;
-    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };
+    void setClickFunction(std::function<void(Fruit*)> callback) { clickFunction = callback; };
 private:
-    std::function<void()> clickFunction;
+    std::function<void(Fruit*)> clickFunction;
 };
 
 // Base Scene.

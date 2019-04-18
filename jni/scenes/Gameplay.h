@@ -3,6 +3,8 @@
 
 #include "Line.h"
 
+#define GRID_SIZE 8
+
 class Gameplay: public Scene {
 private:
     Activity* activity;
@@ -31,58 +33,32 @@ public:
                     ->target(1.03f)->remove(false)->loop()->reverse()->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
-        // Apple.
-        apple = addFruit("textures/AppleFruit.png", 64, 64, Location(halfWidth - 64.0, halfHeight + 64.0f));
-        apple->setClickFunction(std::bind(&Gameplay::onAppleClick, this));
-        TweenManager::getInstance()->addTween(apple->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(apple->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());        
-        // Tomato.
-        tomato = addFruit("textures/TomatoFruit.png", 64, 64, Location(halfWidth, halfHeight + 64.0f));
-        tomato->setClickFunction(std::bind(&Gameplay::onTomatoClick, this));
-        TweenManager::getInstance()->addTween(tomato->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(tomato->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        // Pear.
-        pear = addFruit("textures/PearFruit.png", 64, 64, Location(halfWidth + 64.0f, halfHeight + 64.0f));
-        pear->setClickFunction(std::bind(&Gameplay::onPearClick, this));
-        TweenManager::getInstance()->addTween(pear->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(pear->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        // Orange.
-        orange = addFruit("textures/OrangeFruit.png", 64, 64, Location(halfWidth - 64.0f, halfHeight));
-        orange->setClickFunction(std::bind(&Gameplay::onOrangeClick, this));
-        TweenManager::getInstance()->addTween(orange->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(orange->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        // Grapes.
-        grapes = addFruit("textures/GrapesFruit.png", 64, 64, Location(halfWidth, halfHeight));
-        grapes->setClickFunction(std::bind(&Gameplay::onGrapesClick, this));
-        TweenManager::getInstance()->addTween(grapes->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(grapes->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        // Bannana.
-        bannana = addFruit("textures/BannanaFruit.png", 64, 64, Location(halfWidth + 64.0f, halfHeight));
-        bannana->setClickFunction(std::bind(&Gameplay::onBannanaClick, this));
-        TweenManager::getInstance()->addTween(bannana->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(bannana->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        // Carrot.
-        carrot = addFruit("textures/CarrotFruit.png", 64, 64, Location(halfWidth, halfHeight - 64));
-        carrot->setClickFunction(std::bind(&Gameplay::onCarrotClick, this));
-        TweenManager::getInstance()->addTween(carrot->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-        TweenManager::getInstance()->addTween(carrot->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
+        // Create fruits.
+        float dx = 0.0f;
+        float dy = 0.0f;
+        for (int j = 0; j < GRID_SIZE; j++) {
+            for (int i = 0; i < GRID_SIZE; i++) {
+                const char* fruitTextures[7] = {
+                    "textures/AppleFruit.png",
+                    "textures/BannanaFruit.png",
+                    "textures/CarrotFruit.png",
+                    "textures/GrapesFruit.png",
+                    "textures/OrangeFruit.png",
+                    "textures/PearFruit.png",
+                    "textures/TomatoFruit.png"
+                };
+                int n = (int)frand(6);
+                fruits[i][j] = addFruit(fruitTextures[n], 64, 64, Location(i * 32 + 72 - dx, renderHeight - j * 32 - 64 - dy));
+                fruits[i][j]->sprite->scale = Vector2(0.7f, 0.7f);
+                fruits[i][j]->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1));
+                dy += 2.0f;
+            }
+            dy -= 2.0f * GRID_SIZE;
+            dx += 2.0f;
+        }
         // Line (just for test).
         line = new Line(5.0f);
-        line->color = Vector(0.2f, 1.0f, 0.4f);
+        line->color = Vector(0.3f, 0.3f, 0.3f);
         // Load sounds.
         grub01Sound = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
         grub02Sound = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
@@ -96,47 +72,23 @@ public:
     int gestureTapEvent(int x, int y) {
         if (!created) return false;
         Location point = GraphicsManager::getInstance()->screenToRender(x, y);
-        // line->addPoint(Vector(point.x, point.y, 0.0f));
+        line->addPoint(Vector(point.x, point.y, 0.0f));
         return 0;
     };
     void update() {
         Scene::update();
     };
-    void onAppleClick() {
-        apple->alive = false;
-        SoundManager::getInstance()->playSound(grub01Sound);
-        LOG_DEBUG("Kill aplle.");
-    };    
-    void onTomatoClick() {
-        tomato->alive = false;
-        SoundManager::getInstance()->playSound(grub02Sound);
-        LOG_DEBUG("Kill tomato.");
-    };
-    void onPearClick() {
-        pear->alive = false;
-        SoundManager::getInstance()->playSound(grub03Sound);
-        LOG_DEBUG("Kill pear.");
-    };
-    void onOrangeClick() {
-        orange->alive = false;
-        SoundManager::getInstance()->playSound(grub04Sound);
-        LOG_DEBUG("Kill pear.");
-    };
-    void onGrapesClick() {
-        grapes->alive = false;
-        SoundManager::getInstance()->playSound(grub05Sound);
-        LOG_DEBUG("Kill greapes.");
-    };
-    void onBannanaClick() {
-        bannana->alive = false;
-        SoundManager::getInstance()->playSound(grub05Sound);
-        LOG_DEBUG("Kill bannana.");
-    };
-    void onCarrotClick() {
-        carrot->alive = false;
-        SoundManager::getInstance()->playSound(grub05Sound);
-        LOG_DEBUG("Kill carrot.");
-    };
+    void onFruitClick(Fruit* fruit) {
+        fruit->alive = false;
+        LOG_DEBUG("Kill fruit.");
+        switch ((int)frand(4)) {
+            case 0: SoundManager::getInstance()->playSound(grub01Sound); break;
+            case 1: SoundManager::getInstance()->playSound(grub02Sound); break;
+            case 2: SoundManager::getInstance()->playSound(grub03Sound); break;
+            case 3: SoundManager::getInstance()->playSound(grub04Sound); break;
+            case 4: SoundManager::getInstance()->playSound(grub05Sound); break;
+        }
+    }
     int backEvent() {
         activity->setStartScene();
         return 1;
@@ -159,13 +111,7 @@ public:
     Sound* grub04Sound;
     Sound* grub05Sound;
     // Fruits.
-    Fruit* apple;
-    Fruit* tomato;
-    Fruit* pear;
-    Fruit* orange;
-    Fruit* grapes;
-    Fruit* bannana;
-    Fruit* carrot;
+    Fruit* fruits[GRID_SIZE][GRID_SIZE];
 };
 
 #endif // __GAMEPLAY_H__
