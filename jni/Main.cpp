@@ -1,30 +1,39 @@
 /* Let's go full native! */
 
 #define APP_TITLE "lithium"
+#define DEBUG_MODE
 
 // Stuff for recieve log message.
 #include <stdio.h>
 #include <android/log.h>
+// Log.
 #define LOG_INFO(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
     __android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s: %s", __FILE__, buf); \
 } while (0)
+// Warn.
 #define LOG_WARN(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
     __android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s: %s", __FILE__, buf); \
 } while (0)
+// Error.
 #define LOG_ERROR(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
     __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s: %s", __FILE__, buf); \
 } while (0)
-#define LOG_DEBUG(x...) do { \
-    char buf[512]; \
-    sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s: %s", __FILE__, buf); \
-} while (0)
+// Debug.
+#ifdef DEBUG_MODE
+    #define LOG_DEBUG(x...) do { \
+        char buf[512]; \
+        sprintf(buf, x); \
+        __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s: %s", __FILE__, buf); \
+    } while (0)
+#else
+    #define LOG_DEBUG(x...) {}
+#endif
 
 // Object deletion macro.
 #define SAFE_DELETE(x) { delete x; x = NULL; }
@@ -48,7 +57,7 @@ struct ConfigData {
 };
 ConfigData* configData;
 
-// Type of ui mode.
+// Type of ui mode (for Google Wear 2.0 support).
 #include "android/configuration.h"
 static int32_t uiModeType;
 
@@ -61,12 +70,9 @@ static int32_t uiModeType;
 #include "EventLoop.h"
 #include "Activity.h"
 
-#include "Level.h"
-
 // TODO:
-// - besier ...
-// - game object implemennt ...
-// - render batch ? ...
+// - tween after pause ! ...
+// - music volume screen ...
 // - disable sensors ...
 
 // Android entry point.

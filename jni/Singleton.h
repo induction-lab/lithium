@@ -5,12 +5,11 @@ template <typename T>
 class Singleton {
 public:
     static T* getInstance() {
-        if (instance == 0) instance = new T();
+        if (instance == NULL) instance = new T();
         return instance;
     };
     static void dispose() {
-        if (instance != 0) delete instance;
-        instance = 0;
+        if (instance != 0) SAFE_DELETE(instance);
     };
 private:
     static T* instance;

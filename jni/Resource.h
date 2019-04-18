@@ -41,7 +41,7 @@ public:
         }
     };
     ResourceDescriptor descript() {
-        ResourceDescriptor rd = { -1, 0, 0 };
+        ResourceDescriptor rd = {-1, 0, 0};
         AAsset* asset = AAssetManager_open(assetManager, filePath, AASSET_MODE_UNKNOWN);
         if (asset != NULL) {
             rd.descriptor = AAsset_openFileDescriptor(asset, &rd.start, &rd.length);

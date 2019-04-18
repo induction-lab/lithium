@@ -72,7 +72,7 @@ public:
         char prop[PROP_VALUE_MAX];
         __system_property_get("ro.kernel.qemu", prop);
         bool in_emulator = strtol(prop, nullptr, 0) == 1;
-        LOG_INFO("ro.kernel.qemu = %s", prop);
+        LOG_DEBUG("ro.kernel.qemu = %s", prop);
         if (in_emulator) LOG_INFO("In emulator! Enabling some hacks :(");
         // Defines display requirements. 16bits mode here.
         const EGLint attributes[] = {
@@ -284,7 +284,7 @@ ERROR:
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // Creates the vertex buffer
+        // Creates the vertex buffer.
         renderVertexBuffer = initVertexBuffer(vertices, sizeof(vertices));
         if (renderVertexBuffer == 0) goto ERROR;
         // Creates the shader used to render texture to screen.
@@ -300,7 +300,7 @@ ERROR:
         return STATUS_ERROR;
     };
     Texture* loadTexture(const char* path, int filter, int mode) {
-        // Reuse texture, if already loaded
+        // Reuse texture, if already loaded.
         std::map<const char*, Texture*>::iterator it = textures.find(path);
         if (it != textures.end()) return it->second;
         // Appends a new texture to the texture map.

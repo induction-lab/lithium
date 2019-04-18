@@ -58,7 +58,7 @@ public:
                 (*it)->update(PlatformGetTime());
                 // Remove stopped tweens.
                 if((*it)->getCompleted() && (*it)->getAutoRemove()) {
-                    delete (*it);
+                    SAFE_DELETE(*it);
                     tweens.remove(*it);
                 }
             }

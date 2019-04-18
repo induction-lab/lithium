@@ -80,9 +80,7 @@ public:
         complited = false;
         startTime = PlatformGetTime() + delayAmount + initialDelay;
         endTime = startTime + duration;
-        if (targetObj != NULL) {
-            combinedAttrsCnt = targetObj->getValues(type, startValues);
-        }
+        if (targetObj != NULL) combinedAttrsCnt = targetObj->getValues(type, startValues);
         return this;
     };
     Tween* loop(int count = -1) {
@@ -133,17 +131,12 @@ public:
     };
     // Sets the target values of the interpolation.
     Tween* target(float *targetValues, int len) {
-        if (len <= combinedAttrsLimit) {
-            for (int i=0; i<len; i++)
-                this->targetValues[i] = targetValues[i];
-        }
+        if (len <= combinedAttrsLimit) for (int i = 0; i < len; i++) this->targetValues[i] = targetValues[i];
         return this;
     };
     void update(float t) 	{
         // If it's not ready return.
-        if ( !playing || t < startTime ) {
-            return;
-        }
+        if (!playing || t < startTime) return;
         // On start callback.
         if (!started) {
             started = true;
@@ -174,16 +167,12 @@ public:
                     }
                 };
                 // Start any chains.
-                for (std::list<Tween*>::reverse_iterator it = chains.rbegin(); it != chains.rend(); ++it) {
-                    (*it)->start();
-                }
+                for (std::list<Tween*>::reverse_iterator it = chains.rbegin(); it != chains.rend(); ++it) (*it)->start();
                 // Complete callback.
                 onCompleteCallback.call();
             } else {
                 // Update it.
-                for (int i = 0; i < combinedAttrsCnt; i++) {
-                    accessorBuffer[i] = lerp(startValues[i], targetValues[i], easing(elapsed));
-                }
+                for (int i = 0; i < combinedAttrsCnt; i++) accessorBuffer[i] = lerp(startValues[i], targetValues[i], easing(elapsed));
                 targetObj->setValues(type, accessorBuffer);
                 onUpdateCallback.call();
             }

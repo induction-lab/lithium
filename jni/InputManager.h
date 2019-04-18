@@ -88,11 +88,11 @@ public:
     };
 public:
     void registerListener(InputListener *listener) {
-        LOG_DEBUG("Register InputListener.");
+        LOG_DEBUG("Register InputListener %d.", listeners.size() + 1);
         listeners.push_back(listener);
     };
     void unregisterListener(InputListener *listener) {
-        LOG_DEBUG("Unregister InputListener.");
+        LOG_DEBUG("Unregister InputListener %d.", listeners.size());
         listeners.erase(std::find(listeners.begin(), listeners.end(), listener));
     };
     int32_t onTouchEvent(AInputEvent* event) {
@@ -158,9 +158,9 @@ public:
                     gesturePinching = false;
                     gestureDetected = true;
                 } else if (gestureDraging) {
-                    onGestureDropEvent(x, y);
                     gestureDetected = true;
                     gestureDraging = false;
+                    onGestureDropEvent(x, y);
                 }
                 // Test for swipe.
                 else if (time - pointer0.time < GESTURE_SWIPE_DURATION_MAX && (abs(deltaX) > GESTURE_SWIPE_DISTANCE_MIN || abs(deltaY) > GESTURE_SWIPE_DISTANCE_MIN) ) {
@@ -172,18 +172,18 @@ public:
                         if (deltaY > 0) direction = SWIPE_DIRECTION_DOWN;
                         else if (deltaY < 0) direction = SWIPE_DIRECTION_UP;
                     }
-                    onGestureSwipeEvent(x, y, direction);
                     gestureDetected = true;
+                    onGestureSwipeEvent(x, y, direction);
                 }
                 // Test for tap.
                 else if(time - pointer0.time < GESTURE_TAP_DURATION_MAX) {
-                    onGestureTapEvent(x, y);
                     gestureDetected = true;
+                    onGestureTapEvent(x, y);
                 }
                 // Test for long tap.
                 else if(time - pointer0.time >= GESTURE_LONG_TAP_DURATION_MIN) {
-                    onGestureLongTapEvent(x, y, time - pointer0.time);
                     gestureDetected = true;
+                    onGestureLongTapEvent(x, y, time - pointer0.time);
                 }
             }
             pointer0.pressed = false;
@@ -411,7 +411,9 @@ private:
         }
     };
     void onBackEvent() {
+        int size = listeners.size();
         for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            if (size != listeners.size()) break;
             (*it)->backEvent();
         }
     };

@@ -160,12 +160,14 @@ public:
         gestureTapEvent(x, y);
     };
     void update() {
-        if (!alive && !dies && !dead) {
+        if (alive) return;
+        if (!dies && !dead) {
             sprite->setFrames(0, 5, 7.0f, false);
             dies = true;
+            return;
         }
         if (dies && sprite->animationEnded()) dies = false;
-        if (!alive && !dies && !dead) {
+        if (!dies && !dead) {
             TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
                 ->target(0.0f)->remove(true)->start();
             dead = true;
