@@ -1,0 +1,7 @@
+.credentials
+bin/
+gen/
+libs/
+obj/
+*.keystore
+*.npp
