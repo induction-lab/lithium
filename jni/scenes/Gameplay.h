@@ -63,13 +63,17 @@ public:
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
-        scoreText->setText("0000000");
         changedScoreText = new RasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
         changedScoreText->scale = Vector2(0.7f, 0.7f);
-        scores = 0;
+        scores = configData->ScorePoints;
+        updateScore(scores, true);
         // Create fruits.
         for (int y = 0; y < GRID_SIZE; y++)
-        for (int x = 0; x < GRID_SIZE; x++) addFruit(x, y);
+        for (int x = 0; x < GRID_SIZE; x++) {
+            // Load saved fuit type.
+            int fruitType = (configData->fruitsType[x][y] == 0) ? -1 : configData->fruitsType[x][y];
+            addFruit(x, y, fruitType);
+        }
         switch ((int)frand(3)) {
             case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
             case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
@@ -89,17 +93,18 @@ public:
     };
     // Some black magic.
     Vector2 getSkrewedLocation(int X, int Y) {
-        float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
-        float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
+        float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+        float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
         float halfWidth = renderWidth / 2;
         float halfHeight = renderHeight / 2;
         float dy = (X * 2.0f) - (0.2f * GRID_SIZE * Y);
         float dx = (Y * 2.0f);
         return Vector2(halfWidth + X * 42 - 100 - dx, halfHeight - Y * 42 + 110 - dy);
     };
-    void addFruit(int X, int Y, bool loadFromSave = false) {
+    // New fruit.
+    void addFruit(int X, int Y, int fruitType = -1) {
         // LOG_INFO("Creating new fruit.");
-        int fruitType = (int)frand(7);
+        if (fruitType == -1) fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
         const char* fruitTextures[7] = {
             "textures/AppleFruit.png",
@@ -160,7 +165,7 @@ public:
                 }
                 addFruit(x, y);
             } else if (getFruit(x, y)->sprite->location != getSkrewedLocation(x, y)) {
-                // Move fruits to their location.
+                // Move alived fruits to their location.
                 getFruit(x, y)->moveTo(getSkrewedLocation(x, y));
                 getFruit(x, y)->selected = false;
             }
@@ -222,6 +227,7 @@ public:
                 }
             }
         }
+        // Result check.
         if (result >= MIN_MATCH_COUNT) {
             switch ((int)frand(5)) {
                 case 0: SoundManager::getInstance()->playSound(grub01Sound); break;
@@ -243,6 +249,7 @@ public:
         dyingFruits = result;
         return result;
     };
+    // Bonus text.
     void showBonusText(int step) {
         if (!bonusTextAnimated) {
             switch (step) {
@@ -264,8 +271,10 @@ public:
             t2->addChain(t3);
             t2->addChain(t4);
             t2->start();
+            bonusTextAnimated = true;
         }        
     }
+    // Select fruit.
     void onFruitClick(int X, int Y) {
         if (!getFruit(X, Y)->alive) return;
         if (dyingFruits > 0) return;
@@ -317,26 +326,41 @@ public:
     void onBonusTextComplete() {
         bonusTextAnimated = false;
     };
-    void updateScore(int value) {
-        scores += value;
-        if (scores < 0) scores = 0;
+    // Scores.
+    void updateScore(int value, bool firstStart = false) {
+        if (!firstStart) {
+            scores += value;
+            if (scores < 0) scores = 0;            
+            std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
+            changedScoreText->setText(changedStr.c_str());
+        }        
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
-        std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
         scoreText->setText(str.c_str());
-        changedScoreText->setText(changedStr.c_str());
     };
+    // Back to main scene.
     int backEvent() {
+        if (dyingFruits > 0) return 0;
+        saveGameState();
         activity->setStartScene();
         return 1;
     };
     int gestureSwipeEvent(int x, int y, int direction) {
+        if (dyingFruits > 0) return 0;
         if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return 0;
         if (direction == SWIPE_DIRECTION_RIGHT) {
+            saveGameState();
             activity->setStartScene();
             return 1;
         }
         return 0;
+    };
+    void saveGameState() {
+        for (int y = 0; y < GRID_SIZE; y++)
+        for (int x = 0; x < GRID_SIZE; x++) {
+            configData->fruitsType[x][y] = getFruit(x, y)->type;
+        }
+        configData->ScorePoints = scores;
     };
     Background* background;
     Background* gameBox;

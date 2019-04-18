@@ -21,7 +21,7 @@ public:
         newText("\0"),
         lastText("\0"),
         textChanged(false),
-        animated(0),
+        startedTweens(0),
         animation(animation),
         scale(Vector2(1.0f, 1.0f)),
         just(just) {
@@ -33,7 +33,7 @@ public:
         sprites.clear();
     };
     void update() {
-        if (animated > 0) return;
+        if (startedTweens > 0) return;
         if (newText.compare(lastText) == 0 && !textChanged) return;
         const char* text = newText.c_str();
         int lastTextLength = strlen(lastText.c_str());
@@ -64,7 +64,7 @@ public:
                         ->target(1.5f, 1.5f)->remove(true);
                     Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Sinusoidal::InOut)
                         ->target(1.0f, 1.0f)->remove(true)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
-                    animated++;
+                    startedTweens++;
                     t1->addChain(t2)->start();
                 }
                 if (q) {
@@ -91,17 +91,17 @@ public:
                     ->target(0.0f)->remove(true)->delay(1.0f)->delay(0.7f);
                 Tween* t4 = TweenManager::getInstance()->addTween(*it, TweenType::POSITION_Y, 0.25f, Ease::Sinusoidal::InOut)
                     ->target(lastLocation.y)->remove(true)->delay(0.7f)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
-                animated++;
+                startedTweens++;
                 t1->addChain(t3);
                 t3->addChain(t4);
                 t1->start();
-                textChanged = false;
             }
         }
         lastText = text;
+        textChanged = false;
     }
     void onAnimatedComplete() {
-        animated--;
+        startedTweens--;
     }
     void setText(const char* text) {
         newText = text;
@@ -117,7 +117,7 @@ private:
     std::string newText;
     std::string lastText;
     bool textChanged;
-    int animated;
+    int startedTweens;
     TextAnimation animation;
     std::vector<Sprite*> sprites;
     Justification just;

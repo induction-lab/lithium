@@ -60,7 +60,7 @@ static android_app* application;
 struct ConfigData {
     int soundVolume = 70;
     int musicVolume = 50;
-    int fruitsType[MIN_MATCH_COUNT][MIN_MATCH_COUNT];
+    int fruitsType[GRID_SIZE][GRID_SIZE];
     int ScorePoints = 0;
 };
 ConfigData* configData;

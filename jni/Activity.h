@@ -78,7 +78,15 @@ protected:
     void onDeactivate() {
         LOG_INFO("Deactivating Engine.");
     };
+    void onCreateWindow() {
+        readConfig();
+    };
+    void onDestroyWindow() {
+        writeConfig();
+    };
     void onDestroy() {
+        clearGameState();
+        writeConfig();
         if (scene != NULL) SAFE_DELETE(scene);
     };
 };

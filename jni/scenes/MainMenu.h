@@ -83,7 +83,7 @@ public:
             return 1;
         }
         return 0;
-    };    
+    };
     Background* background;
     Background* gameBox;
     Button* exitButton;

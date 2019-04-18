@@ -54,6 +54,15 @@ public:
     };
 };
 
+void clearGameState() {
+    LOG_DEBUG("Clear game state.");
+    for (int y = 0; y < GRID_SIZE; y++)
+    for (int x = 0; x < GRID_SIZE; x++) {
+        configData->fruitsType[x][y] = 0;
+    }
+    configData->ScorePoints = 0;
+};
+
 void readConfig() {
     configData = new ConfigData();
     const char* internalPath = application->activity->internalDataPath;
