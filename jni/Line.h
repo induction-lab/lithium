@@ -10,7 +10,7 @@ public:
         color(Vector(1.0f, 1.0f, 1.0f)),
         opaque(1.0f),
         shaderProgram(0),
-        aPosition(0), uProjection(0) {
+        aPosition(0), uProjection(0), uColor(0), uOpaque(0) {
         LOG_DEBUG("Create Line.");
         GraphicsManager::getInstance()->registerComponent(this);
     };
@@ -85,9 +85,10 @@ public:
         vertices.push_back(Vector2(p2 + length2 * miter2));
         vertices.push_back(Vector2(p2 - length2 * miter2));
     };
-    float thickness;
+    float thickness;    
     Vector color;
-    float opaque;
+    float opaque;    
+private:
     std::vector<Vector> points;
     std::vector<Vector2> vertices;
     GLuint shaderProgram;

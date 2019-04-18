@@ -13,10 +13,10 @@ public:
     Widget():
         sprite(NULL),
         spriteBatch(NULL) {
-        // LOG_DEBUG("Create widget.");
+        LOG_DEBUG("Create widget.");
     };
     ~Widget() {
-        // LOG_DEBUG("Delete widget.");
+        LOG_DEBUG("Delete widget.");
     }
     virtual void update() {};
     void setSprite(Sprite* sprite, Vector2 location) {
@@ -175,6 +175,7 @@ public:
                 changed = (state == precent);
                 precent = state;
                 if (slideFunction != NULL) slideFunction(precent);
+                changed = false;
                 return 1;
             }
         }
@@ -200,7 +201,29 @@ private:
 };
 
 // Background Widget.
-class Background: public Widget {};
+class Background: public Widget {
+public:
+    Background():
+        clickFunction(NULL) {
+        //
+    };
+    int gestureTapEvent(int x, int y) {
+        Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sprite->pointInSprite(point.x, point.y)) {
+            if (clickFunction != NULL) {
+                clickFunction();
+                return 1;
+            }
+        }
+        return 0;
+    };  
+    int gestureLongTapEvent(int x, int y, float time) {
+        return gestureTapEvent(x, y);
+    };
+    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };    
+private:
+    std::function<void()> clickFunction;
+};
 
 // Base Scene.
 class Scene: public InputListener {

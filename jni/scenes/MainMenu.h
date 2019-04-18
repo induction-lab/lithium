@@ -23,32 +23,33 @@ public:
         float halfHeight = renderHeight / 2;
         background = addBackground("textures/Background.png", 360, 640, Vector2(halfWidth, halfHeight));
         gameBox = addBackground("textures/GameBox.png", 360, 380, Vector2(halfWidth, halfHeight));
+        gameBox->setClickFunction(std::bind(&MainMenu::onGameBoxClick, this));        
         gameBox->sprite->opaque = 0.0f;
         Tween* t0 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::OPAQUE, 0.7f, Ease::Sinusoidal::InOut)
-                    ->target(1.0f)->remove(true)->start();
+            ->target(1.0f)->remove(true)->start();
         Tween* t1 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_X, 0.37f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start();
+            ->target(1.03f)->remove(false)->loop()->reverse()->start();
         Tween* t2 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
+            ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         exitButton = addButton("textures/ExitButton.png", 80, 78, Vector2(halfWidth - 85, halfHeight - 80));
-		exitButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        exitButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         exitButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         exitButton->setClickFunction(std::bind(&MainMenu::onExitButtonClick, this));
         TweenManager::getInstance()->addTween(exitButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
-            ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.7f);        
+            ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.7f);
         playButton = addButton("textures/PlayButton.png", 104, 100, Vector2(halfWidth, halfHeight - 100));
-		playButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        playButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         playButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         playButton->setClickFunction(std::bind(&MainMenu::onPlayButtonClick, this));
         TweenManager::getInstance()->addTween(playButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.9f);
         soundSettingsButton = addButton("textures/SoundSettingButton.png", 80, 78, Vector2(halfWidth + 85, halfHeight - 80));
-		soundSettingsButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        soundSettingsButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         soundSettingsButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         soundSettingsButton->setClickFunction(std::bind(&MainMenu::onSoundsButtonClick, this));
         TweenManager::getInstance()->addTween(soundSettingsButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
-		buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
+        buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
         created = true;
@@ -57,21 +58,24 @@ public:
     void update() {
         Scene::update();
     };
-	void onAnyButtonDown() {
+    void onAnyButtonDown() {
         SoundManager::getInstance()->playSound(buttonDownSound);
-	};
-	void onAnyButtonUp() {
+    };
+    void onAnyButtonUp() {
         SoundManager::getInstance()->playSound(buttonUpSound);
-	};
+    };
+    void onGameBoxClick() {
+        LOG_DEBUG("GameBox Click");
+    };
     void onExitButtonClick() {
         activity->quit = true;
-    }
-	void onPlayButtonClick() {
+    };
+    void onPlayButtonClick() {
         activity->changeScene(new Gameplay(activity));
- 	};
-	void onSoundsButtonClick() {
+    };
+    void onSoundsButtonClick() {
         activity->changeScene(new SoundSetting(activity));
-	};
+    };
     int backEvent() {
         activity->quit = true;
         return 1;

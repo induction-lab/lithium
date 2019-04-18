@@ -31,12 +31,12 @@ public:
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         sounds = addBackground("textures/SoundPanel.png", 268, 239, Vector2(halfWidth, halfHeight));
         okButton = addButton("textures/OkButton.png", 80, 78, Vector2(halfWidth + 70, halfHeight - 100));
-		okButton->setDownFunction(std::bind(&SoundSetting::onAnyButtonDown, this));
+        okButton->setDownFunction(std::bind(&SoundSetting::onAnyButtonDown, this));
         okButton->setUpFunction(std::bind(&SoundSetting::onAnyButtonUp, this));
         okButton->setClickFunction(std::bind(&SoundSetting::onOkButtonClick, this));
         TweenManager::getInstance()->addTween(okButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.2f);
-		soundSlider = addSlider("textures/SliderBackground.png", 160, 20, Vector2(halfWidth + 25, halfHeight + 20));
+        soundSlider = addSlider("textures/SliderBackground.png", 160, 20, Vector2(halfWidth + 25, halfHeight + 20));
         soundSlider->setSliderHandle("textures/SliderHandle.png", 48, 48, 0);
         soundSlider->setSlideFunction(std::bind(&SoundSetting::onSoundSliderSlide, this, std::placeholders::_1));
         soundSlider->setPosition(configData->soundVolume);
@@ -55,12 +55,12 @@ public:
     void update() {
         Scene::update();
     };
-	void onAnyButtonDown() {
+    void onAnyButtonDown() {
         SoundManager::getInstance()->playSound(buttonDownSound);
-	};
-	void onAnyButtonUp() {
+    };
+    void onAnyButtonUp() {
         SoundManager::getInstance()->playSound(buttonUpSound);
-	};
+    };
     void onOkButtonClick() {
         activity->setStartScene();
     };

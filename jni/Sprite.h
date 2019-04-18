@@ -21,10 +21,10 @@ public:
         spriteWidth(width), spriteHeight(height),
         frameCount(0), frameXCount(0), frameYCount(0),
         currentFrame(0) {
-        // LOG_DEBUG("Create sprite.");
+        LOG_DEBUG("Create sprite.");
     };
     ~Sprite() {
-        // LOG_DEBUG("Delete sprite.");
+        LOG_DEBUG("Delete sprite.");
     };
     void setFrame(int frame) {
         currentFrame = frame;

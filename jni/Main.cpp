@@ -54,12 +54,12 @@ static android_app* application;
 // Base 'match three' game params.
 #define GRID_SIZE 6             // optimal for watch screen
 #define MIN_MATCH_COUNT 3       // minimal match fruits
-#define MIN_MATCH_WOW_COUNT 5   // minimal match fruits for wow bonus
+#define MIN_MATCH_WOW_COUNT 5   // minimal match fruits for "wow" bonus
 
 // Application default config.
 struct ConfigData {
     int soundVolume = 70;
-    int musicVolume = 50;
+    int musicVolume; // = 50;
     int fruitsType[GRID_SIZE][GRID_SIZE] = {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1},
@@ -68,7 +68,6 @@ struct ConfigData {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1}
     };
-    bool newBoard = true;
     int ScorePoints = 0;
     int missStep = 0;
 };
@@ -88,12 +87,11 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - particle system
-// - new logo
-// - music pause
-// - test for swap
-// - time manager test
-// - Alex, where my music?
+// - New logo
+// - Music pause
+// - TimeManager test
+// - Anton, where my music?
+// - .. Refactoring to C++ best practics
 
 // Android entry point.
 void android_main(android_app* app) {

@@ -7,22 +7,26 @@
 #include <stdlib.h>
 
 #define EPSILON (1e-6)
+// float pi = 4.0f * atan(1.0f);
 #define PI (3.14159265358979323846)
 #define MAX(a, b) (a > b ? a : b)
 #define MIN(a, b) (a < b ? a : b)
 #define CLAMP(x, lo, hi) (MIN(hi, MAX(lo, x)))
 
-// Calculates radians by degrees
+// Calculates radians by degrees.
 inline float Rad(float Degrees) { return Degrees * (PI / 180.0f); };
 
-// Calculates degrees by radians
+// Calculates degrees by radians.
 inline float Deg(float Radians) { return Radians * (180.0f / PI); };
 
-// Square of x
+// Square of x.
 inline float sqr(float x) { return x * x; };
 
-// Calculates random 0 < x < 1
+// Calculates random 0 < x < 1.
 inline float frand(float x = 1.0f) { return (float)rand() / RAND_MAX * x; };
+
+// Methods to return a random value between ranges.
+inline float frandRange(float min, float max) { return min + (((float)rand() / (float)RAND_MAX) * (max - min)); };
 
 //-----------------------------------------------------------------------------
 //  A vector in 3-space.

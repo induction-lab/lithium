@@ -13,9 +13,11 @@ public:
         sprites(), vertices(), indexes(),
         shaderProgram(0),
         aPosition(0), aTexture(0), uProjection(0), uTexture(0), uColor(0), uOpaque(0) {
+        LOG_DEBUG("Create SpriteBatch.");
         GraphicsManager::getInstance()->registerComponent(this);
     };
     ~SpriteBatch() {
+        LOG_DEBUG("Delete SpriteBatch.");
         reset();
     };
     Sprite* registerSprite(const char* texturePath, int width, int height) {
@@ -62,7 +64,10 @@ public:
         }
     };
     void reset() {
-        for (std::vector<Sprite*>::iterator it = sprites.begin(); it != sprites.end(); ++it) {
+        LOG_DEBUG("Delete %d sprites.", sprites.size());
+        int n = 0;
+        for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
+            // LOG_DEBUG("%d", ++n);
             SAFE_DELETE(*it);
         }
         indexes.clear();

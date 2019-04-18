@@ -74,6 +74,10 @@ public:
         }
     };
     void reset() {
+        LOG_DEBUG("Delete %d tweens.", tweens.size());
+        for (std::list<Tween*>::reverse_iterator it = tweens.rbegin(); it != tweens.rend(); ++it) {
+            SAFE_DELETE(*it);
+        }
         tweens.clear();
     };
     // Debug.
