@@ -7,6 +7,7 @@ class Shader {
 public:
     Shader(android_app* pApplication, const char* pPath) :
             mResource(pApplication, pPath) {
+		//
     }
     const char* getPath() {
         return mResource.getPath();
@@ -18,27 +19,27 @@ public:
         char infoLog[256];
         // Opens Shader file.
         if (mResource.open() != STATUS_OK) {
-            LOG_ERROR("Error open shader resource.");            
+            LOG_ERROR("Error open shader resource");            
             mResource.close();
             return STATUS_ERROR;
         }
         // Reads Shader file.
-        GLint lShaderLength = mResource.getLength();
-        char *lShaderBuffer = new char[lShaderLength];
-        if (mResource.read(lShaderBuffer, lShaderLength) != STATUS_OK) {
-            LOG_ERROR("Error loading shader.");            
+        GLint shaderLength = mResource.getLength();
+        char *shaderBuffer = new char[shaderLength];
+        if (mResource.read(shaderBuffer, shaderLength) != STATUS_OK) {
+            LOG_ERROR("Error reading shader resource");  
             mResource.close();
-            delete[] lShaderBuffer;
+            delete[] shaderBuffer;
             return STATUS_ERROR;                        
         }
         mResource.close();
-        const char *lShaderStrings[2] = {NULL, lShaderBuffer};
-        GLint lStringsLengths[2] = {0, lShaderLength};
+        const char *shaderStrings[2] = {NULL, shaderBuffer};
+        GLint stringsLengths[2] = {0, shaderLength};
         // Builds the vertex shader.
-        lShaderStrings[0] = "#define VERTEX\n";
-        lStringsLengths[0] = strlen(lShaderStrings[0]);
+        shaderStrings[0] = "#define VERTEX\n";
+        stringsLengths[0] = strlen(shaderStrings[0]);
         vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 2, lShaderStrings, lStringsLengths);
+        glShaderSource(vertexShader, 2, shaderStrings, stringsLengths);
         glCompileShader(vertexShader);
         glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
         if (result == GL_FALSE) {
@@ -47,10 +48,10 @@ public:
             goto ERROR;
         }
         // Builds the fragment shader.
-        lShaderStrings[0] = "#define FRAGMENT\n";
-        lStringsLengths[0] = strlen(lShaderStrings[0]);
+        shaderStrings[0] = "#define FRAGMENT\n";
+        stringsLengths[0] = strlen(shaderStrings[0]);
         fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 2, lShaderStrings, lStringsLengths);
+        glShaderSource(fragmentShader, 2, shaderStrings, stringsLengths);
         glCompileShader(fragmentShader);
         glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
         if (result == GL_FALSE) {
@@ -58,7 +59,7 @@ public:
             LOG_ERROR("Fragment shader error: %s", infoLog);
             goto ERROR;
         }
-        delete[] lShaderBuffer;        
+        delete[] shaderBuffer;        
         // Builds the shader program.
         mProgram = glCreateProgram();
         glAttachShader(mProgram, vertexShader);
@@ -74,9 +75,9 @@ public:
             goto ERROR;
         }
         return STATUS_OK;
-ERROR:
+	ERROR:
         mResource.close();
-        delete[] lShaderBuffer;
+        delete[] shaderBuffer;
         if (vertexShader > 0) glDeleteShader(vertexShader);
         if (fragmentShader > 0) glDeleteShader(fragmentShader);
         return STATUS_ERROR;

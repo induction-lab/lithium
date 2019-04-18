@@ -1,5 +1,5 @@
-#ifndef __SPRITE_H__
-#define __SPRITE_H__
+#ifndef __SPRITEBATCH_H__
+#define __SPRITEBATCH_H__
 
 #include "GraphicsManager.h"
 #include "TimeManager.h"
@@ -11,15 +11,15 @@ public:
     struct Vertex {
         GLfloat x, y, u, v;
     };
-    Sprite(GraphicsManager* pGraphicsManager, const char* pTexturePath, int32_t pHeight, int32_t pWidth) :
+    Sprite(GraphicsManager* pGraphicsManager, const char* pTexturePath, int32_t pWidth, int32_t pHeight) :
 		mLocation(),
 		mTexturePath(pTexturePath), mTexture(0),
 		mSheetWidth(0), mSheetHeight(0),
-		mSpriteHeight(pHeight), mSpriteWidth(pWidth),
+		mSpriteWidth(pWidth), mSpriteHeight(pHeight),
 		mFrameCount(0), mFrameXCount(0), mFrameYCount(0),
 		mAnimStartFrame(0), mAnimFrameCount(1),
 		mAnimSpeed(0), mAnimFrame(0), mAnimLoop(false) {}	
-    void setAnimation(int32_t pStartFrame, int32_t pFrameCount, float pSpeed, bool pLoop) {
+    void setFrames(int32_t pStartFrame, int32_t pFrameCount, float pSpeed, bool pLoop) {
 		mAnimStartFrame = pStartFrame;
 		mAnimFrame = 0.0f, mAnimSpeed = pSpeed, mAnimLoop = pLoop;
 		mAnimFrameCount = pFrameCount;
@@ -33,15 +33,12 @@ protected:
     friend class SpriteBatch;
     status load(GraphicsManager* pGraphicsManager) {
 		Texture* texture = pGraphicsManager->loadTexture(mTexturePath);
-		if (texture->load() != STATUS_OK) return STATUS_ERROR;
 		mTexture = texture->getId();
 		mSheetWidth = texture->getWidth();
 		mSheetHeight = texture->getHeight();
 		mFrameXCount = mSheetWidth / mSpriteWidth;
 		mFrameYCount = mSheetHeight / mSpriteHeight;
 		mFrameCount = (mSheetHeight / mSpriteHeight) * (mSheetWidth / mSpriteWidth);
-		LOG_INFO("Loaded sprite with %d feame count", mFrameCount);
-		loadStatus = STATUS_OK;
 		return STATUS_OK;
 	}
     void draw(Vertex pVertices[4], float pTimeStep) {
@@ -82,7 +79,6 @@ protected:
 		pVertices[3].u = u2;    pVertices[3].v = v2;
 	}
 private:
-	status loadStatus = STATUS_NOT_LOADED;
     const char* mTexturePath;
     GLuint mTexture;
 	Location mLocation;
@@ -96,6 +92,8 @@ private:
     bool mAnimLoop;
 };
 
+#define MAX_TEXT_CHARS 1
+
 class SpriteBatch : public GraphicsComponent {
 public:
     SpriteBatch(TimeManager* pTimeManager, GraphicsManager* pGraphicsManager) :
@@ -107,12 +105,16 @@ public:
 		mGraphicsManager->registerComponent(this);
 	}
     ~SpriteBatch() {
+		clear();
+	}
+	void clear() {
 		std::vector<Sprite*>::iterator spriteIt;
 		for (spriteIt = mSprites.begin(); spriteIt < mSprites.end(); ++spriteIt) {
 			delete (*spriteIt);
 		}
-	} 
-    Sprite* registerSprite(const char* pTexturePath, int32_t pHeight, int32_t pWidth) {
+		mSprites.clear();		
+	}
+    Sprite* registerSprite(const char* pTexturePath, int32_t pWidth, int32_t pHeight) {
 		int32_t spriteCount = mSprites.size();
 		int32_t index = spriteCount * 4; // Points to 1st vertex.
 		// Precomputes the index buffer.
@@ -123,14 +125,13 @@ public:
 			mVertices.push_back(Sprite::Vertex());
 		}
 		// Appends a new sprite to the sprite array.
-		Sprite* sprite = new Sprite(mGraphicsManager, pTexturePath, pHeight, pWidth);
+		Sprite* sprite = new Sprite(mGraphicsManager, pTexturePath, pWidth, pHeight);
 		mSprites.push_back(sprite);
 		return sprite;
 	}
     status load() {
 		// Creates and retrieves shader attributes and uniforms.
 		Shader* shader = mGraphicsManager->loadShader("shaders/Sprite.shader");
-		if (shader->load() != STATUS_OK) goto ERROR;
 		mShaderProgram = shader->getProgram();
 		aPosition = glGetAttribLocation(mShaderProgram, "aPosition");
 		aTexture = glGetAttribLocation(mShaderProgram, "aTexture");
@@ -140,7 +141,6 @@ public:
 		for (std::vector<Sprite*>::iterator spriteIt = mSprites.begin(); spriteIt < mSprites.end(); ++spriteIt) {
 			if ((*spriteIt)->load(mGraphicsManager) != STATUS_OK) goto ERROR;
 		}
-		loadStatus = STATUS_OK;
 		return STATUS_OK;
 	ERROR:
 		LOG_ERROR("Error loading sprite batch");
@@ -162,13 +162,12 @@ public:
 		// Renders all sprites in batch.
 		const int32_t vertexPerSprite = 4;
 		const int32_t indexPerSprite = 6;
-		float timeStep = mTimeManager->elapsed();
+		float timeStep = mTimeManager->getFrameElapsedTime();
 		int32_t spriteCount = mSprites.size();
 		int32_t currentSprite = 0, firstSprite = 0;
 		while (bool canDraw = (currentSprite < spriteCount)) {
 			// Switches texture.
 			Sprite* sprite = mSprites[currentSprite];
-			if (sprite->loadStatus == STATUS_NOT_LOADED) sprite->load(mGraphicsManager);
 			GLuint currentTexture = sprite->mTexture;
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, sprite->mTexture);
@@ -195,6 +194,7 @@ public:
 private:
     SpriteBatch(const SpriteBatch&);
     void operator=(const SpriteBatch&);
+	friend class Font;
     TimeManager* mTimeManager;
     GraphicsManager* mGraphicsManager;
     std::vector<Sprite*> mSprites;

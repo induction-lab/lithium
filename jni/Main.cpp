@@ -10,12 +10,9 @@
 #define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, __VA_ARGS__)
 
 // TODO:
-// - Replace iterators to "it" in code for small
-// - refacrore contools event (!)
-// - Grioup widgets into one object
-// - Font widget
+// - refacrore controls event (!) combine imput manager with gesture detector?
 // - Dragable widget + status for easy debug!
-// - check on big on null texteres
+// - check on big or null texteres
 // - ...1010
 
 // Stuff for status state
@@ -23,7 +20,6 @@ typedef unsigned long int status;
 const status STATUS_OK         =  0;
 const status STATUS_ERROR      = -1;
 const status STATUS_EXIT       = -2;
-const status STATUS_NOT_LOADED = -3;
 
 // Basic context services
 class GraphicsManager;
@@ -48,19 +44,20 @@ struct Context {
 // Android entry point
 void android_main(android_app* pApplication) {
 	LOG_INFO("--- Let's go full native! ---");
-	EventLoop lEventLoop(pApplication);
-    Sensor lAccelerometer(lEventLoop, ASENSOR_TYPE_ACCELEROMETER);
+	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	
+	EventLoop eventLoop(pApplication);
+    Sensor accelerometer(eventLoop, ASENSOR_TYPE_ACCELEROMETER);
     // Creates services.
-    TimeManager lTimeManager;
-    GraphicsManager lGraphicsManager(pApplication);
-    InputManager lInputManager(pApplication, &lAccelerometer, &lGraphicsManager);
-    SoundManager lSoundManager(pApplication);
+    TimeManager timeManager;
+    GraphicsManager graphicsManager(pApplication);
+    InputManager inputManager(pApplication, &accelerometer, &graphicsManager);
+    SoundManager soundManager(pApplication);
     // Fills the context.
-    Context lContext = { &lGraphicsManager, &lInputManager, &lSoundManager, &lTimeManager };
+    Context context = { &graphicsManager, &inputManager, &soundManager, &timeManager };
     // Toggle fullscreen
     ANativeActivity_setWindowFlags(pApplication->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
     // Starts the game loop.
-    Engine lEngine(&lContext);
-    lEventLoop.run(&lEngine, &lInputManager);
+    Engine engine(&context);
+    eventLoop.run(&engine, &inputManager);
 	LOG_INFO("--- Bye! ---");
 }

@@ -6,51 +6,72 @@
 #include "InputManager.h"
 #include "SoundManager.h"
 #include "GraphicsManager.h"
-#include "Sprite.h"
 #include "Interface.h"
+
+void Test() {};
 
 class Engine: public ActivityHandler {
 public:
 	Engine(Context* pContext) :
-			mGraphicsManager(pContext->mGraphicsManager),
-			mInputManager(pContext->mInputManager),
-			mSoundManager(pContext->mSoundManager),
 			mTimeManager(pContext->mTimeManager),
-			mSpriteBatch(mTimeManager, mGraphicsManager),
-			mInterface(&mSpriteBatch, mInputManager, mSoundManager)
-	{
+			mGraphicsManager(pContext->mGraphicsManager),
+			mInputManager(pContext->mInputManager),		
+			mSoundManager(pContext->mSoundManager) {
 		LOG_INFO("Creating Engine");
-		Labels = mSpriteBatch.registerSprite("textures/Labels.png", 338, 600);
+		mInterface = new Interface(mTimeManager, mGraphicsManager, mInputManager);
 	}
-	~Engine() {}
-	void Test1() {
+	~Engine() {
+		if (mInterface != NULL) delete mInterface;
+		mInterface = NULL;		
+	}
+	void onMusicCheckBoxDown() {	
+		mSoundManager->playSound(mSoundDown);
+	}
+	void onMusicCheckBoxUp() {
+		mSoundManager->playSound(mSoundUp);
 		mMute = !mMute;
 		if (mMute == true) {
 			mSoundManager->stopMusic();
 		} else {
-			mSoundManager->playMusic("sounds/background.mp3");
+			mSoundManager->playMusic("sounds/Intro.mp3");
 		}
-	}	
-	void Test2() {
+	}
+	void onExitButtonDown() {
+		mSoundManager->playSound(mSoundDown);
+	}
+	void onExitButtonUp() {
+		mSoundManager->playSound(mSoundUp);
 		mQuit = true;
-	}		
+	}
 protected:
 	status onActivate() {
 		// Starts services.
 		if (mGraphicsManager->start() != STATUS_OK) return STATUS_ERROR;
 		if (mInputManager->start() != STATUS_OK) return STATUS_ERROR;
 		if (mSoundManager->start() != STATUS_OK) return STATUS_ERROR;
-		mTimeManager->reset();
+		mTimeManager->start();
 		LOG_INFO("Activating Engine");
 		if (mFirstStart) {
+			mSoundDown = mSoundManager->registerSound("sounds/SoundDown.wav");
+			mSoundUp = mSoundManager->registerSound("sounds/SoundUp.wav");			
 			float x = mGraphicsManager->getRenderWidth()  * 0.5f;
 			float y = mGraphicsManager->getRenderHeight() * 0.5f;
-			mInterface.addCheckBox("Music", "textures/Interface_Button_Aqua.png", Location(x - 100, y), std::bind(&Engine::Test1, this));
-			mInterface.addButton("Exit", "textures/Interface_Button_Red.png", Location(x + 100, y), std::bind(&Engine::Test2, this));
-			Labels->setLocation(Location(x, y));
+			mBackground = mInterface->addBackground("textures/Background.png", 360, 640, Location(x, y));
+			mMuteCheckBox = mInterface->addCheckBox("textures/Mute.png", 80, 78, Location(280, 240));
+			mMuteCheckBox->setDownFunction(std::bind(&Engine::onMusicCheckBoxDown, this));
+			mMuteCheckBox->setUpFunction(std::bind(&Engine::onMusicCheckBoxUp, this));
+			mMuteCheckBox->setChecked(true);
+			mExitButton = mInterface->addButton("textures/Exit.png", 80, 78, Location(80, 240));
+			mExitButton->setDownFunction(std::bind(&Engine::onExitButtonDown, this));
+			mExitButton->setUpFunction(std::bind(&Engine::onExitButtonUp, this));
+			mPlayButton = mInterface->addButton("textures/Play.png", 104, 100, Location(180, 240));
+			mFPSSpriteText = mInterface->addSpriteText("textures/Font.png", 32, 32, Location(20, 20), Justification::LEFT);
+			mLogo = mInterface->addLogo("textures/Logo.png", 320, 170, Location(174, 400));
 			mFirstStart = false;
 		}
-		if (mMute != true) mSoundManager->playMusic("sounds/background.mp3");
+		mGraphicsManager->loadResources();
+		mSoundManager->loadResources();
+		if (!mMute) mSoundManager->playMusic("sounds/Intro.mp3");
 		return STATUS_OK;
 	}
 	void onDeactivate() {
@@ -58,13 +79,15 @@ protected:
 		mGraphicsManager->stop();
 		mInputManager->stop();
 		mSoundManager->stop();
+		mTimeManager->stop();
 	}
 	status onStep() {
 		// Updates services.
+		mFPSSpriteText->setText(mTimeManager->getFrameRateStr());
 		if (mGraphicsManager->update() != STATUS_OK) return STATUS_ERROR;
 		if (mInputManager->update() != STATUS_OK) return STATUS_ERROR;
 		mTimeManager->update();		
-		mInterface.update();
+		mInterface->update();
 		if (mQuit) return STATUS_EXIT;
 		return STATUS_OK;		
 	}
@@ -109,13 +132,22 @@ private:
 	InputManager*    mInputManager;
 	SoundManager*    mSoundManager;
 	TimeManager*     mTimeManager;
-	SpriteBatch      mSpriteBatch;
-	Interface        mInterface;
 	
-	Sprite* Labels;
+	Interface*       mInterface;
+	
+	Sound* mSoundUp;
+	Sound* mSoundDown;	
+	
+	Background* mBackground;
+	Button* mExitButton;
+	CheckBox* mMuteCheckBox;	
+	Button* mPlayButton;
+	SpriteText* mFPSSpriteText;
+	Logo* mLogo;
+	
 	bool mFirstStart = true;
 	bool mQuit = false;
-	bool mMute = true;
+	bool mMute = false;
  };
 
 #endif

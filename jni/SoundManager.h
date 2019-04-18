@@ -10,24 +10,25 @@ class SoundManager;
 class Sound {
 public:
     Sound(android_app* pApplication, const char* pPath) :
-		mResource(pApplication, pPath),
-		mBuffer(NULL), mLength(0) {}
-    const char* getPath() {
-		return mResource.getPath();
+			mResource(pApplication, pPath),
+			mBuffer(NULL),
+			mLength(0) {
+		//	
 	}
+    const char* getPath() {
+        return mResource.getPath();
+    }	
     uint8_t* getBuffer() { return mBuffer; };
     off_t getLength() { return mLength; };
     status load() {
 		LOG_INFO("Loading sound: %s", mResource.getPath());
-		status result;
 		// Opens sound file.
 		if (mResource.open() != STATUS_OK) goto ERROR;
 		// Reads sound file.
 		mLength = mResource.getLength();
 		mBuffer = new uint8_t[mLength];
-		result = mResource.read(mBuffer, mLength);
+		if (mResource.read(mBuffer, mLength) != STATUS_OK) goto ERROR;
 		mResource.close();
-		loadStatus = STATUS_OK;
 		return STATUS_OK;
 	ERROR:
 		LOG_ERROR("Error while reading sound");
@@ -35,23 +36,24 @@ public:
 	}
     status unload() {
 		delete[] mBuffer;
-		mBuffer = NULL; mLength = 0;
+		mBuffer = NULL;
+		mLength = 0;
 		return STATUS_OK;
 	}
 private:
-    status loadStatus = STATUS_NOT_LOADED;
-	Sound(const Sound&);
-    void operator=(const Sound&);
     friend class SoundManager;
     Resource mResource;
-    uint8_t* mBuffer; off_t mLength;
+    uint8_t* mBuffer;
+	off_t mLength;
 };
 
 class SoundQueue {
 public:
     SoundQueue() :
-		mPlayerObj(NULL), mPlayer(NULL),
-		mPlayerQueue() {
+			mPlayerObj(NULL),
+			mPlayer(NULL),
+			mPlayerQueue() {
+		//	
 	}
     status initialize(SLEngineItf pEngine, SLObjectItf pOutputMixObj) {
 		LOG_INFO("Starting SoundQueue");
@@ -104,7 +106,9 @@ public:
 		// Destroys sound player.
 		if (mPlayerObj != NULL) {
 			(*mPlayerObj)->Destroy(mPlayerObj);
-			mPlayerObj = NULL; mPlayer = NULL; mPlayerQueue = NULL;
+			mPlayerObj = NULL;
+			mPlayer = NULL;
+			mPlayerQueue = NULL;
 		}
 	}
     void playSound(Sound* pSound) {
@@ -126,8 +130,6 @@ public:
 		LOG_ERROR("Error trying to play sound");
 	}
 private:
-    SoundQueue(const SoundQueue&);
-    void operator=(const SoundQueue&);
     // Sound player.
     SLObjectItf mPlayerObj; SLPlayItf mPlayer;
     SLBufferQueueItf mPlayerQueue;
@@ -136,16 +138,20 @@ private:
 class SoundManager {
 public:
     SoundManager(android_app* pApplication) :
-		mApplication(pApplication),
-		mEngineObj(NULL), mEngine(NULL),
-		mOutputMixObj(NULL),
-		mMusicPlayerObj(NULL), mMusicPlayer(NULL), mMusicPlayerSeek(NULL),
-		mSoundQueues(), mCurrentQueue(0),
-		mSounds() {
+			mApplication(pApplication),
+			mEngineObj(NULL),
+			mEngine(NULL),
+			mOutputMixObj(NULL),
+			mMusicPlayerObj(NULL),
+			mMusicPlayer(NULL),
+			mMusicPlayerSeek(NULL),
+			mSoundQueues(),
+			mCurrentQueue(0),
+			mSounds() {
 		LOG_INFO("Creating SoundManager");
 	};
 	~SoundManager() {
-		LOG_INFO("Destroying SoundManager");
+		LOG_INFO("Destructing SoundManager");
 		for (std::vector<Sound*>::iterator soundIt = mSounds.begin(); soundIt < mSounds.end(); ++soundIt) {
 			delete (*soundIt);
 		};
@@ -175,15 +181,19 @@ public:
 		for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
 			if (mSoundQueues[i].initialize(mEngine, mOutputMixObj) != STATUS_OK) goto ERROR;
 		}
-		// Loads resources
-		for (std::vector<Sound*>::iterator soundIt = mSounds.begin(); soundIt < mSounds.end(); ++soundIt) {
-			if ((*soundIt)->load() != STATUS_OK) goto ERROR;
-		};		
 		return STATUS_OK;
 	ERROR:
 		LOG_ERROR("Error while starting SoundManager");
 		stop();
 		return STATUS_ERROR;
+	}
+	status loadResources() {
+		LOG_INFO("SoundManager: Loads resources");
+		// Loads resources
+		for (std::vector<Sound*>::iterator soundIt = mSounds.begin(); soundIt < mSounds.end(); ++soundIt) {
+			if ((*soundIt)->load() != STATUS_OK) return STATUS_ERROR;
+		};
+		return STATUS_OK;
 	}
 	void stop() {
 		LOG_INFO("Stopping SoundManager");
@@ -209,11 +219,11 @@ public:
 	}
     status playMusic(const char* pPath) {
 		SLresult result;
-		LOG_INFO("Opening Music: %s", pPath);
+		LOG_INFO("Opening music: %s", pPath);
 		Resource resource(mApplication, pPath);
 		ResourceDescriptor descriptor = resource.descript();
 		if (descriptor.mDescriptor < 0) {
-			LOG_INFO("Could not open Music file");
+			LOG_INFO("Could not open music file");
 			return STATUS_ERROR;
 		}
 		// Creates Music player and retrieves its interfaces.
@@ -241,7 +251,7 @@ public:
 		if (result != SL_RESULT_SUCCESS) goto ERROR;
 		return STATUS_OK;
 	ERROR:
-		LOG_ERROR("Error playing Music");
+		LOG_ERROR("Error playing music");
 		return STATUS_ERROR;
 	} 
     void stopMusic() {
@@ -253,7 +263,8 @@ public:
 				(*mMusicPlayer)->SetPlayState(mMusicPlayer, SL_PLAYSTATE_PAUSED);
 				(*mMusicPlayerObj)->Destroy(mMusicPlayerObj);
 				mMusicPlayerObj = NULL;
-				mMusicPlayer = NULL; mMusicPlayerSeek = NULL;
+				mMusicPlayer = NULL;
+				mMusicPlayerSeek = NULL;
 			}
 		}
 	}
@@ -269,7 +280,6 @@ public:
 	}
     void playSound(Sound* pSound) {
 		int32_t currentQueue = ++mCurrentQueue;
-		if (pSound->loadStatus == STATUS_NOT_LOADED) pSound->load();
 		SoundQueue& soundQueue = mSoundQueues[currentQueue % QUEUE_COUNT];
 		soundQueue.playSound(pSound);
 	}
@@ -280,7 +290,8 @@ private:
     // Audio output.
     SLObjectItf mOutputMixObj;
     // Background music player.
-    SLObjectItf mMusicPlayerObj; SLPlayItf mMusicPlayer;
+    SLObjectItf mMusicPlayerObj;
+	SLPlayItf mMusicPlayer;
     SLSeekItf mMusicPlayerSeek;
     // Sound players.
     static const int32_t QUEUE_COUNT = 4;

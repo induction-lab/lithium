@@ -10,13 +10,12 @@
 
 #include <vector>
 
-const int32_t DEFAULT_RENDER_WIDTH  = 600;
+const int32_t DEFAULT_RENDER_WIDTH  = 360;
 
 class GraphicsComponent {
 public:
     virtual status load() = 0;
     virtual void draw() = 0;
-	status loadStatus = STATUS_NOT_LOADED;
 };
 
 class GraphicsManager {
@@ -53,10 +52,10 @@ public:
     status start() {
         LOG_INFO("Starting GraphicsManager");
         EGLint format, numConfigs, result;
-        EGLConfig lConfig;
+        EGLConfig config;
         EGLint majorVersion, minorVersion;
         // Defines display requirements. 16bits mode here.
-        const EGLint lAttributes[] = {
+        const EGLint attributes[] = {
             EGL_LEVEL,           0,
             EGL_SURFACE_TYPE,    EGL_WINDOW_BIT,
             EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
@@ -78,17 +77,17 @@ public:
         if (!eglInitialize(mDisplay, &majorVersion, &minorVersion)) goto ERROR;
         // Selects the first OpenGL configuration found.
         LOG_DEBUG("Selecting a display config.");
-        if (!eglChooseConfig(mDisplay, lAttributes, &lConfig, 1, &numConfigs) || (numConfigs <= 0)) goto ERROR;
+        if (!eglChooseConfig(mDisplay, attributes, &config, 1, &numConfigs) || (numConfigs <= 0)) goto ERROR;
         // Reconfigures the Android window with the EGL format.
         LOG_DEBUG("Configuring window format.");
-        if (!eglGetConfigAttrib(mDisplay, lConfig, EGL_NATIVE_VISUAL_ID, &format)) goto ERROR;
+        if (!eglGetConfigAttrib(mDisplay, config, EGL_NATIVE_VISUAL_ID, &format)) goto ERROR;
         ANativeWindow_setBuffersGeometry(mApplication->window, 0, 0, format);
         // Creates the display surface.
         LOG_DEBUG("Initializing the display.");
-        mSurface = eglCreateWindowSurface(mDisplay, lConfig, mApplication->window, NULL);
+        mSurface = eglCreateWindowSurface(mDisplay, config, mApplication->window, NULL);
         if (mSurface == EGL_NO_SURFACE) goto ERROR;
         // Create a context
-        mContext = eglCreateContext(mDisplay, lConfig, EGL_NO_CONTEXT, contextAttributes);
+        mContext = eglCreateContext(mDisplay, config, EGL_NO_CONTEXT, contextAttributes);
         if (mContext == EGL_NO_CONTEXT) goto ERROR;
         // Activates the display surface.
         LOG_DEBUG("Activating the display.");
@@ -96,10 +95,9 @@ public:
                 || !eglQuerySurface(mDisplay, mSurface, EGL_WIDTH, &mScreenWidth)
                 || !eglQuerySurface(mDisplay, mSurface, EGL_HEIGHT, &mScreenHeight)
                 || (mScreenWidth <= 0) || (mScreenHeight <= 0)) goto ERROR;
-				// Defines and initializes offscreen surface.
 		LOG_INFO("Screen dimensions: %d x %d", mScreenWidth, mScreenHeight);				
+		// Defines and initializes offscreen surface.
 		if (initializeRenderBuffer() != STATUS_OK) goto ERROR;
-		// Z-Buffer is useless as we are ordering draw calls ourselves
 		glViewport(0, 0, mRenderWidth, mRenderHeight);
 		// Prepares the projection matrix.
 		memset(mProjectionMatrix[0], 0, sizeof(mProjectionMatrix));
@@ -110,6 +108,7 @@ public:
 		mProjectionMatrix[3][1] = -1.0f;
 		mProjectionMatrix[3][2] =  0.0f;
 		mProjectionMatrix[3][3] =  1.0f;		
+		// Z-Buffer is useless as we are ordering draw calls ourselves.
 		glDisable(GL_DEPTH_TEST);
         // Displays information about OpenGL.
         LOG_INFO("OpenGL render context information:\n"
@@ -124,16 +123,19 @@ public:
                  (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION),
                  majorVersion, minorVersion
                 );
-		// Loads graphics components.
-		for (std::vector<GraphicsComponent*>::iterator componentIt = mComponents.begin(); componentIt < mComponents.end(); ++componentIt) {
-			(*componentIt)->loadStatus = (*componentIt)->load();
-		}
 		return STATUS_OK;
 	ERROR:
         LOG_ERROR("Error while starting GraphicsManager");
         stop();
         return STATUS_ERROR;
     }
+	status loadResources() {
+		LOG_INFO("GraphicsManager: Loads graphics components");
+		// Loads graphics components.
+		for (std::vector<GraphicsComponent*>::iterator componentIt = mComponents.begin(); componentIt < mComponents.end(); ++componentIt) {
+			if ((*componentIt)->load() != STATUS_OK) return STATUS_ERROR;
+		}		
+	}
     void stop() {
         LOG_INFO("Stopping GraphicsManager");
         // Releases textures.
@@ -186,12 +188,11 @@ public:
 		// Uses the offscreen FBO for scene rendering.
 		glBindFramebuffer(GL_FRAMEBUFFER, mRenderFrameBuffer);
 		glViewport(0, 0, mRenderWidth, mRenderHeight);
-		glClearColor(0.25f, 0.27f, 0.28f, 0.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		// Render graphic components.
 		std::vector<GraphicsComponent*>::iterator componentIt;
 		for (componentIt = mComponents.begin(); componentIt < mComponents.end(); ++componentIt) {
-			if ((*componentIt)->loadStatus == STATUS_NOT_LOADED) (*componentIt)->load();
 			(*componentIt)->draw();
 		}
 		// The FBO is rendered and scaled into the screen.
@@ -247,14 +248,15 @@ public:
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mRenderTexture, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		// Creates the shader used to render texture to screen.
+		// Creates the vertex buffer
 		mRenderVertexBuffer = loadVertexBuffer(vertices, sizeof(vertices));
 		if (mRenderVertexBuffer == 0) goto ERROR;
-		// Creates and retrieves shader attributes and uniforms.
+		// Creates the shader used to render texture to screen.
 		Shader* shader;
 		shader = loadShader("shaders/Render.shader");
-		if (shader->load() != STATUS_OK) goto ERROR;
+		if (shader == NULL) goto ERROR;
 		mRenderShaderProgram = shader->getProgram();
+		// Creates and retrieves shader attributes and uniforms.
 		aPosition = glGetAttribLocation(mRenderShaderProgram,"aPosition");
 		aTexture = glGetAttribLocation(mRenderShaderProgram, "aTexture");
 		uTexture = glGetUniformLocation(mRenderShaderProgram,"uTexture");
@@ -267,22 +269,19 @@ public:
     void registerComponent(GraphicsComponent* pComponent) {
         mComponents.push_back(pComponent);
     }
-	static void callback_readPng(png_structp pStruct, png_bytep pData, png_size_t pSize) {
-		Resource* resource = ((Resource*) png_get_io_ptr(pStruct));
-		if (resource->read(pData, pSize) != STATUS_OK) {
-			LOG_ERROR("none");
-			resource->close();
-		}
-	} 	
     Texture* loadTexture(const char* pPath) {
 		// Finds out if texture already loaded.
 		for (std::vector<Texture*>::iterator TextureIt = mTextures.begin(); TextureIt < mTextures.end(); ++TextureIt) {
-            if (strcmp(pPath, (*TextureIt)->getPath()) == 0) return (*TextureIt);
+			if (strcmp(pPath, (*TextureIt)->getPath()) == 0) return (*TextureIt);
         }
         // Appends a new texture to the texture array.
 		Texture* texture = new Texture(mApplication, pPath);
+		if (texture->load() != STATUS_OK) goto ERROR;
 		mTextures.push_back(texture);
 		return texture;
+	ERROR:
+		delete texture;
+		return NULL;
     }
     Shader* loadShader(const char* pPath) {
 		// Finds out if shader already loaded.
@@ -291,8 +290,12 @@ public:
 		}
         // Appends a new shader to the shader array.
         Shader* shader = new Shader(mApplication, pPath);
+		if (shader->load() != STATUS_OK) goto ERROR;
         mShaders.push_back(shader);
         return shader;
+	ERROR:
+		delete shader;
+		return NULL;
     }
 	GLuint loadVertexBuffer(const void* pVertexBuffer, int32_t pVertexBufferSize) {
 		GLuint vertexBuffer;

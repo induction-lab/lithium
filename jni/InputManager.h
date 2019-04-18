@@ -16,8 +16,6 @@ struct Location {
 	float y;
 };
 
-class EventLoop;
-
 class Sensor {
 public:
 	Sensor(EventLoop& pEventLoop, int32_t pSensorType):
@@ -66,9 +64,6 @@ public:
 		LOG_ERROR("Error while deactivating sensor.");
 		return STATUS_ERROR;
 	}
-	status toggle() {
-		return (mSensor != NULL) ? disable() : enable();
-	}
 private:
 	EventLoop& mEventLoop;
 	const ASensor* mSensor;
@@ -83,7 +78,6 @@ public:
 			mDownX(0.0f), mDownY(0.0f),
 			mRefPoint(NULL), 
 			mGraphicsManager(pGraphicsManager),
-			mMenuKey(false),
 			mAccelerometer(pAccelerometer) {
 		LOG_INFO("Creating InputManager");
 	}
@@ -99,22 +93,15 @@ public:
 	}
 	status start() {
 		LOG_INFO("Starting InputManager");
-		mDirectionX = 0.0f, mDirectionY = 0.0f;
-		mMenuKey = false;
+		// Activates sensors
+		mAccelerometer->enable();		
+		mDirectionX = 0.0f,
+		mDirectionY = 0.0f;
 		mScaleFactor = float(mGraphicsManager->getRenderWidth()) / float(mGraphicsManager->getScreenWidth());		
 		return STATUS_OK;
 	}
 	status update() {
-		// Activates or not sensors if search button is pressed.
-		/*
-		if (mMenuKey) {
-			if (mAccelerometer->toggle() != STATUS_OK) {
-				return STATUS_ERROR;
-			}
-		}
-		*/
 		// Clears previous state.
-		mMenuKey = false;
 		return STATUS_OK;
 	};
 	void stop() {
@@ -174,8 +161,8 @@ public:
 			mDownY = ((float)mGraphicsManager->getScreenHeight() - AMotionEvent_getY(pEvent, 0)) * mScaleFactor;
 		}
 		if (AMotionEvent_getAction(pEvent) == AMOTION_EVENT_ACTION_UP) {
-			mDownX = 0.0f;
-			mDownY = 0.0f;
+			mDownX = -1.0f;
+			mDownY = -1.0f;
 		}		
 		return true;
 	}
@@ -217,9 +204,6 @@ public:
 			case AKEYCODE_DPAD_DOWN:
 			case AKEYCODE_DPAD_UP:
 				mDirectionY = 0.0f;
-				break;
-			case AKEYCODE_MENU:
-				mMenuKey = true;
 				break;
 			case AKEYCODE_BACK:
 				return false;
@@ -351,8 +335,6 @@ private:
 	Location* mRefPoint;
 	GraphicsManager* mGraphicsManager;
 	float mScaleFactor;
-	// Keys.
-	bool mMenuKey;
 	// Sensors.
 	Sensor* mAccelerometer;
 };

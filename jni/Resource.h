@@ -11,17 +11,23 @@ struct ResourceDescriptor {
 
 class Resource {
 public:
-    Resource(android_app* pApplication, const char* pPath) :
+    Resource() {};
+	Resource(android_app* pApplication, const char* pPath) :
             mAssetManager(pApplication->activity->assetManager),
             mPath(pPath),
-            mAsset(NULL) {}
-    status open() {
+            mAsset(NULL) {
+				//
+			}
+			status open() {
         mAsset = AAssetManager_open(mAssetManager, mPath, AASSET_MODE_UNKNOWN);
         return (mAsset != NULL) ? STATUS_OK : STATUS_ERROR;
     }
+    const char* getPath() {
+        return mPath;
+    }
     status read(void* pBuffer, size_t pCount) {
-        int32_t lReadCount = AAsset_read(mAsset, (char*)pBuffer, pCount);
-        return (lReadCount == pCount) ? STATUS_OK : STATUS_ERROR;
+        int32_t readCount = AAsset_read(mAsset, (char*)pBuffer, pCount);
+        return (readCount == pCount) ? STATUS_OK : STATUS_ERROR;
     }
     void close() {
         if (mAsset != NULL) {
@@ -30,24 +36,20 @@ public:
         }
     }
 	ResourceDescriptor descript() {
-		ResourceDescriptor lDescriptor = { -1, 0, 0 };
-		AAsset* lAsset = AAssetManager_open(mAssetManager, mPath,
-		AASSET_MODE_UNKNOWN);
-		if (lAsset != NULL) {
-			lDescriptor.mDescriptor = AAsset_openFileDescriptor(lAsset, &lDescriptor.mStart, &lDescriptor.mLength);
-			AAsset_close(lAsset);
+		ResourceDescriptor descriptor = { -1, 0, 0 };
+		AAsset* asset = AAssetManager_open(mAssetManager, mPath, AASSET_MODE_UNKNOWN);
+		if (asset != NULL) {
+			descriptor.mDescriptor = AAsset_openFileDescriptor(asset, &descriptor.mStart, &descriptor.mLength);
+			AAsset_close(asset);
 		}
-		return lDescriptor;
+		return descriptor;
 	}	
-    const char* getPath() {
-        return mPath;
-    }
     off_t getLength() {
         return AAsset_getLength(mAsset);
     }    
 private:
     const char* mPath;
-    AAssetManager *mAssetManager;
+    AAssetManager* mAssetManager;
     AAsset* mAsset;
 };
 

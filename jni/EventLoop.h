@@ -162,8 +162,8 @@ protected:
 		}
 	}
 	int32_t processInputEvent(AInputEvent* pEvent) {
-		int32_t lEventType = AInputEvent_getType(pEvent);
-		switch (lEventType) {
+		int32_t eventType = AInputEvent_getType(pEvent);
+		switch (eventType) {
 		case AINPUT_EVENT_TYPE_MOTION:
 			switch (AInputEvent_getSource(pEvent)) {
 			case AINPUT_SOURCE_TOUCHSCREEN:
@@ -181,11 +181,11 @@ protected:
 		return 0;
 	}
 	void processSensorEvent() {
-		ASensorEvent lEvent;
-		while (ASensorEventQueue_getEvents(mSensorEventQueue, &lEvent, 1) > 0) {
-			switch (lEvent.type) {
+		ASensorEvent event;
+		while (ASensorEventQueue_getEvents(mSensorEventQueue, &event, 1) > 0) {
+			switch (event.type) {
 			case ASENSOR_TYPE_ACCELEROMETER:
-				mInputHandler->onAccelerometerEvent(&lEvent);
+				mInputHandler->onAccelerometerEvent(&event);
 				break;
 			}
 		}
@@ -194,16 +194,16 @@ private:
 	friend class Sensor;
 	// Private callbacks handling events occuring in the thread loop.
 	static void callback_event(android_app* pApplication, int32_t pCommand) {
-		EventLoop& lEventLoop = *(EventLoop*) pApplication->userData;
-		lEventLoop.processAppEvent(pCommand);
+		EventLoop& eventLoop = *(EventLoop*) pApplication->userData;
+		eventLoop.processAppEvent(pCommand);
 	}
 	static int32_t callback_input(android_app* pApplication, AInputEvent* pEvent) {
-		EventLoop& lEventLoop = *(EventLoop*) pApplication->userData;
-		return lEventLoop.processInputEvent(pEvent);
+		EventLoop& eventLoop = *(EventLoop*) pApplication->userData;
+		return eventLoop.processInputEvent(pEvent);
 	}
 	static void callback_sensor(android_app* pApplication, android_poll_source* pSource) {
-		EventLoop& lEventLoop = *(EventLoop*) pApplication->userData;
-		lEventLoop.processSensorEvent();
+		EventLoop& eventLoop = *(EventLoop*) pApplication->userData;
+		eventLoop.processSensorEvent();
 	}
 private:
 	// Saves application state when application is active/paused.
@@ -216,7 +216,7 @@ private:
 	ActivityHandler* mActivityHandler;
 	// Input event observer.
 	InputHandler* mInputHandler;
-	// Event queue.
+    // Sensors
 	ASensorManager* mSensorManager;
 	ASensorEventQueue* mSensorEventQueue;
 	android_poll_source mSensorPolsource;
