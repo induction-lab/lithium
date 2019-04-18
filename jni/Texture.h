@@ -116,24 +116,24 @@ protected:
         }
         // Indicates that image needs conversion to RGBA if needed.
         switch (colorType) {
-            case PNG_COLOR_TYPE_PALETTE:
-                png_set_palette_to_rgb(pngPtr);
-                format = transparency ? GL_RGBA : GL_RGB;
-                break;
-            case PNG_COLOR_TYPE_RGB:
-                format = transparency ? GL_RGBA : GL_RGB;
-                break;
-            case PNG_COLOR_TYPE_RGBA:
-                format = GL_RGBA;
-                break;
-            case PNG_COLOR_TYPE_GRAY:
-                png_set_expand_gray_1_2_4_to_8(pngPtr);
-                format = transparency ? GL_LUMINANCE_ALPHA:GL_LUMINANCE;
-                break;
-            case PNG_COLOR_TYPE_GA:
-                png_set_expand_gray_1_2_4_to_8(pngPtr);
-                format = GL_LUMINANCE_ALPHA;
-                break;
+        case PNG_COLOR_TYPE_PALETTE:
+            png_set_palette_to_rgb(pngPtr);
+            format = transparency ? GL_RGBA : GL_RGB;
+            break;
+        case PNG_COLOR_TYPE_RGB:
+            format = transparency ? GL_RGBA : GL_RGB;
+            break;
+        case PNG_COLOR_TYPE_RGBA:
+            format = GL_RGBA;
+            break;
+        case PNG_COLOR_TYPE_GRAY:
+            png_set_expand_gray_1_2_4_to_8(pngPtr);
+            format = transparency ? GL_LUMINANCE_ALPHA:GL_LUMINANCE;
+            break;
+        case PNG_COLOR_TYPE_GA:
+            png_set_expand_gray_1_2_4_to_8(pngPtr);
+            format = GL_LUMINANCE_ALPHA;
+            break;
         }
         // Validates all tranformations.
         png_read_update_info(pngPtr, infoPtr);

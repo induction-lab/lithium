@@ -3,6 +3,9 @@
 
 /* Simple particle system */
 
+// Specify a limit for the size of our particle vector.
+const int MAX_PARTICLES = 10;
+
 class Particle {
 public:
     Particle() {
@@ -23,7 +26,7 @@ public:
     const float MAX_PARTICLE_SIZE = 0.7f;
     const float X_SPEED_RANGE     = 3.0f;
     const float Y_SPEED_RANGE     = 6.0f;
-    const float GRAVITY           = 0.06f;
+    const float GRAVITY           = 0.1f;
     void update() {
         sprite->angle += rotation;
         sprite->scale = Vector2(size, size);
@@ -35,7 +38,7 @@ public:
         framesToLive--;
     };
     Vector2 speed;     // the current speed of the particle
-    float size;        // the size of the particle
+    float size;        // the size of the particle i.e. how big the pointsprite will be drawn
     float rotation;    // the rotation speed
     int framesToLive;  // number of frames before the particle is destroyed
     Sprite* sprite;

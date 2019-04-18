@@ -42,18 +42,18 @@ public:
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
-            case Touch::TOUCH_DOWN:
-                if (inSprite) {
-                    sprite->setFrame(1);
-                    if (downFunction != NULL) downFunction();
-                }
-                break;
-            case Touch::TOUCH_UP:
-                sprite->setFrame(0);
-                if (inSprite && upFunction != NULL) upFunction();
-                break;
-            case Touch::TOUCH_MOVE:
-                if (!inSprite) sprite->setFrame(0);
+        case Touch::TOUCH_DOWN:
+            if (inSprite) {
+                sprite->setFrame(1);
+                if (downFunction != NULL) downFunction();
+            }
+            break;
+        case Touch::TOUCH_UP:
+            sprite->setFrame(0);
+            if (inSprite && upFunction != NULL) upFunction();
+            break;
+        case Touch::TOUCH_MOVE:
+            if (!inSprite) sprite->setFrame(0);
         }
     };
     int gestureTapEvent(int x, int y) {
@@ -92,12 +92,12 @@ public:
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
-            case Touch::TOUCH_DOWN:
-                if (inSprite && downFunction != NULL) downFunction();               
-                break;
-            case Touch::TOUCH_UP:
-                if (inSprite && upFunction != NULL) upFunction();
-                break;
+        case Touch::TOUCH_DOWN:
+            if (inSprite && downFunction != NULL) downFunction();               
+            break;
+        case Touch::TOUCH_UP:
+            if (inSprite && upFunction != NULL) upFunction();
+            break;
         }
     };
     int gestureTapEvent(int x, int y) {

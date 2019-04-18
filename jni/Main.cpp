@@ -110,7 +110,6 @@ void android_main(android_app* app) {
     // Starts the game loop.
     EventLoop* eventLoop = new EventLoop();
     eventLoop->run(new Activity);
-    // Finalize game.
     SAFE_DELETE(eventLoop);
     SAFE_DELETE(configData);
     LOG_INFO("--- Bye! ---");
