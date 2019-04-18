@@ -10,7 +10,7 @@ enum class Justification {
 
 class RasterFont {
 public:
-    const int CHAR_PADDING = 16;
+    const int CHAR_PADDING = 44;
     RasterFont(const char* path, int width, int height, Vector2 location, Justification just):
         path(path), width(width), height(height), location(location),
         newText("\0"),
@@ -37,7 +37,7 @@ public:
             bool q = ((count < lastTextLength) && (text[count] != lastText.c_str()[count]));
             if (q) spriteBatch->unregisterSprite(sprites.at(count));
             // Get shift.
-            Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count, location.y);
+            Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count + 5, location.y + frand(4) - 2.0f);
             if (just == Justification::MIDDLE) {
                 l.x = l.x - textWidth / 2;
             } else if (just == Justification::RIGHT) {
@@ -60,7 +60,7 @@ public:
                 } else {
                     sprites.push_back(sprite);
                 }
-            } else sprites.at(count)->location = l;
+            } else sprites.at(count)->location.x = l.x;
         }
         // Delete tail.
         if (lastTextLength > textLength) {

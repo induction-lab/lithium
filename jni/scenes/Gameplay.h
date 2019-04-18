@@ -24,8 +24,8 @@ public:
         if (created) return STATUS_OK;
         LOG_DEBUG("Start Gameplay scene.");
         spriteBatch = new SpriteBatch();
-        float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
-        float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
+        float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+        float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
         float halfWidth = renderWidth / 2;
         float halfHeight = renderHeight / 2;
         background = addBackground("textures/Background.png", 360, 640, Vector2(halfWidth, halfHeight));
@@ -59,7 +59,7 @@ public:
         zipDown03Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown03.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points bar.
-        rasterFont = new RasterFont("textures/Font.png", 32, 32, Vector2(halfWidth, halfHeight - 145), Justification::MIDDLE);
+        rasterFont = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE);
         rasterFont->setText("0000000");
         scores = 0;
         // Create fruits.
@@ -85,7 +85,7 @@ public:
         return Vector2(halfWidth + X * 42 - 100 - dx, halfHeight - Y * 42 + 110 - dy);
     };
     void addFruit(int X, int Y, bool loadFromSave = false) {
-        LOG_INFO("Creating new fruit.");
+        // LOG_INFO("Creating new fruit.");
         int fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
         const char* fruitTextures[7] = {
@@ -108,6 +108,7 @@ public:
         fruit->index = Vector2(X, Y);
         fruits.push_back(fruit);
     };
+    // Get fruit by index.
     Fruit* getFruit(int X, int Y) {
         for (std::vector<Fruit*>::iterator it = fruits.begin(); it < fruits.end(); ++it) {
             if ((*it)->index.x == X && (*it)->index.y == Y) return (*it);
@@ -123,7 +124,7 @@ public:
         if (rasterFont != NULL) rasterFont->update();
     };
     void dropFruits(int X, int Y) {
-        LOG_DEBUG("Drop fruits ...");
+        // LOG_DEBUG("Drop fruits ...");
         // Backup dead fruit index.
         getFruit(X, Y)->index.y = -1;
         // Move down all upper fruits.
@@ -132,7 +133,7 @@ public:
         getFruit(X, -1)->index.y = 0;
     };
     void updateBoard() {
-        LOG_DEBUG("Update board ...");
+        // LOG_DEBUG("Update board ...");
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (getFruit(x, y)->dead) {
@@ -157,7 +158,7 @@ public:
         testForMatch();
     };
     int testForMatch() {
-        LOG_DEBUG("Testing match fruits ...");
+        // LOG_DEBUG("Testing match fruits ...");
         int result = 0;
         int count, type;
         // Horizontal test.
@@ -252,8 +253,8 @@ public:
                 case 0: SoundManager::getInstance()->playSound(Lift01Sound); break;
                 case 1: SoundManager::getInstance()->playSound(Lift02Sound); break;
                 case 2: SoundManager::getInstance()->playSound(Lift03Sound); break;
-            }            
-        } else testForMatch();
+            }
+        } else if (testForMatch() < 3) updateScore(-2);
     };
     void onFruitDead(int X, int Y) {
         dyingFruits--;
@@ -262,6 +263,7 @@ public:
     };
     void updateScore(int value) {
         scores += value;
+        if (scores < 0) scores = 0;
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
         rasterFont->setText(str.c_str());        
@@ -303,7 +305,7 @@ public:
     // Fruits.
     int dyingFruits;
     std::vector<Fruit*> fruits;
-    // For score points.
+    // Score points.
     RasterFont* rasterFont;
     int scores;
 };

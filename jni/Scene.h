@@ -13,10 +13,10 @@ public:
     Widget():
         sprite(NULL),
         spriteBatch(NULL) {
-        LOG_DEBUG("Create widget.");
+        // LOG_DEBUG("Create widget.");
     };
     ~Widget() {
-        LOG_DEBUG("Delete widget.");
+        // LOG_DEBUG("Delete widget.");
     }
     virtual void update() {};
     void setSprite(Sprite* sprite, Vector2 location) {

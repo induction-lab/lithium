@@ -16,8 +16,8 @@ public:
         if (created) return STATUS_OK;
         LOG_DEBUG("Start SoundSetting scene.");
         spriteBatch = new SpriteBatch();
-        float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
-        float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
+        float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+        float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
         float halfWidth = renderWidth / 2;
         float halfHeight = renderHeight / 2;
         background = addBackground("textures/Background.png", 360, 640, Vector2(halfWidth, halfHeight));

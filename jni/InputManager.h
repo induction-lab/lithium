@@ -91,11 +91,11 @@ public:
     };
 public:
     void registerListener(InputListener *listener) {
-        LOG_DEBUG("Register InputListener %d.", listeners.size() + 1);
+        // LOG_DEBUG("Register InputListener %d.", listeners.size() + 1);
         listeners.push_back(listener);
     };
     void unregisterListener(InputListener *listener) {
-        LOG_DEBUG("Unregister InputListener %d.", listeners.size());
+        // LOG_DEBUG("Unregister InputListener %d.", listeners.size());
         listeners.erase(std::find(listeners.begin(), listeners.end(), listener));
     };
     int32_t onTouchEvent(AInputEvent* event) {
