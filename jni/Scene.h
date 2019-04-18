@@ -7,8 +7,6 @@
 
 #include <functional>
 
-class Interface;
-
 class Widget: public InputListener {
 public:
     Widget(int32_t width, int32_t height, Location location):
@@ -119,12 +117,7 @@ public:
     void gestureTapEvent(int x, int y) {
         if (pointInWidget(Location(x, y))) {
 			checked = !checked;
-			if (checked) {
-				sprite->setFrames(1, 1, 0.0f, false);
-			} else {
-				sprite->setFrames(0, 1, 0.0f, false);
-			}			
-			if (clickFunction != NULL) clickFunction();
+			setChecked(checked);
 		}
     };
     void gestureLongTapEvent(int x, int y, float time) {
@@ -140,7 +133,7 @@ public:
         } else {
             sprite->setFrames(0, 1, 0.0f, false);
         }
-        if (clickFunction != NULL) clickFunction();
+        if (clickFunction != NULL) clickFunction();        
     };
 private:
     bool checked;
@@ -159,7 +152,7 @@ public:
     virtual ~Scene() {
         LOG_INFO("Delete scene.");
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
-            delete (*it);
+            SAFE_DELETE(*it);
         }
         widgets.clear();
     }
@@ -190,6 +183,8 @@ public:
         }
 	}
     virtual status start(void) = 0;
+    virtual void pause(void) {};
+    virtual void resume(void) {};
     SpriteBatch* spriteBatch;
 private:
     std::vector<Widget*> widgets;

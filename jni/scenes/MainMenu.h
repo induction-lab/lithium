@@ -33,15 +33,21 @@ public:
 		exitButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         exitButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         exitButton->setClickFunction(std::bind(&MainMenu::onExitButtonClick, this));
+        TweenManager::getInstance()->addTween(exitButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.7f);        
         playButton = addButton("textures/Play.png", 104, 100, Location(halfWidth, halfHeight - 100));
 		playButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         playButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         playButton->setClickFunction(std::bind(&MainMenu::onPlayButtonClick, this));
+        TweenManager::getInstance()->addTween(playButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.9f);
         muteCheckBox = addCheckBox("textures/Mute.png", 80, 78, Location(halfWidth + 90, halfHeight - 80));
 		muteCheckBox->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         muteCheckBox->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         muteCheckBox->setClickFunction(std::bind(&MainMenu::onMuteCheckBoxClick, this));
-        muteCheckBox->setChecked(true);
+        TweenManager::getInstance()->addTween(muteCheckBox->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5);
+        muteCheckBox->setChecked(configData->musicOn);
 		soundButtonDown = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         soundButtonUp = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
@@ -49,6 +55,12 @@ public:
     };
     void update() {
         Scene::update();
+    };
+    void pause() {
+        //
+    };
+    void resume() {
+        //
     };
 	void onAnyButtonDown() {
         SoundManager::getInstance()->playSound(soundButtonDown);
@@ -65,8 +77,10 @@ public:
 	void onMuteCheckBoxClick() {
         if (muteCheckBox->getChecked()) {
             SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
+            configData->musicOn = true;
         } else {
-            SoundManager::getInstance()->stopMusic();
+            SoundManager::getInstance()->stopMusic(false);
+            configData->musicOn = false;
         }
 	};
     void backEvent() {

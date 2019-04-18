@@ -10,7 +10,6 @@
 
 #include <map>
 #include <vector>
-#include <algorithm>
 
 const int32_t DEFAULT_RENDER_WIDTH  = 360;
 
@@ -64,7 +63,7 @@ public:
     };
     status start() {
         LOG_INFO("Starting GraphicsManager.");
-        EGLint format, numConfigs, result;
+        EGLint format, numConfigs;
         EGLConfig config;
         EGLint majorVersion, minorVersion;
         // Defines display requirements. 16bits mode here.

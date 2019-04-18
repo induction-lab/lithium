@@ -13,7 +13,7 @@ private:
         if (scene != NULL) {
             TimeManager::getInstance()->reset();
             GraphicsManager::getInstance()->reset();
-            //SoundManager::getInstance()->reset();
+            SoundManager::getInstance()->reset();
             TweenManager::getInstance()->reset();
             SAFE_DELETE(scene);            
         }
@@ -29,6 +29,7 @@ public:
     Activity():
         quit(false),
         firstStart(true),
+        paused(false),
         scene(NULL),
         sceneChanged(false) {
         LOG_DEBUG("Creating Activity.");
@@ -63,6 +64,12 @@ protected:
         if (scene != NULL && !paused) scene->update();
         return STATUS_OK;
     };
+    void onPause() {
+        if (scene != NULL) scene->pause();
+    };
+    void onResume() {
+        if (scene != NULL) scene->resume();
+    };    
     void onDeactivate() {
         LOG_INFO("Dectivating Engine.");
     };

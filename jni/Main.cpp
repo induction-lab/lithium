@@ -30,7 +30,7 @@
 #define SAFE_DELETE(x) { delete x; x = NULL; }
 
 // Array deletion macro
-#define SAFE_DELETE_ARRAY(x) { delete[] x; x = NULL; } 
+#define SAFE_DELETE_ARRAY(x) { delete[] x; x = NULL; }
 
 // Stuff for status state
 typedef unsigned long int status;
@@ -41,6 +41,12 @@ const status STATUS_EXIT       = -2;
 #include <android_native_app_glue.h>
 static android_app* application;
 
+// Application default config.
+struct ConfigData {
+     bool musicOn = false;
+};
+ConfigData* configData;
+
 #include "Geometry.h"
 #include "TimeManager.h"
 #include "TweenManager.h"
@@ -50,17 +56,27 @@ static android_app* application;
 #include "EventLoop.h"
 #include "Activity.h"
 
+// TODO:
+// - draw line ...
+// - besier ...
+// - game object implemennt ...
+// - render batch ? ...
+
 // Android entry point.
 void android_main(android_app* app) {
 	LOG_INFO("--- Let's go full native! ---");
-	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	
+	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);
     // Toggle fullscreen.
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
 	// Application details provided by Android.
 	application = app;
+    // Read config data.
+    readConfig();
     // Starts the game loop.
 	EventLoop* eventLoop = new EventLoop();
 	eventLoop->run(new Activity);
 	SAFE_DELETE(eventLoop);
+    // Save config data.
+    writeConfig();
 	LOG_INFO("--- Bye! ---");
 }

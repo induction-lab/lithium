@@ -18,7 +18,7 @@ public:
         playerObj(NULL),
         playerPlay(NULL),
         playerSeek(NULL),
-        playedMusic(NULL),
+        musicPath(NULL),
         soundQueues(),
         currentQueue(0),
         sounds() {
@@ -53,7 +53,7 @@ public:
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
         if (loadResources() != STATUS_OK) goto ERROR;
-        if (playedMusic != NULL) playMusic(playedMusic);
+        if (musicPath != NULL && playMusic(musicPath) != STATUS_OK) goto ERROR;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting SoundManager.");
@@ -92,8 +92,9 @@ ERROR:
         }
     };
     void reset() {
-        stopMusic();
+        stopMusic(false);
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
+            (*it)->unload();
             SAFE_DELETE(*it);
         };
         sounds.clear();        
@@ -130,13 +131,13 @@ ERROR:
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
-        playedMusic = path;
+        musicPath = path;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error playing music.");
         return STATUS_ERROR;
     };
-    void stopMusic() {
+    void stopMusic(bool paused = true) {
         LOG_INFO("Stopping Music.");
         if (playerPlay != NULL) {
             SLuint32 playerState;
@@ -147,6 +148,7 @@ ERROR:
                 playerObj = NULL;
                 playerPlay = NULL;
                 playerSeek = NULL;
+                if (!paused) musicPath = NULL;
             }
         }
     };
@@ -166,7 +168,6 @@ ERROR:
         soundQueue.playSound(sound);
     };
 private:
-    const char* playedMusic = NULL; // temporary pump...
     // OpenSL ES engine.
     SLObjectItf engineObj;
     SLEngineItf engine;
@@ -176,6 +177,7 @@ private:
     SLObjectItf playerObj;
     SLPlayItf playerPlay;
     SLSeekItf playerSeek;
+    const char* musicPath;
     // Sound players.
     static const int32_t QUEUE_COUNT = 4;
     SoundQueue soundQueues[QUEUE_COUNT];
