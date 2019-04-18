@@ -11,26 +11,26 @@
 #define LOG_INFO(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
+    __android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s:%s(): %s", __FILE__, __FUNCTION__, buf); \
 } while (0)
 // Warn.
 #define LOG_WARN(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
+    __android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s:%s(): %s", __FILE__, __FUNCTION__, buf); \
 } while (0)
 // Error.
 #define LOG_ERROR(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
+    __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s:%s(): %s", __FILE__, __FUNCTION__, buf); \
 } while (0)
 // Debug.
 #ifdef DEBUG_MODE
     #define LOG_DEBUG(x...) do { \
         char buf[512]; \
         sprintf(buf, x); \
-        __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
+        __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s:%s(): %s", __FILE__, __FUNCTION__, buf); \
     } while (0)
 #else
     #define LOG_DEBUG(x...) {}
@@ -65,7 +65,7 @@ static android_app* application;
 // Application default config.
 struct ConfigData {
     int soundVolume = 70;
-    int musicVolume = 80;
+    int musicVolume;// = 80;
     int fruitsType[GRID_SIZE][GRID_SIZE] = {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1},

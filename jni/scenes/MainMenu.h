@@ -51,7 +51,7 @@ public:
             ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
         /*
         // - test -
-        Background* boom = addBackground("textures/_boom.png", 360, 640, Vector2(halfWidth, halfHeight));
+        Background* boom = addBackground("textures/StartScreen.png", 360, 640, Vector2(halfWidth, halfHeight));
         TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)->target(43)->remove(true)->start(5.0f);
         // --------
         */

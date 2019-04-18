@@ -33,16 +33,18 @@ public:
         type(type),                                            // fruit type
         alive(true), dead(false),                              // alive/dead state
         selected(false), animated(false),                      // selected state
-        dropped(true),                                         // dropped state
+        dropped(false),                                        // dropped state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
         moveTween(NULL),                                       // move animation tween
         index(Vector2()),                                      // index on board
         prevIndex(Vector2()),                                  // prevision index on board
         // Callback functions.
         clickFunction(NULL),
+        moveFunction(NULL),
+        movedFunction(NULL),        
         killFunction(NULL),
+        dyingFunction(NULL),
         deadFunction(NULL),
-        movedFunction(NULL),
         moveType(FruitMoveType::UNKNOWN),
         killType(FruitKillType::UNKNOWN) {
         // LOG_DEBUG("Create Fruit.");
@@ -77,58 +79,62 @@ public:
             animated = false;
         }
     };
-    void kill(FruitKillType fruitkillType = FruitKillType::DEAD) {
+    void kill(float delay = 0.0f, FruitKillType fruitkillType = FruitKillType::DEAD) {
         killType = fruitkillType;
-        if (type >= FRUITS_COUNT) {
-            LOG_DEBUG("Bonus kill! %d %d", (int)index.x, (int)index.y);
-            if (alive) {
-                alive = false;
-                onKill();
-                onDead();
-            }
+        if (alive) {
             alive = false;
+            if (killFunction != NULL) killFunction(index.x, index.y, killType);
+        }
+        if (type >= FRUITS_COUNT) {
+            onDead();
             return;
         }
         if (!dead) {
-            alive = false;
             Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
+                ->onStart(std::bind(&Fruit::onDying, this))
                 ->target(4.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
-                ->target(0.0f)->remove(true);
-            t1->onStart(std::bind(&Fruit::onKill, this));
-            t2->onComplete(std::bind(&Fruit::onDead, this));
-            t1->addChain(t2)->start(0.3f);
+                ->target(0.0f)->remove(true)
+                ->onComplete(std::bind(&Fruit::onDead, this));
+            t1->addChain(t2)->start(delay);
         }
     };
     void onMoved() {
         if (movedFunction != NULL) movedFunction(index.x, index.y, moveType);
     };
-    void onKill() {
-        this->killType = killType;
-        if (killFunction != NULL) killFunction(index.x, index.y, killType);
-    }
+    void onDying() {
+        if (dyingFunction != NULL) dyingFunction(index.x, index.y, killType);
+    };
     void onDead() {
         dead = true;
         if (deadFunction != NULL) deadFunction(index.x, index.y, killType);
     };
     void moveTo(int x, int y, float delay = 0.0f, FruitMoveType fruitMoveType = FruitMoveType::UNKNOWN) {
         moveType = fruitMoveType;
+        if (moveFunction != NULL) moveFunction(index.x, index.y, moveType);
         prevIndex = index;
         index = Vector2(x, y);
         Vector2 location = getSkrewedLocation(x, y);
         moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
-            ->target(location.x, location.y)->remove(true)->start(delay)
-            ->onComplete(std::bind(&Fruit::onMoved, this));
+            ->target(location.x, location.y)->remove(true)
+            ->onComplete(std::bind(&Fruit::onMoved, this))
+            ->start(delay);
         selected = false;
     };
     void setClickFunction(std::function<void(int, int)> callback) {
         clickFunction = callback;
     };
+    void setMoveFunction(std::function<void(int, int, FruitMoveType)> callback) {
+        moveFunction = callback;
+    };    
     void setMovedFunction(std::function<void(int, int, FruitMoveType)> callback) {
         movedFunction = callback;
     };
     void setKillFunction(std::function<void(int, int, FruitKillType)> callback) {
         killFunction = callback;
+    };
+    void setDyingFunction(std::function<void(int, int, FruitKillType)> callback) {
+        dyingFunction = callback;
     };
     void setDeadFunction(std::function<void(int, int, FruitKillType)> callback) {
         deadFunction = callback;
@@ -145,8 +151,10 @@ public:
     Sprite* sprite;    
 private:
     std::function<void(int, int)> clickFunction;
+    std::function<void(int, int, FruitMoveType)> moveFunction;
     std::function<void(int, int, FruitMoveType)> movedFunction;
     std::function<void(int, int, FruitKillType)> killFunction;
+    std::function<void(int, int, FruitKillType)> dyingFunction;
     std::function<void(int, int, FruitKillType)> deadFunction;
 };
 

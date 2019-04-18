@@ -60,7 +60,6 @@ public:
         vo_excellent_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_excellent_2.wav");
         vo_excellent_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_excellent_3.wav");
         vo_fine_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_fine_1.wav");
-        vo_hahaSound = SoundManager::getInstance()->registerSound("sounds/vo_haha.wav");
         vo_unbelievable_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_1.wav");
         vo_unbelievable_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_2.wav");
         vo_unbelievable_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_3.wav");
@@ -70,6 +69,12 @@ public:
         vo_wow_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_1.wav");
         vo_wow_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_2.wav");
         vo_wow_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_3.wav");
+        // My sounds.
+        hahaSound = SoundManager::getInstance()->registerSound("sounds/Haha.wav");
+        bonus01Sound = SoundManager::getInstance()->registerSound("sounds/Bonus01.wav");
+        bonus02Sound = SoundManager::getInstance()->registerSound("sounds/Bonus02.wav");
+        bonus03Sound = SoundManager::getInstance()->registerSound("sounds/Bonus03.wav");
+        bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
@@ -87,12 +92,6 @@ public:
         }
         SoundManager::getInstance()->playSound(fruits_startSound);
         printBoard();
-        // Create bonus text.
-        bonus = addBackground("textures/BonusText.png", 214, 132, Vector2(halfWidth, halfHeight));
-        bonus->sprite->scale = Vector2(0.5f, 0.5f);
-        bonus->sprite->opaque = 0.0f;
-        bonus->sprite->order = 1;
-        bonusAnimated = false;
         matchStep = 0;
         missStep = configData->missStep;
         particleSystem = new ParticleSystem();
@@ -121,7 +120,7 @@ public:
     // New fruit.
     void addFruit(int x, int y, int fruitType = -1) {
         // LOG_DEBUG("Creating new fruit.");
-        if (fruitType == -1) fruitType = (int)frand(FRUITS_COUNT);
+        if (fruitType == -1) fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
         const char* fruitTextures[8] = {
             "textures/AppleFruit.png",
@@ -139,17 +138,21 @@ public:
         fruit->sprite->opaque = 0.0f;
         TweenManager::getInstance()->addTween(fruit->sprite, TweenType::OPAQUE, 0.1f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
         fruit->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1, std::placeholders::_2));
+        fruit->setMoveFunction(std::bind(&Gameplay::onFruitMove, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setMovedFunction(std::bind(&Gameplay::onFruitMoved, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setKillFunction(std::bind(&Gameplay::onFruitKill, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        fruit->setDyingFunction(std::bind(&Gameplay::onFruitDying, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setDeadFunction(std::bind(&Gameplay::onFruitDead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        droppedFruits++;
-        if (fruitType < FRUITS_COUNT) fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
-        else fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP_EXTRA);
+        if (fruitType != 7) {
+            fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
+        } else {
+            fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP_EXTRA);
+        }
         fruits[x][y] = fruit;
-        
     };
     // Update scene.
     void update() {
+        Scene::update();
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
@@ -175,7 +178,6 @@ public:
             fruits[x][y]->selected = false;
             if (fruits[x][y]->alive) {
                 if (fruits[x][y]->dropped) {
-                    droppedFruits++;
                     fruits[x][y]->moveTo(x, y, 0.0f, FruitMoveType::DROP);
                 }
             } else {
@@ -189,7 +191,6 @@ public:
             case 1: SoundManager::getInstance()->playSound(fall_2Sound); break;
             case 2: SoundManager::getInstance()->playSound(fall_3Sound); break;                    
         }
-        resultCheck();
     };
     // Test for match equals fruits in line.
     int testForMatch() {
@@ -206,15 +207,14 @@ public:
             count = 1;
             for (int x = 0; x < GRID_SIZE; x++) {
                 // If type not match, reset match count.
-                if (fruits[x][y]->type != type || fruits[x][y]->type > FRUITS_COUNT) {
+                if (fruits[x][y]->type != type || fruits[x][y]->type == 7) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
                 // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = x - count + 1; p <= x; p++) if (fruits[p][y]->alive) {
-                        dyingFruits++;
-                        fruits[p][y]->kill();
+                        fruits[p][y]->kill(0.15f, FruitKillType::DEAD);
                         result++;
                     }
                 }
@@ -230,15 +230,14 @@ public:
             count = 1;
             for (int y = GRID_SIZE - 1; y >= 0; y--) {
                 // If type not match, reset match count.
-                if (fruits[x][y]->type != type || fruits[x][y]->type > FRUITS_COUNT) {
+                if (fruits[x][y]->type != type || fruits[x][y]->type == 7) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
                 // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = y + count - 1; p >= y; p--) if (fruits[x][p]->alive) {
-                        dyingFruits++;
-                        fruits[x][p]->kill();
+                        fruits[x][p]->kill(0.15f, FruitKillType::DEAD);
                         result++;
                     }
                 }
@@ -249,13 +248,10 @@ public:
     };
     // Result check.
     void resultCheck() {
+        LOG_DEBUG("Result check.");
         testForMatch();
         if (dyingFruits >= MIN_MATCH_COUNT) {
-            switch ((int)frand(3)) {
-                case 0: SoundManager::getInstance()->playSound(match_1Sound); break;
-                case 1: SoundManager::getInstance()->playSound(match_2Sound); break;
-                case 2: SoundManager::getInstance()->playSound(match_3Sound); break;
-            }
+            /*
             // Show bonus text.
             if (dyingFruits >= MIN_MATCH_UNBELIEVABLE_COUNT) {
                 showBonus(-4);
@@ -269,23 +265,22 @@ public:
             } else if (dyingFruits >= MIN_MATCH_WONDERFUL_COUNT) {
                 showBonus(-1);
                 updateScore(dyingFruits * matchStep);
-            } else if (matchStep > 1) {
-                showBonus(matchStep);
-                updateScore(dyingFruits * matchStep);
-            } else updateScore(dyingFruits);
+            } 
+            */
             matchStep++;
-        } else matchStep = 1;        
+            if (matchStep > 1) showBonus(matchStep);
+            updateScore(dyingFruits);
+        } else matchStep = 0;
     }
     // Select fruit.
     void onFruitClick(int X, int Y) {
-        LOG_DEBUG("click %d %d", X, Y);
+        LOG_DEBUG("Select %d %d", X, Y);
         if (!fruits[X][Y]->alive) return;
         if (dyingFruits > 0) return;
         if (swapedFruits > 0) return;
         if (droppedFruits > 0) return;
         bool swaped = false;
         if (fruits[X][Y]->type == 7) {
-            dyingFruits++;
             fruits[X][Y]->kill();
         } else {
             // Standart click.
@@ -293,10 +288,8 @@ public:
             for (int y = 0; y < GRID_SIZE; y++)
             for (int x = 0; x < GRID_SIZE; x++) {
                 if (fruits[x][y]->selected && fruits[x][y] != fruits[X][Y]) {
-                    swapedFruits++; 
                     fruits[x][y]->moveTo(X, Y, 0.0f, FruitMoveType::SWAP);
                     fruits[x][y]->selected = false;
-                    swapedFruits++;
                     fruits[X][Y]->moveTo(x, y, 0.0f, FruitMoveType::SWAP);
                     fruits[X][Y]->selected = false;
                     std::swap(fruits[x][y], fruits[X][Y]);
@@ -308,10 +301,21 @@ public:
             if (!swaped) {
                 SoundManager::getInstance()->playSound(clickSound);
                 fruits[X][Y]->selected = true;
-                matchStep = 1;
+                matchStep = 0;
             } else {
-                printBoard();
                 resultCheck();
+            }
+        }
+    };
+    // Fruit callbacks.
+    void onFruitMove(int x, int y, FruitMoveType moveType) {
+        switch (moveType) {
+            case FruitMoveType::SWAP:
+                swapedFruits++;
+                break;
+            case FruitMoveType::DROP: {
+                droppedFruits++;
+                break;
             }
         }
     };
@@ -320,48 +324,46 @@ public:
         switch (moveType) {
             case FruitMoveType::SWAP: {
                 swapedFruits--;
-                LOG_DEBUG("swapedFruits = %d", swapedFruits);
                 if (swapedFruits == 0) {
-                    Vector2 prevIndex = fruits[x][y]->prevIndex;
                     // Come back miss fruits.
                     if (dyingFruits < MIN_MATCH_COUNT) {
-                        LOG_DEBUG("Come back miss fruits %d %d > %d %d", x, y, (int)prevIndex.x, (int)prevIndex.y);
-                        swapedFruits++;
+                        Vector2 prevIndex = fruits[x][y]->prevIndex;
                         fruits[x][y]->moveTo((int)prevIndex.x, (int)prevIndex.y, 0.0f, FruitMoveType::SWAP_BACK);
-                        swapedFruits++;
                         fruits[(int)prevIndex.x][(int)prevIndex.y]->moveTo(x, y, 0.0f, FruitMoveType::SWAP_BACK);
                         std::swap(fruits[x][y], fruits[(int)prevIndex.x][(int)prevIndex.y]);
                         missStep++;
-                        updateScore(-2 * missStep);
+                        updateScore(-2);
                         SoundManager::getInstance()->playSound(no_moveSound);
                     } else missStep = 0;
                 }
                 break;
             }
-            case FruitMoveType::SWAP_BACK: {
-                LOG_DEBUG("Back swap %d %d", x, y);
-                swapedFruits--;
-                LOG_DEBUG("Back swapedFruits = %d", swapedFruits);
-                break;
-            }                
             case FruitMoveType::DROP: {
-                droppedFruits--;
                 LOG_DEBUG("droppedFruits = %d", droppedFruits);
+                droppedFruits--;
                 fruits[x][y]->dropped = false;
                 if (droppedFruits == 0) {
-                    LOG_DEBUG("All fruits dropped.");
-                    printBoard(false);
-                    LOG_WARN("matchStep = %d", matchStep);
-                    if (matchStep == 1 && fruits[x][y]->type != 7) {
-                        // Add bonus redich fruit.
-                        int X = (int)frand(GRID_SIZE);
-                        int Y = (int)frand(GRID_SIZE);
-                        if (fruits[X][Y]->type != 7) {
-                            LOG_DEBUG("Kill %d %d for redish.", X, Y);
-                            dyingFruits++;
-                            fruits[X][Y]->kill(FruitKillType::REPLACE);
+                    resultCheck();
+                    LOG_DEBUG("matchStep %d", matchStep);
+                    // Add bonus redich fruit to empty place.
+                    if (matchStep == 0) {
+                        int n = 0;
+                        bool goodPlace = false;
+                        while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
+                            n++;
+                            int X = (int)frand(GRID_SIZE);
+                            int Y = (int)frand(GRID_SIZE);
+                            if (fruits[X][Y]->type != 7 && !fruits[X][Y]->dropped) {
+                                LOG_DEBUG("Redish!!!");
+                                Vector2 location = getSkrewedLocation(X, Y);
+                                location.y = location.y + 40;                            
+                                addAnimation("textures/BonusFruitCreate.png", 64, 96, location, 26, 1.2f, 0.5f);
+                                LOG_DEBUG("Kill %d %d for redish.", X, Y);
+                                fruits[X][Y]->kill(0.0f, FruitKillType::REPLACE);
+                                goodPlace = true;
+                            }
                         }
-                    } else LOG_DEBUG("Dropped redish...");
+                    }
                 }
                 break;
             }
@@ -370,90 +372,93 @@ public:
     // Fruit callbacks.
     void onFruitKill(int x, int y, FruitKillType killType) {
         if (fruits[x][y]->type == 7) {
-            LOG_DEBUG("Redish!!");
+            LOG_DEBUG("Kill Redish!!!");
+            TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::OPAQUE, 0.7f, Ease::Linear)->target(0.0f)->remove(true)->start();
+            Vector2 location = getSkrewedLocation(x, y);
+            addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
             for (int Y = 0; Y < GRID_SIZE; Y++)
             for (int X = 0; X < GRID_SIZE; X++) {
                 fruits[X][Y]->selected = false;
             }
-            for (int p = 0; p < GRID_SIZE; p++) if (fruits[x][p]->alive) {
-                dyingFruits++;
-                fruits[x][p]->kill();
-            }
-            for (int p = 0; p < GRID_SIZE; p++) if (fruits[p][y]->alive) {
-                dyingFruits++;
-                fruits[p][y]->kill();
-            }
-            fruits[x][y]->dropped = false;
-            resultCheck();
+            int p;
+            float delay;
+            for (p = y + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f)
+                if (fruits[x][p]->alive) fruits[x][p]->kill(delay);
+            for (p = y - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f)
+                if (fruits[x][p]->alive) fruits[x][p]->kill(delay);
+            for (p = x + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f)
+                if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
+            for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f)
+                if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
+            matchStep = 1;
+            updateScore(dyingFruits);
         }
+        if (killType == FruitKillType::DEAD) dyingFruits++;
+    };
+    void onFruitDying(int x, int y, FruitKillType killType) {
         if (killType == FruitKillType::DEAD) {
+            switch ((int)frand(3)) {
+                case 0: SoundManager::getInstance()->playSound(match_1Sound); break;
+                case 1: SoundManager::getInstance()->playSound(match_2Sound); break;
+                case 2: SoundManager::getInstance()->playSound(match_3Sound); break;
+            }
             // Reset time limit.
             lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
             // Emit star particles.
             if (SLOW_DOWN == 1) particleSystem->emit(3, getSkrewedLocation(x, y));
-        }
+        }    
     };
     void onFruitDead(int x, int y, FruitKillType killType) {
-        dyingFruits--;
         switch (killType) {
             case FruitKillType::DEAD: {
+                LOG_DEBUG("dyingFruits = %d", dyingFruits);
+                dyingFruits--;
                 // Move down all upper fruits index.
-                LOG_DEBUG("Drop fruits upper %d %d", x, y);
                 for (int p = y; p > 0; p--) {
                     std::swap(fruits[x][p], fruits[x][p - 1]);
                     std::swap(fruits[x][p]->index, fruits[x][p - 1]->index);
                     fruits[x][p]->dropped = true;
                 }
+                if (dyingFruits == 0) {
+                    updateBoard();
+                }
                 break;
             }
             case FruitKillType::REPLACE: {
-                LOG_DEBUG("Replace to redish %d %d", x, y);
                 spriteBatch->unregisterSprite(fruits[x][y]->sprite);
                 SAFE_DELETE(fruits[x][y]);
                 addFruit(x, y, 7);
-                /*
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(vo_aha_1Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(vo_aha_2Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(vo_aha_3Sound); break;
-                } 
-                */
-                SoundManager::getInstance()->playSound(vo_hahaSound);
+                switch ((int)frand(4)) {
+                    case 0: SoundManager::getInstance()->playSound(bonus01Sound); break;
+                    case 1: SoundManager::getInstance()->playSound(bonus02Sound); break;
+                    case 2: SoundManager::getInstance()->playSound(bonus03Sound); break;
+                    case 3: SoundManager::getInstance()->playSound(bonus04Sound); break;
+                }
                 break;
             }
         }
-        LOG_DEBUG("dyingFruits = %d", dyingFruits);
-        if (dyingFruits == 0) updateBoard();
     };
     // Bonus text.
     void showBonus(int step) {
         LOG_WARN("showBonus = %d", step);
+        float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+        float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
+        float halfWidth = renderWidth / 2;
+        float halfHeight = renderHeight / 2;
+        Vector2 location = Vector2(halfWidth, halfHeight);
+        if (step > 1) SoundManager::getInstance()->playSound(doubleSound);
         switch (step) {
-            case 2: bonus->sprite->setFrame(4); break;
-            case 3: bonus->sprite->setFrame(5); break;
-            case 4: bonus->sprite->setFrame(6); break;
-            case 5: bonus->sprite->setFrame(7); break;
-            case -1: {
-                bonus->sprite->setFrame(2);
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(vo_wonderful_1Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(vo_wonderful_2Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(vo_wonderful_3Sound); break;                    
-                }
-                break;                
-            }
-            case -2: {
-                bonus->sprite->setFrame(0);
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(vo_excellent_1Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(vo_excellent_2Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(vo_excellent_3Sound); break;
-                }
+            // x2, x3, x4, x5 text.
+            case 2:
+            case 3:
+            case 4:
+            case 5: {
+                addBonusText("textures/MatchStepBonus.png", 214, 75, location, step - 1);
                 break;
-
             }
-            case -3: {
-                bonus->sprite->setFrame(3);
+            // Wow text.
+            default: {
+                addBonusText("textures/MatchStepBonus.png", 214, 75, location, 0);
                 switch ((int)frand(3)) {
                     case 0: SoundManager::getInstance()->playSound(vo_wow_1Sound); break;
                     case 1: SoundManager::getInstance()->playSound(vo_wow_2Sound); break;
@@ -461,33 +466,14 @@ public:
                 }
                 break;
             }
-            case -4: {
-                bonus->sprite->setFrame(1);
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(vo_unbelievable_1Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(vo_unbelievable_2Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(vo_unbelievable_3Sound); break;
-                }
-                break;
-            }
-            default: {
-                SoundManager::getInstance()->playSound(vo_fine_1Sound);
-                break;
-            }
         }
-        if (step > 1 && step < 6) SoundManager::getInstance()->playSound(doubleSound);
-        Tween* t1 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
-        Tween* t2 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
-        Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.5f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(1.5f);
-        Tween* t4 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(1.5f);
-        t2->addChain(t3);
-        t2->addChain(t4);
-        t2->start();
     }    
     // Scores.
     void updateScore(int value, bool firstStart = false) {
         if (scores < 0) return;
         if (!firstStart) {
+            if (missStep > 0) value *= missStep;
+            if (matchStep > 1) value *= matchStep;
             if (scores + value < 0) value = -scores;
             scores += value;
             std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
@@ -506,7 +492,7 @@ public:
         return 1;
     };
     int gestureSwipeEvent(int x, int y, int direction) {
-        if (dyingFruits > 0) return 0;
+        // if (dyingFruits > 0) return 0;
         if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return 0;
         if (direction == SWIPE_DIRECTION_RIGHT) {
             // saveGameState();
@@ -530,7 +516,6 @@ private:
     Background* gameBox;
     // Bonus text.
     Background* bonus;
-    bool bonusAnimated;
     int matchStep;
     int missStep;
     // Fruits.
@@ -568,7 +553,6 @@ private:
     Sound* vo_excellent_2Sound;
     Sound* vo_excellent_3Sound;
     Sound* vo_fine_1Sound;
-    Sound* vo_hahaSound;
     Sound* vo_unbelievable_1Sound;
     Sound* vo_unbelievable_2Sound;
     Sound* vo_unbelievable_3Sound;
@@ -578,6 +562,11 @@ private:
     Sound* vo_wow_1Sound;
     Sound* vo_wow_2Sound;
     Sound* vo_wow_3Sound;
+    Sound* hahaSound;
+    Sound* bonus01Sound;
+    Sound* bonus02Sound;
+    Sound* bonus03Sound;
+    Sound* bonus04Sound;
 };
 
 #endif // __GAMEPLAY_H__

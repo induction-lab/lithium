@@ -208,7 +208,7 @@ private:
     SLVolumeItf playerVolume;
     SLSeekItf playerSeek;
     // Sound players.
-    static const int QUEUE_COUNT = 7;
+    static const int QUEUE_COUNT = 12;
     SoundQueue soundQueues[QUEUE_COUNT];
     int currentQueue;
     // Sounds.

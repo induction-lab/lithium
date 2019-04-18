@@ -24,7 +24,7 @@ public:
         SLDataFormat_PCM dataFormat;
         dataFormat.formatType    = SL_DATAFORMAT_PCM;
         dataFormat.numChannels   = 1; // mono sound
-        dataFormat.samplesPerSec = SL_SAMPLINGRATE_48;
+        dataFormat.samplesPerSec = SL_SAMPLINGRATE_44_1;
         dataFormat.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
         dataFormat.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
         dataFormat.channelMask   = SL_SPEAKER_FRONT_CENTER;

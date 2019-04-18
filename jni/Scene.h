@@ -228,8 +228,9 @@ private:
 // Animation class.
 class Animation: public Widget {
 public:
-    Animation(int frames, float delay):
+    Animation(int frames, float duration, float delay):
         frames(frames),
+        duration(duration),
         delay(delay),
         completed(false),
         started(false) {
@@ -237,7 +238,7 @@ public:
     };
     void update() {
         if (!started) {
-            TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 1.2f, Ease::Linear)->target(frames)->remove(true)
+            TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, duration, Ease::Linear)->target(frames)->remove(true)
                 ->onComplete(std::bind(&Animation::onComplete, this))->start(delay);
             started = true;
         }
@@ -246,7 +247,36 @@ public:
         completed = true;
     };
     int frames;
+    float duration;
     float delay;
+    bool completed;
+    bool started;
+};
+
+// BonusText class.
+class BonusText: public Widget {
+public:
+    BonusText(int frame):
+        completed(false),
+        started(false) {
+        //
+    };
+    void update() {
+        if (!started) {
+            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
+            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
+            Tween* t3 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.5f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.5f);
+            Tween* t4 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.5f);
+            t2->addChain(t3);
+            t2->addChain(t4);
+            t3->onComplete(std::bind(&BonusText::onComplete, this));
+            t2->start();
+            started = true;
+        }
+    };
+    void onComplete() {
+        completed = true;
+    };
     bool completed;
     bool started;
 };
@@ -298,28 +328,49 @@ public:
         widgets.push_back(background);
         return background;
     };
-    Animation* addAnimation(const char* path, int width, int height, Vector2 location, int frames, float delay) {
-        LOG_DEBUG("Creating new animation.");
-        Animation* animation = new Animation(frames, delay);
+    Animation* addAnimation(const char* path, int width, int height, Vector2 location, int frames, float duration, float delay = 0.0f) {
+        LOG_DEBUG("Creating new 'Animation' widget.");
+        Animation* animation = new Animation(frames, duration, delay);
         animation->setSprite(spriteBatch->registerSprite(path, width, height), location);
         animation->sprite->order = 1;
         animation->spriteBatch = spriteBatch;
         animations.push_back(animation);
         return animation;
-    };    
+    };
+    BonusText* addBonusText(const char* path, int width, int height, Vector2 location, int frame) {
+        LOG_DEBUG("Creating new 'BonusText' widget.");
+        BonusText* bonusText = new BonusText(frame);
+        bonusText->setSprite(spriteBatch->registerSprite(path, width, height), location);
+        bonusText->sprite->order = 1;
+        bonusText->sprite->scale = Vector2(0.5f, 0.5f);
+        bonusText->sprite->opaque = 0.0f;
+        bonusText->sprite->setFrame(frame);            
+        bonusText->spriteBatch = spriteBatch;
+        bonusTexts.push_back(bonusText);
+        return bonusText;
+    };
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();
         }
-        for (std::vector<Animation*>::iterator it = animations.begin(); it < animations.end(); ++it) {
+        for (std::vector<Animation*>::const_reverse_iterator it = animations.rbegin(); it < animations.rend(); ++it) {
             (*it)->update();
             if ((*it)->completed) {
-                // Delete animation
+                // Delete animation.
                 LOG_DEBUG("Delete animation.");
                 spriteBatch->unregisterSprite((*it)->sprite);
                 animations.erase(std::remove(animations.begin(), animations.end(), *it), animations.end());
             }
         }
+        for (std::vector<BonusText*>::const_reverse_iterator it = bonusTexts.rbegin(); it < bonusTexts.rend(); ++it) {
+            (*it)->update();
+            if ((*it)->completed) {
+                // Delete bonusText.
+                LOG_DEBUG("Delete bonusText.");
+                spriteBatch->unregisterSprite((*it)->sprite);
+                bonusTexts.erase(std::remove(bonusTexts.begin(), bonusTexts.end(), *it), bonusTexts.end());
+            }
+        }        
     };
     virtual status start(void) = 0;
     virtual void pause(void) {};
@@ -329,6 +380,7 @@ public:
 private:
     std::vector<Widget*> widgets;
     std::vector<Animation*> animations;
+    std::vector<BonusText*> bonusTexts;
 };
 
 #endif // __SCENE_H__
