@@ -4,6 +4,8 @@
 #include "GraphicsManager.h"
 #include "TimeManager.h"
 
+/// @see https://github.com/SFML/SFML/wiki/Source:-AnimatedSprite
+
 class SpriteBatch; 
 
 class Sprite {
@@ -18,7 +20,7 @@ public:
 		mSpriteWidth(width), mSpriteHeight(height),
 		mFrameCount(0), mFrameXCount(0), mFrameYCount(0),
 		mAnimStartFrame(0), mAnimFrameCount(1),
-		mAnimSpeed(0), mAnimFrame(0), mAnimLoop(false) {
+		mAnimSpeed(0.0f), mAnimFrame(0.0f), mAnimLoop(false) {
 		//
 	}	
     void setFrames(int32_t startFrame, int32_t frameCount, float speed, bool loop) {
@@ -178,7 +180,7 @@ public:
 				} else {
 					break;
 				}
-			} while (canDraw = (++currentSprite < spriteCount));
+			} while (canDraw == (++currentSprite < spriteCount));
 			// Renders sprites each time texture changes.
 			glDrawElements(GL_TRIANGLES, (currentSprite - firstSprite) * indexPerSprite, GL_UNSIGNED_SHORT, &mIndexes[firstSprite * indexPerSprite]);
 			firstSprite = currentSprite;

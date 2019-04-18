@@ -179,7 +179,7 @@ public:
         // Creates OpenSL ES engine and dumps its capabilities.
         result = slCreateEngine(&mEngineObj, 0, NULL, engineMixIIDCount, engineMixIIDs, engineMixReqs);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*mEngineObj)->Realize(mEngineObj,SL_BOOLEAN_FALSE);
+        result = (*mEngineObj)->Realize(mEngineObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*mEngineObj)->GetInterface(mEngineObj, SL_IID_ENGINE, &mEngine);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
@@ -240,7 +240,7 @@ ERROR:
         // Creates Music player and retrieves its interfaces.
         SLDataLocator_AndroidFD dataLocatorIn = { SL_DATALOCATOR_ANDROIDFD, descriptor.mDescriptor, descriptor.mStart, descriptor.mLength };
         SLDataFormat_MIME dataFormat = { SL_DATAFORMAT_MIME, NULL, SL_CONTAINERTYPE_UNSPECIFIED };
-        SLDataSource dataSource= { &dataLocatorIn, &dataFormat };
+        SLDataSource dataSource = { &dataLocatorIn, &dataFormat };
         SLDataLocator_OutputMix dataLocatorOut = { SL_DATALOCATOR_OUTPUTMIX, mOutputMixObj };
         SLDataSink dataSink = { &dataLocatorOut, NULL };
         // Creates Music player and retrieves its interfaces.

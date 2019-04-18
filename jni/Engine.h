@@ -1,5 +1,5 @@
-#ifndef __LITHIUM_H__
-#define __LITHIUM_H__
+#ifndef __ENGINE_H__
+#define __ENGINE_H__
 
 #include "EventLoop.h"
 #include "TimeManager.h"
@@ -13,10 +13,13 @@ void Test() {};
 class Engine: public ActivityHandler {
 public:
 	Engine(Context* context) :
-			mTimeManager(context->mTimeManager),
-			mGraphicsManager(context->mGraphicsManager),
-			mInputManager(context->mInputManager),		
-			mSoundManager(context->mSoundManager) {
+		mTimeManager(context->mTimeManager),
+		mGraphicsManager(context->mGraphicsManager),
+		mInputManager(context->mInputManager),		
+		mSoundManager(context->mSoundManager),
+		mFirstStart(true),
+		mQuit(false)
+	{
 		LOG_INFO("Creating Engine");
 		mInterface = new Interface();
 	}
@@ -32,9 +35,9 @@ public:
 	}		
 	void onMusicCheckBoxClick() {
 		if (mMuteCheckBox->getChecked()) {
-			mSoundManager->stopMusic();
-		} else {
 			mSoundManager->playMusic("sounds/Intro.mp3");
+		} else {
+			mSoundManager->stopMusic();
 		}
 	}
 	void onExitButtonDown() {
@@ -60,23 +63,23 @@ protected:
 			float x = mGraphicsManager->getRenderWidth()  * 0.5f;
 			float y = mGraphicsManager->getRenderHeight() * 0.5f;
 			mBackground = mInterface->addBackground("textures/Background.png", 360, 640, Location(x, y));
-			mMuteCheckBox = mInterface->addCheckBox("textures/Mute.png", 80, 78, Location(280, 240));
+			mMuteCheckBox = mInterface->addCheckBox("textures/Mute.png", 80, 78, Location(280, 185));
 			mMuteCheckBox->setDownFunction(std::bind(&Engine::onMusicCheckBoxDown, this));
 			mMuteCheckBox->setUpFunction(std::bind(&Engine::onMusicCheckBoxUp, this));
 			mMuteCheckBox->setClickFunction(std::bind(&Engine::onMusicCheckBoxClick, this));
 			mMuteCheckBox->setChecked(true);
-			mExitButton = mInterface->addButton("textures/Exit.png", 80, 78, Location(80, 240));
+			mExitButton = mInterface->addButton("textures/Exit.png", 80, 78, Location(80, 195));
 			mExitButton->setDownFunction(std::bind(&Engine::onExitButtonDown, this));
 			mExitButton->setUpFunction(std::bind(&Engine::onExitButtonUp, this));
 			mExitButton->setClickFunction(std::bind(&Engine::onExitButtonClick, this));
-			mPlayButton = mInterface->addButton("textures/Play.png", 104, 100, Location(180, 240));
-			mFPSSpriteText = mInterface->addSpriteText("textures/Font.png", 32, 32, Location(20, 20), Justification::LEFT);
-			mLogo = mInterface->addLogo("textures/Logo.png", 320, 170, Location(174, 400));
+			mPlayDragBox = mInterface->addDragBox("textures/Play.png", 104, 100, Location(180, 190));
+			mFPSSpriteText = mInterface->addSpriteText("textures/Font.png", 32, 32, Location(20, 20), LEFT);
+			mLogo = mInterface->addLogo("textures/Logo.png", 320, 170, Location(174, 480));
 			mFirstStart = false;
 		}
 		mGraphicsManager->loadResources();
 		mSoundManager->loadResources();
-		if (!mMuteCheckBox->getChecked()) mSoundManager->playMusic("sounds/Intro.mp3");
+		if (mMuteCheckBox->getChecked()) mSoundManager->playMusic("sounds/Intro.mp3");
 		return STATUS_OK;
 	}
 	void onDeactivate() {
@@ -91,7 +94,8 @@ protected:
 		mFPSSpriteText->setText(mTimeManager->getFrameRateStr());
 		if (mGraphicsManager->update() != STATUS_OK) return STATUS_ERROR;
 		if (mInputManager->update() != STATUS_OK) return STATUS_ERROR;
-		mTimeManager->update();		
+		mTimeManager->update();
+		mInterface->update();
 		if (mQuit) return STATUS_EXIT;
 		return STATUS_OK;		
 	}
@@ -145,12 +149,11 @@ private:
 	Background* mBackground;
 	Button* mExitButton;
 	CheckBox* mMuteCheckBox;	
-	Button* mPlayButton;
+	DragBox* mPlayDragBox;
 	SpriteText* mFPSSpriteText;
 	Logo* mLogo;
-	
-	bool mFirstStart = true;
-	bool mQuit = false;
+	bool mFirstStart;
+	bool mQuit;
  };
 
 #endif

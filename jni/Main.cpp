@@ -35,6 +35,8 @@ struct Context {
 #include "GraphicsManager.h"
 #include "Engine.h"
 
+#include <android_native_app_glue.h>
+
 // Android entry point
 void android_main(android_app* app) {
 	LOG_INFO("--- Let's go full native! ---");
@@ -47,7 +49,7 @@ void android_main(android_app* app) {
     SoundManager soundManager(app);
     // Fills the context.
     Context context = { &graphicsManager, &inputManager, &soundManager, &timeManager };
-    // Toggle fullscreen
+    // Toggle fullscreen.
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
     // Starts the game loop.
     Engine engine(&context);

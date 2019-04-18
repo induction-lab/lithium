@@ -19,14 +19,11 @@ const char* GetBuildDate() {
 
 // Platform-dependent function to get the current time (in seconds).
 float PlatformGetTime() {
-	static bool	Initialized = false;
-	static clock_t baseTime;
-	if (Initialized == false) {
-		baseTime = clock();
-		Initialized = true;
-		return 0.0f;
-	}
-	return (float)(clock() - baseTime) / (float)CLOCKS_PER_SEC;
+    // Retrieves current time with a monotonic clock to ensure
+    // time goes forward and is not subject to system changes.
+    timespec timeVal;
+    clock_gettime(CLOCK_MONOTONIC, &timeVal);
+    return timeVal.tv_sec + (timeVal.tv_nsec * 1.0e-9);	
 }
 
 class TimeManager {
