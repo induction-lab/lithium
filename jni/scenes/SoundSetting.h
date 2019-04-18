@@ -7,10 +7,10 @@ private:
 public:
     SoundSetting(Activity* activity):
         activity(activity) {
-        LOG_INFO("Scene SoundSetting created.");
+        LOG_INFO("Create SoundSetting scene.");
     };
     ~SoundSetting() {
-        LOG_INFO("Scene SoundSetting destructed.");
+        LOG_INFO("Destroy SoundSetting scene.");
     };
     status start() {
         if (created) return STATUS_OK;

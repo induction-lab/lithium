@@ -36,18 +36,14 @@ public:
         Sprite* sprite = new Sprite(texturePath, width, height);
         sprites.push_back(sprite);
         sprite->load();
-        LOG_DEBUG("3. %d %d %d", indexes.size(), vertices.size(), sprites.size());
         return sprite;
     };
     void unregisterSprite(Sprite* sprite) {
         std::vector<Sprite*>::iterator it = find(sprites.begin(), sprites.end(), sprite);
-        LOG_DEBUG("1. %d %d %d", indexes.size(), vertices.size(), sprites.size());
         if (it != sprites.end()) {
             int n = std::distance(sprites.begin(), it);
             SAFE_DELETE(*it);
             sprites.erase(std::remove(sprites.begin(), sprites.end(), *it), sprites.end());
-            vertices.erase(vertices.begin() + n * vertexPerSprite, vertices.begin() + (n+1) * vertexPerSprite);
-            LOG_DEBUG("1.1 %d %d %d", indexes.size(), vertices.size(), sprites.size());
             indexes.clear();
             for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
                 int n = std::distance(sprites.begin(), it);
@@ -62,7 +58,6 @@ public:
                 indexes.push_back(index+3);
             }
         }
-        LOG_DEBUG("2. %d %d %d", indexes.size(), vertices.size(), sprites.size());
     };
 	void reset() {
 		for (std::vector<Sprite*>::iterator it = sprites.begin(); it != sprites.end(); ++it) {

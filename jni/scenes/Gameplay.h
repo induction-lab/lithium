@@ -2,6 +2,7 @@
 #define __GAMEPLAY_H__
 
 #include "Fruit.h"
+#include "RasterFont.h"
 
 class Gameplay: public Scene {
 private:
@@ -9,14 +10,15 @@ private:
 public:
     Gameplay(Activity* activity):
         activity(activity) {
-        LOG_INFO("Scene Gameplay created.");
+        LOG_INFO("Create Gameplay scene.");
     };
     ~Gameplay() {
-        LOG_INFO("Scene Gameplay destructed.");
+        LOG_INFO("Destroy Gameplay scene.");
         for (std::vector<Fruit*>::iterator it = fruits.begin(); it < fruits.end(); ++it) {
             SAFE_DELETE(*it);
         }
         fruits.clear();
+        if (rasterFont != NULL) SAFE_DELETE(rasterFont);
     };
     status start() {
         if (created) return STATUS_OK;
@@ -56,6 +58,10 @@ public:
         zipDown02Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown02.wav");
         zipDown03Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown03.wav");
         SoundManager::getInstance()->loadResources();
+        // Create score points bar.
+        rasterFont = new RasterFont("textures/Font.png", 32, 32, Vector2(halfWidth, halfHeight - 145), Justification::MIDDLE);
+        rasterFont->setText("0000000");
+        scores = 0;
         // Create fruits.
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) addFruit(x, y);
@@ -114,6 +120,7 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             if (getFruit(x, y) != NULL) getFruit(x, y)->update();
         }
+        if (rasterFont != NULL) rasterFont->update();
     };
     void dropFruits(int X, int Y) {
         LOG_DEBUG("Drop fruits ...");
@@ -203,6 +210,7 @@ public:
                 case 3: SoundManager::getInstance()->playSound(grub04Sound); break;
                 case 4: SoundManager::getInstance()->playSound(grub05Sound); break;
             }
+            updateScore(result);
         }
         dyingFruits = result;
         return result;
@@ -252,6 +260,12 @@ public:
         dropFruits(X, Y);
         if (dyingFruits == 0) updateBoard();
     };
+    void updateScore(int value) {
+        scores += value;
+        std::string str = std::to_string(scores);
+        while (str.size() < 7) str = "0" + str;
+        rasterFont->setText(str.c_str());        
+    };
     int backEvent() {
         activity->setStartScene();
         return 1;
@@ -289,6 +303,9 @@ public:
     // Fruits.
     int dyingFruits;
     std::vector<Fruit*> fruits;
+    // For score points.
+    RasterFont* rasterFont;
+    int scores;
 };
 
 #endif // __GAMEPLAY_H__

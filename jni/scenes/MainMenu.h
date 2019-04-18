@@ -1,8 +1,6 @@
 #ifndef __MAINMENU_H__
 #define __MAINMENU_H__
 
-#include "RasterFont.h"
-
 class MainMenu : public Scene {
 private:
     Activity* activity;
@@ -10,11 +8,10 @@ public:
     MainMenu(Activity* activity):
         Scene(),
         activity(activity) {
-        LOG_INFO("Scene MainMenu created.");
+        LOG_INFO("Create MainMenu scene.");
     };
     ~MainMenu() {
-        LOG_INFO("Scene MainMenu destructed.");
-        if (rasterFont != NULL) SAFE_DELETE(rasterFont);
+        LOG_INFO("Destroy MainMenu scene.");
     };
     status start() {
         if (created) return STATUS_OK;
@@ -54,10 +51,6 @@ public:
 		buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
-        
-        rasterFont = new RasterFont("textures/Font.png", 32, 32, Vector2(halfWidth, halfHeight + 100), Justification::MIDDLE);
-        rasterFont->setText("123");
-        
         created = true;
         return STATUS_OK;
     };
@@ -74,12 +67,7 @@ public:
         activity->quit = true;
     }
 	void onPlayButtonClick() {
-        // activity->changeScene(new Gameplay(activity));
-        switch ((int)frand(3)) {
-            case 0: rasterFont->setText("321"); break;
-            case 1: rasterFont->setText("654321"); break;
-            case 2: rasterFont->setText("8"); break;
-        }
+        activity->changeScene(new Gameplay(activity));
  	};
 	void onSoundsButtonClick() {
         activity->changeScene(new SoundSetting(activity));
@@ -103,8 +91,6 @@ public:
     Button* soundSettingsButton;
     Sound* buttonDownSound;
     Sound* buttonUpSound;
-    
-    RasterFont* rasterFont;
 };
 
 #endif // __MAINMENU_H__

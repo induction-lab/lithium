@@ -11,7 +11,6 @@
 char BuildDate[64];
 const char* GetBuildDate() {
     int month, day, year;
-    const char* buff[255];
     static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     sscanf(__DATE__, "%s %d %d", BuildDate, &day, &year);
     month = (strstr(month_names, BuildDate)-month_names) / 3 + 1;

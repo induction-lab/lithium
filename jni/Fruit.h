@@ -7,8 +7,6 @@
 #include "GraphicsManager.h"
 #include "SpriteBatch.h"
 
-// #define FRUITS_STATE_LOG_EVENTS
-
 // Fruit.
 class Fruit: public InputListener {
 public:
@@ -20,10 +18,10 @@ public:
         index(Vector2()),                                      // index on board
         clickFunction(NULL),
         deadFunction(NULL) {
-        //
+        // LOG_DEBUG("Create Fruit.");
     };
     ~Fruit() {
-        LOG_DEBUG("Delete Fruit.");
+        // LOG_DEBUG("Delete Fruit.");
     };
     int gestureTapEvent(int x, int y) {
         if (!alive) return false;
@@ -34,9 +32,6 @@ public:
                     ->target(1.1f)->remove(false)->loop()->reverse()->start();
                 yScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_Y, 0.25f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(0.2f);
-#ifdef FRUITS_STATE_LOG_EVENTS
-                LOG_DEBUG("Fruit selected. Index x=%d y=%d. Type=%d.", (int)index.x, (int)index.y, type);
-#endif // FRUITS_STATE_LOG_EVENTS
                 animated = true;
             }
             if (clickFunction != NULL) clickFunction((int)index.x, (int)index.y);
@@ -59,9 +54,6 @@ public:
     };
     void kill() {
         if (!dead) {
-#ifdef FRUITS_STATE_LOG_EVENTS
-            LOG_DEBUG("Kill fruit. Index x=%d y=%d. Type=%d.", (int)index.x, (int)index.y, type);
-#endif // FRUITS_STATE_LOG_EVENTS
             Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Sinusoidal::InOut)
                     ->target(4.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
@@ -69,22 +61,13 @@ public:
             t2->onComplete(std::bind(&Fruit::onDead, this));
             t1->addChain(t2)->start(0.3f);
         } 
-#ifdef FRUITS_STATE_LOG_EVENTS        
-        else LOG_WARN("Fruit is already dead. Index x=%d y=%d. Type=%d.", (int)index.x, (int)index.y, type);
-#endif // FRUITS_STATE_LOG_EVENTS
     };
     void onDead() {
         dead = true;
         alive = false;
-#ifdef FRUITS_STATE_LOG_EVENTS
-        LOG_DEBUG("Fruit is dead. Index x=%d y=%d. Type=%d.", (int)index.x, (int)index.y, type);
-#endif // FRUITS_STATE_LOG_EVENTS
         if (deadFunction != NULL) deadFunction(index.x, index.y);
     };
     void moveTo(Vector2 location, float delay = 0.0f) {
-#ifdef FRUITS_STATE_LOG_EVENTS
-        LOG_DEBUG("Move fruit. Index x=%d y=%d. Type=%d.", (int)index.x, (int)index.y, type);
-#endif // FRUITS_STATE_LOG_EVENTS
         TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
             ->target(location.x, location.y)->remove(true)->start(delay);
     };
