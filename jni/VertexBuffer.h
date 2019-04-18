@@ -1,5 +1,5 @@
-#ifndef __VERTEX_BUFFER_H__
-#define __VERTEX_BUFFER_H__
+#ifndef __VERTEXBUFFER_H__
+#define __VERTEXBUFFER_H__
 
 class VertexBuffer {
 private:
@@ -12,14 +12,14 @@ public:
         buffer(NULL),
         size(0) {
         //
-    }
+    };
     ~VertexBuffer() {
         if (bufferId != 0) {
             glDeleteBuffers(1, &bufferId);
 			LOG_DEBUG("Vertex buffer id:%d is dead.", bufferId);			
             bufferId = 0;
         }		
-    }
+    };
     status createFromData(const void* buffer, int32_t bufferSize) {
         LOG_DEBUG("Create %d x 32 bits sized vertex buffer.", bufferSize);
         // Upload specified memory buffer into OpenGL.
@@ -34,10 +34,10 @@ public:
 ERROR:
         LOG_ERROR("Error creating vertex buffer.");
         return STATUS_ERROR;
-    }
+    };
 	GLuint getBufferId() {
 		return bufferId;
-	}
+	};
 };
 
-#endif
+#endif // __VERTEXBUFFER_H__

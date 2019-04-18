@@ -7,18 +7,18 @@ public:
     static T* getInstance() {
         if (instance == 0) instance = new T();
         return instance;
-    }
+    };
     static void dispose() {
         if (instance != 0) delete instance;
         instance = 0;
-    }
+    };
 private:
     static T* instance;
 protected:
-    Singleton() {}
-    ~Singleton() {}
+    Singleton() {};
+    ~Singleton() {};
 };
 
 template <typename T> T* Singleton<T>::instance = 0;
 
-#endif
+#endif // __SINGLETON_H__

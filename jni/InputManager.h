@@ -42,10 +42,10 @@ private:
 #define GESTURE_PINCH_DISTANCE_MIN          GESTURE_DRAG_DISTANCE_MIN
 
 static const bool MULTI_TOUTCH = true;
-static const int SWIPE_DIRECTION_UP     = 1 << 0;   // The up direction for a swipe event.
-static const int SWIPE_DIRECTION_DOWN   = 1 << 1;   // The down direction for a swipe event.
-static const int SWIPE_DIRECTION_LEFT   = 1 << 2;   // The left direction for a swipe event.
-static const int SWIPE_DIRECTION_RIGHT  = 1 << 3;   // The right direction for a swipe event.
+static const int SWIPE_DIRECTION_UP     = 1 << 0;   // the up direction for a swipe event
+static const int SWIPE_DIRECTION_DOWN   = 1 << 1;   // the down direction for a swipe event
+static const int SWIPE_DIRECTION_LEFT   = 1 << 2;   // the left direction for a swipe event
+static const int SWIPE_DIRECTION_RIGHT  = 1 << 3;   // the right direction for a swipe event
 
 class InputListener {
 public:
@@ -65,35 +65,35 @@ public:
 
 class InputManager: public Singleton<InputManager> {
 public:
-    InputManager() :
+    InputManager():
         primaryTouchId(-1),
         gestureDraging(false),
         gesturePinching(false)  {
-        LOG_INFO("Creating InputManager");
+        LOG_INFO("Creating InputManager.");
         //
-    }
+    };
     ~InputManager() {
-        LOG_INFO("Destructing InputManager");
-    }
+        LOG_INFO("Destructing InputManager.");
+    };
     status start() {
-        LOG_INFO("Starting InputManager");
+        LOG_INFO("Starting InputManager.");
         return STATUS_OK;
-    }
+    };
     status update() {
         // Clears previous state.
         return STATUS_OK;
-    }
+    };
     void stop() {
-        LOG_INFO("Stopping InputManager");
-    }
+        LOG_INFO("Stopping InputManager.");
+    };
 public:
     void registerListener(InputListener *listener) {
         listeners.push_back(listener);
-    }
+    };
     void unregisterListener(InputListener *listener) {
         listeners.erase(std::find(listeners.begin(), listeners.end(), listener));
-    }
-    bool onTouchEvent(AInputEvent* event) {
+    };
+    int32_t onTouchEvent(AInputEvent* event) {
 #ifdef INPUTMANAGER_LOG_EVENTS
         LOG_DEBUG("AMotionEvent_getAction=%d", AMotionEvent_getAction(event));
         LOG_DEBUG("AMotionEvent_getFlags=%d", AMotionEvent_getFlags(event));
@@ -128,7 +128,7 @@ public:
             pointerId = AMotionEvent_getPointerId(event, 0);
             x = AMotionEvent_getX(event, 0);
             y = AMotionEvent_getY(event, 0);
-            // Gesture handling
+            // Gesture handling.
             pointer0.pressed = true;
             pointer0.time = time;
             pointer0.pointerId = pointerId;
@@ -143,7 +143,7 @@ public:
             pointerId = AMotionEvent_getPointerId(event, 0);
             x = AMotionEvent_getX(event, 0);
             y = AMotionEvent_getY(event, 0);
-            // Gestures
+            // Gestures.
             gestureDetected = false;
             if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
                 onTouchEvent(Touch::TOUCH_RELEASE, x, y, pointerId);
@@ -151,7 +151,7 @@ public:
             if (pointer0.pressed &&  pointer0.pointerId == pointerId) {
                 int deltaX = x - pointer0.x;
                 int deltaY = y - pointer0.y;
-                // Test for drop
+                // Test for drop.
                 if (gesturePinching) {
                     gesturePinching = false;
                     gestureDetected = true;
@@ -160,7 +160,7 @@ public:
                     gestureDetected = true;
                     gestureDraging = false;
                 }
-                // Test for swipe
+                // Test for swipe.
                 else if (time - pointer0.time < GESTURE_SWIPE_DURATION_MAX && (abs(deltaX) > GESTURE_SWIPE_DISTANCE_MIN || abs(deltaY) > GESTURE_SWIPE_DISTANCE_MIN) ) {
                     int direction = 0;
                     if (abs(deltaX) > abs(deltaY)) {
@@ -173,12 +173,12 @@ public:
                     onGestureSwipeEvent(x, y, direction);
                     gestureDetected = true;
                 }
-                // Test for tap
+                // Test for tap.
                 else if(time - pointer0.time < GESTURE_TAP_DURATION_MAX) {
                     onGestureTapEvent(x, y);
                     gestureDetected = true;
                 }
-                // Test for long tap
+                // Test for long tap.
                 else if(time - pointer0.time >= GESTURE_LONG_TAP_DURATION_MIN) {
                     onGestureLongTapEvent(x, y, time - pointer0.time);
                     gestureDetected = true;
@@ -192,7 +192,7 @@ public:
             pointerId = AMotionEvent_getPointerId(event, pointerIndex);
             x = AMotionEvent_getX(event, pointerIndex);
             y = AMotionEvent_getY(event, pointerIndex);
-            // Gesture handling
+            // Gesture handling.
             pointer1.pressed = true;
             pointer1.time = time;
             pointer1.pointerId = pointerId;
@@ -220,7 +220,7 @@ public:
                     gesturePinching = false;
                     gestureDetected = true;
                 }
-                // Test for swipe
+                // Test for swipe.
                 else if (time - pointer1.time < GESTURE_SWIPE_DURATION_MAX && (abs(deltaX) > GESTURE_SWIPE_DISTANCE_MIN || abs(deltaY) > GESTURE_SWIPE_DISTANCE_MIN) ) {
                     int direction = 0;
                     if (deltaX > 0) direction |= SWIPE_DIRECTION_RIGHT;
@@ -230,12 +230,12 @@ public:
                     onGestureSwipeEvent(x, y, direction);
                     gestureDetected = true;
                 }
-                // Test for tap
+                // Test for tap.
                 else if(time - pointer1.time < GESTURE_TAP_DURATION_MAX) {
                     onGestureTapEvent(x, y);
                     gestureDetected = true;
                 }
-                // Test for long tap
+                // Test for long tap.
                 else if(time - pointer1.time >= GESTURE_LONG_TAP_DURATION_MIN) {
                     onGestureLongTapEvent(x, y, time - pointer1.time);
                     gestureDetected = true;
@@ -256,7 +256,7 @@ public:
                     onTouchEvent(Touch::TOUCH_MOVE, AMotionEvent_getX(event, i), AMotionEvent_getY(event, i), pointerId);
                 }
                 if (pointer0.pressed) {
-                    //The two pointers are pressed and the event was done by one of it
+                    //The two pointers are pressed and the event was done by one of it.
                     if (pointer1.pressed && (pointerId == pointer0.pointerId || pointerId == pointer1.pointerId)) {
                         if (pointer0.pointerId == pointer1.pointerId) {
                             gesturePinching = false;
@@ -292,9 +292,9 @@ public:
                             } else gesturePinching = false;
                         }
                     }
-                    // Only the primary pointer is done and the event was done by it
+                    // Only the primary pointer is done and the event was done by it.
                     else if (!gestureDetected && pointerId == pointer0.pointerId) {
-                        //Test for drag
+                        //Test for drag.
                         int delta = sqrt(pow((float)(x - pointer0.x), 2) + pow((float)(y - pointer0.y), 2));
                         if (gestureDraging || ((time - pointer0.time >= GESTURE_DRAG_START_DURATION_MIN) && (delta >= GESTURE_DRAG_DISTANCE_MIN))) {
                             onGestureDragEvent(x, y);
@@ -306,9 +306,9 @@ public:
             }
             break;
         }
-        return true;
-    }
-    bool onKeyboardEvent(AInputEvent* event) {
+        return 0;
+    };
+    int32_t onKeyboardEvent(AInputEvent* event) {
 #ifdef INPUTMANAGER_LOG_EVENTS
         LOG_DEBUG("AKeyEvent_getAction=%d", AKeyEvent_getAction(event));
         LOG_DEBUG("AKeyEvent_getFlags=%d", AKeyEvent_getFlags(event));
@@ -319,9 +319,22 @@ public:
         LOG_DEBUG("AKeyEvent_getDownTime=%lld", AKeyEvent_getDownTime(event));
         LOG_DEBUG("AKeyEvent_getEventTime=%lld", AKeyEvent_getEventTime(event));
 #endif
-        return true;
-    }
-    bool onTrackballEvent(AInputEvent* event) {
+        int32_t action = AMotionEvent_getAction(event);
+        int32_t keyCode = AKeyEvent_getKeyCode(event);
+        switch (action & AMOTION_EVENT_ACTION_MASK) {
+            case AKEY_EVENT_ACTION_DOWN:
+                if (keyCode == AKEYCODE_BACK) {
+                    onBackEvent();
+                    return 1;
+                } else onKeyDownEvent(keyCode);
+                break;
+            case AKEY_EVENT_ACTION_UP:
+                onKeyUpEvent(keyCode);
+                break;
+        }
+        return 0;
+    };
+    int32_t onTrackballEvent(AInputEvent* event) {
 #ifdef INPUTMANAGER_LOG_EVENTS
         LOG_DEBUG("AMotionEvent_getAction=%d", AMotionEvent_getAction(event));
         LOG_DEBUG("AMotionEvent_getFlags=%d", AMotionEvent_getFlags(event));
@@ -344,9 +357,9 @@ public:
         LOG_DEBUG("AMotionEvent_getTouchMajor=%f", AMotionEvent_getTouchMajor(event, 0));
         LOG_DEBUG("AMotionEvent_getTouchMinor=%f", AMotionEvent_getTouchMinor(event, 0));
 #endif
-        return true;
-    }
-    bool onAccelerometerEvent(ASensorEvent* event) {
+        return 0;
+    };
+    int32_t onAccelerometerEvent(ASensorEvent* event) {
 #ifdef INPUTMANAGER_LOG_EVENTS
 #ifdef INPUTMANAGER_LOG_SENSOR_EVENTS
         LOG_DEBUG("ASensorEvent=%d", event->version);
@@ -356,58 +369,57 @@ public:
         LOG_DEBUG("ASensorEvent=%f,%f,%f,%d", event->acceleration.x, event->acceleration.y, event->acceleration.z, event->acceleration.status);
 #endif
 #endif
-        return true;
-    }
+        return 0;
+    };
 private:
     void onTouchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->touchEvent(event, x, y, pointerId);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->touchEvent(event, x, y, pointerId);
         }
     };
     void onGestureDragEvent(int x, int y) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureDragEvent(x, y);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->gestureDragEvent(x, y);
         }
     };
     void onGestureDropEvent(int x, int y) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureDropEvent(x, y);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->gestureDropEvent(x, y);
         }
     };
     void onGestureSwipeEvent(int x, int y, int direction) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureSwipeEvent(x, y, direction);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) if ((*it) != NULL) (*it)->gestureSwipeEvent(x, y, direction);
         }
     };
     void onGestureTapEvent(int x, int y) {
-        Location location = GraphicsManager::getInstance()->screenToRender(x, y);
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureTapEvent(x, y);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->gestureTapEvent(x, y);
         }
     };
     void onGestureLongTapEvent(int x, int y, float time) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureLongTapEvent(x, y, time);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->gestureLongTapEvent(x, y, time);
         }
     };
     void onGesturePinchEvent(int x, int y, float scale) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gesturePinchEvent(x, y, scale);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->gesturePinchEvent(x, y, scale);
         }
     };
     void onBackEvent() {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->backEvent();
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->backEvent();
         }
     };
     void onKeyDownEvent(int keyCode) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->keyDownEvent(keyCode);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->keyDownEvent(keyCode);
         }
     };
     void onKeyUpEvent(int keyCode) {
-        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->keyUpEvent(keyCode);
+        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it) != NULL) (*it)->keyUpEvent(keyCode);
         }
     };    
 private:
@@ -427,10 +439,10 @@ private:
 
 InputListener::InputListener(void) {
     InputManager::getInstance()->registerListener(this);
-}
+};
 
 InputListener::~InputListener(void) {
     InputManager::getInstance()->unregisterListener(this);
-}
+};
 
 #endif // __INPUTMANAGER_H__

@@ -16,7 +16,7 @@ public:
         upFunction(NULL),
         clickFunction(NULL) {
         //
-    }
+    };
     virtual void update() {};
     bool pointInWidget(Location point) {
         float halfWidth = width * 0.5f;
@@ -25,16 +25,16 @@ public:
                 (point.x < location.x + halfWidth ) &&
                 (point.y > location.y - halfHeight) &&
                 (point.y < location.y + halfHeight));
-    }
+    };
     void setDownFunction(std::function<void()> callback) {
         downFunction = callback;
-    }
+    };
     void setUpFunction(std::function<void()> callback) {
         upFunction = callback;
-    }
+    };
     void setClickFunction(std::function<void()> callback) {
         clickFunction = callback;
-    }
+    };
 protected:
     friend class Interface;
     int32_t width, height;
@@ -44,4 +44,4 @@ protected:
     std::function<void()> clickFunction;
 };
 
-#endif
+#endif // __INTERFACE_H__

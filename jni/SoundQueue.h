@@ -6,12 +6,12 @@
 
 class SoundQueue {
 public:
-    SoundQueue() :
+    SoundQueue():
         playerObj(NULL),
         playerPlay(NULL),
         playerQueue() {
         //
-    }
+    };
     status initialize(SLEngineItf engine, SLObjectItf outputMixObj) {
         LOG_INFO("Starting SoundQueue.");
         SLresult result;
@@ -57,7 +57,7 @@ public:
 ERROR:
         LOG_ERROR("Error while starting SoundQueue.");
         return STATUS_ERROR;
-    }
+    };
     void finalize() {
         LOG_INFO("Stopping SoundQueue.");
         // Destroys sound player.
@@ -67,7 +67,7 @@ ERROR:
             playerPlay = NULL;
             playerQueue = NULL;
         }
-    }
+    };
     void playSound(Sound* sound) {
         SLresult result;
         SLuint32 playerState;
@@ -85,7 +85,7 @@ ERROR:
         return;
 ERROR:
         LOG_ERROR("Error trying to play sound.");
-    }
+    };
 private:
     // Sound player.
     SLObjectItf playerObj;
@@ -93,4 +93,4 @@ private:
     SLBufferQueueItf playerQueue;
 };
 
-#endif
+#endif // __SOUNDQUEUE_H__

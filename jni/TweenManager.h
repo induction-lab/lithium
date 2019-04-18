@@ -21,7 +21,7 @@ public:
     static const int COLOR = 0xF0;
 };
 
-class TweenManager : public Singleton<TweenManager> {
+class TweenManager: public Singleton<TweenManager> {
 public:
     TweenManager():
         started(false) {
@@ -29,7 +29,7 @@ public:
     };
     ~TweenManager() {
         LOG_INFO("Destructing TweenManager.");
-        clear();
+        reset();
     };
     static Tween* makeTween(Tweenable* target, int tweenType = -1, float duration = 1000, EaseFunc ease=Ease::Linear) {
         return new Tween(target, tweenType, duration, ease);
@@ -54,9 +54,9 @@ public:
     status update() {
         if (started) {
             for (std::list<Tween*>::reverse_iterator it = tweens.rbegin(); it != tweens.rend(); ++it) {
-                // update the tween
+                // Update the tween.
                 (*it)->update(PlatformGetTime());
-                //remove stopped tweens
+                // Remove stopped tweens.
                 if((*it)->getCompleted() && (*it)->getAutoRemove()) {
                     delete (*it);
                     tweens.remove(*it);
@@ -69,7 +69,7 @@ public:
         std::list<Tween*>::iterator it = find(tweens.begin(), tweens.end(), t);
         if (it != tweens.end()) tweens.erase(it);
     };
-    void clear() {
+    void reset() {
         tweens.clear();
     };
 private:
@@ -77,4 +77,4 @@ private:
     std::list<Tween*> tweens;
 };
 
-#endif
+#endif // __TWEENMANAGER_H__

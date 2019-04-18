@@ -13,7 +13,7 @@ void showUI() {
     jmethodID methodID = jni->GetMethodID(clazz, "showUI", "()V");
     jni->CallVoidMethod(application->activity->clazz, methodID);
     application->activity->vm->DetachCurrentThread();
-}
+};
 
 void updateFPS(float fps) {
     JNIEnv *jni;
@@ -22,7 +22,7 @@ void updateFPS(float fps) {
     jmethodID methodID = jni->GetMethodID(clazz, "updateFPS", "(F)V");
     jni->CallVoidMethod(application->activity->clazz, methodID, fps);
     application->activity->vm->DetachCurrentThread();
-}
+};
 
 class ActivityHandler {
 public:
@@ -64,7 +64,7 @@ public:
         GraphicsManager::getInstance();
         SoundManager::getInstance();
         TweenManager::getInstance();
-    }
+    };
     ~EventLoop() {
         SAFE_DELETE(activityHandler);
         LOG_DEBUG("Destructing base services ...");
@@ -73,7 +73,7 @@ public:
         GraphicsManager::dispose();
         InputManager::dispose();
         TimeManager::dispose();
-    }
+    };
     void run(ActivityHandler* activity) {
         int32_t result;
         int32_t events;
@@ -103,7 +103,7 @@ public:
                 }
             }
         }
-    }
+    };
 protected:
     status update() {
         // Updates services.
@@ -114,7 +114,7 @@ protected:
         if (activityHandler->onStep() != STATUS_OK) return STATUS_ERROR;
         updateFPS(TimeManager::getInstance()->getFrameRate());
         return STATUS_OK;
-    }
+    };
     void activate() {
         // Enables activity only if a window is available.
         if ((!enabled) && (application->window != NULL)) {
@@ -144,7 +144,7 @@ ERROR:
         quit = true;
         deactivate();
         ANativeActivity_finish(application->activity);
-    }
+    };
     void deactivate() {
         if (enabled) {
             deactivateAccelerometer();
@@ -163,65 +163,65 @@ ERROR:
             TweenManager::getInstance()->stop();
             enabled = false;
         }
-    }
+    };
     void processAppEvent(int32_t command) {
         switch (command) {
         case APP_CMD_CONFIG_CHANGED:
-            LOG_INFO("[onConfigurationChanged]");
+            LOG_DEBUG("[onConfigurationChanged]");
             activityHandler->onConfigurationChanged();
             break;
         case APP_CMD_INIT_WINDOW:
-            LOG_INFO("[onCreateWindow]");
+            LOG_DEBUG("[onCreateWindow]");
             showUI();
             activityHandler->onCreateWindow();
             break;
         case APP_CMD_DESTROY:
-            LOG_INFO("[onDestroy]");
+            LOG_DEBUG("[onDestroy]");
             activityHandler->onDestroy();
             break;
         case APP_CMD_GAINED_FOCUS:
-            LOG_INFO("[onGainFocus]");      
+            LOG_DEBUG("[onGainFocus]");      
             activate();
             activityHandler->onGainFocus();
             break;
         case APP_CMD_LOST_FOCUS:
-            LOG_INFO("[onLostFocus]");      
+            LOG_DEBUG("[onLostFocus]");      
             activityHandler->onLostFocus();
             deactivate();
             break;
         case APP_CMD_LOW_MEMORY:
-            LOG_INFO("[onLowMemory]");
+            LOG_DEBUG("[onLowMemory]");
             activityHandler->onLowMemory();
             break;
         case APP_CMD_PAUSE:
-            LOG_INFO("[onPause]");      
+            LOG_DEBUG("[onPause]");      
             activityHandler->onPause();
             break;
         case APP_CMD_RESUME:
-            LOG_INFO("[onResume]");     
+            LOG_DEBUG("[onResume]");     
             activityHandler->onResume();
             break;
         case APP_CMD_SAVE_STATE:
-            LOG_INFO("[onSaveInstanceState]");
+            LOG_DEBUG("[onSaveInstanceState]");
             activityHandler->onSaveInstanceState(&application->savedState, &application->savedStateSize);
             break;
         case APP_CMD_START:
-            LOG_INFO("[onStart]");
+            LOG_DEBUG("[onStart]");
             activityHandler->onStart();
             break;
         case APP_CMD_STOP:
-            LOG_INFO("[onStop]");
+            LOG_DEBUG("[onStop]");
             activityHandler->onStop();
             break;
         case APP_CMD_TERM_WINDOW:
-            LOG_INFO("[onDestroyWindow]");
+            LOG_DEBUG("[onDestroyWindow]");
             activityHandler->onDestroyWindow();
             deactivate();
             break;
         default:
             break;
         }
-    }
+    };
     int32_t processInputEvent(AInputEvent* event) {
         int32_t eventType = AInputEvent_getType(event);
         switch (eventType) {
@@ -240,7 +240,7 @@ ERROR:
             break;
         }
         return 0;
-    }
+    };
     void processSensorEvent() {
         if (sensorEventQueue != NULL) {
             ASensorEvent event;         
@@ -258,15 +258,15 @@ private:
     static void callback_event(android_app* application, int32_t command) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
         eventLoop.processAppEvent(command);
-    }
+    };
     static int32_t callback_input(android_app* application, AInputEvent* event) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
         return eventLoop.processInputEvent(event);
-    }
+    };
     static void callback_sensor(android_app* application, android_poll_source* source) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
         eventLoop.processSensorEvent();
-    }
+    };
 private:
     void activateAccelerometer() {
         accelerometer = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER);
@@ -291,7 +291,7 @@ private:
         } else {
             LOG_ERROR("No accelerometer found.");
         }
-    }
+    };
     void deactivateAccelerometer() {
         if (accelerometer != NULL) {
             if (ASensorEventQueue_disableSensor(sensorEventQueue, accelerometer) < 0) {
@@ -299,7 +299,7 @@ private:
             }
             accelerometer = NULL;
         }
-    }
+    };
 private:
     // Saves application state when application is active/paused.
     bool enabled;
@@ -316,4 +316,4 @@ private:
     const ASensor* accelerometer;
 };
 
-#endif
+#endif // __EVENTLOOP_H__

@@ -18,20 +18,20 @@ public:
         height(0),
         format(0) {
         //
-    }
+    };
     ~Texture() {
         if (textureId != 0) {
             glDeleteTextures(1, &textureId);
             LOG_DEBUG("Texture id:%d is dead.", textureId);
             textureId = 0;
         }
-    }
+    };
     int32_t getHeight() {
         return height;
-    }
+    };
     int32_t getWidth() {
         return width;
-    }
+    };
     status createFromData(unsigned char* pixelData, int width, int height, GLint format, int filter, int wrapMode) {
         LOG_DEBUG("Create %d x %d texture.", width, height);
         // Creates a new OpenGL texture.
@@ -50,21 +50,21 @@ public:
         }
         LOG_DEBUG("Texture id:%d is available.", textureId);
         return STATUS_OK;
-    }
+    };
     status loadFromFile(const char* path, int filter, int wrapMode) {
         uint8_t* pixelData = loadPNGImage(path);
         if (pixelData == NULL) return STATUS_ERROR;
         status result = createFromData(pixelData, width, height, format, filter, wrapMode);
         SAFE_DELETE(pixelData);
         return result;
-    }
+    };
     void apply() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
-    }
+    };
     GLuint getTextureId() {
         return textureId;
-    }
+    };
 protected:
     unsigned char* loadPNGImage(const char* path) {
         Resource resource(path);
@@ -168,7 +168,7 @@ ERROR:
             png_destroy_read_struct(&pngPtr, infoPtrP, NULL);
         }
         return NULL;
-    }
+    };
 private:
     static void callback_read(png_structp pngPtr, png_bytep data, png_size_t length) {
         Resource* resource = ((Resource*) png_get_io_ptr(pngPtr));
@@ -176,4 +176,4 @@ private:
     }
 };
 
-#endif
+#endif // __TEXTURE_H__

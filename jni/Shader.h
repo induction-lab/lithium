@@ -8,20 +8,16 @@ private:
     GLuint programId;
 public:
     Shader():
-        programId(0),
-        positionAttribLocation(0),
-        texcoordAttribLocation(0),
-        modelMatrixUniformLocation(0),
-        cameraProjViewMatrixLocation(0) {
+        programId(0) {
         //
-    }
+    };
     ~Shader() {
         if (programId != 0) {
             glDeleteProgram(programId);
             LOG_DEBUG("Shader id:%d is dead.", programId);
             programId = 0;
         }
-    }
+    };
     status loadFromFile(const char* path) {
         Resource resource(path);
         LOG_INFO("Loading Shader: %s", resource.getPath());
@@ -93,53 +89,53 @@ ERROR:
         if (vertexShader > 0) glDeleteShader(vertexShader);
         if (fragmentShader > 0) glDeleteShader(fragmentShader);
         return STATUS_ERROR;
-    }
+    };
     void apply() {
         glUseProgram(programId);
-    }   
+    };
     GLuint getProgramId() {
         return programId;
-    }
-    void SetUniform1f(const char* uniform_name, float u) {
+    };
+    void setUniform1f(const char* uniform_name, float u) {
         glUniform1f(glGetUniformLocation(programId, uniform_name), u);
-    }
-    void SetUniform1i(const char* uniform_name, int u) {
+    };
+    void setUniform1i(const char* uniform_name, int u) {
         glUniform1i(glGetUniformLocation(programId, uniform_name), u);
-    }
-    void SetUniform2f(const char* uniform_name, float u, float v) {
+    };
+    void setUniform2f(const char* uniform_name, float u, float v) {
         glUniform2f(glGetUniformLocation(programId, uniform_name), u, v);
-    }
-    void SetUniform2i(const char* uniform_name, int u, int v) {
+    };
+    void setUniform2i(const char* uniform_name, int u, int v) {
         glUniform2i(glGetUniformLocation(programId, uniform_name), u, v);
-    }
-    void SetUniform3f(const char* uniform_name, float u, float v, float w) {
+    };
+    void setUniform3f(const char* uniform_name, float u, float v, float w) {
         glUniform3f(glGetUniformLocation(programId, uniform_name), u, v, w);
-    }
-    void SetUniform3i(const char* uniform_name, int u, int v, int w) {
+    };
+    void setUniform3i(const char* uniform_name, int u, int v, int w) {
         glUniform3i(glGetUniformLocation(programId, uniform_name), u, v, w);
     }
-    void SetUniform4f(const char* uniform_name, float u, float v, float w, float x) {
+    void setUniform4f(const char* uniform_name, float u, float v, float w, float x) {
         glUniform4f(glGetUniformLocation(programId, uniform_name), u, v, w, x);
-    }
-    void SetUniform4i(const char* uniform_name, int u, int v, int w, int x) {
+    };
+    void setUniform4i(const char* uniform_name, int u, int v, int w, int x) {
         glUniform4i(glGetUniformLocation(programId, uniform_name), u, v, w, x);
-    }
-    void SetUniformMatrix(const char* uniform_name, Matrix matrix) {
+    };
+    void setUniformMatrix(const char* uniform_name, Matrix matrix) {
         glUniformMatrix4fv(glGetUniformLocation(programId, uniform_name), 1, false, matrix.data());
-    }
-    void SetUniformMatrix(int uniformIndex, Matrix& matrix) {
+    };
+    void setUniformMatrix(int uniformIndex, Matrix& matrix) {
         glUniformMatrix4fv(uniformIndex, 1, false, matrix.data());
-    }
+    };
     void getAttribAndUniformLocations() {
-        positionAttribLocation = glGetAttribLocation(programId, "a_position");
-        texcoordAttribLocation = glGetAttribLocation(programId, "a_texCoord");
-        modelMatrixUniformLocation = glGetUniformLocation(programId, "u_modelMatrix");
-        cameraProjViewMatrixLocation = glGetUniformLocation(programId, "u_cameraMatrix");
-    }
+        positionAttribLocation = glGetAttribLocation(programId, "aPosition");
+        texcoordAttribLocation = glGetAttribLocation(programId, "aTexCoord");
+        modelMatrixUniformLocation = glGetUniformLocation(programId, "uModelMatrix");
+        cameraProjViewMatrixLocation = glGetUniformLocation(programId, "uCameraMatrix");
+    };
     int positionAttribLocation;
     int texcoordAttribLocation;
     int modelMatrixUniformLocation;
     int cameraProjViewMatrixLocation;
 };
 
-#endif
+#endif // __SHADER_H__

@@ -16,29 +16,29 @@ private:
     AAsset* asset;  
 public:
     Resource() {};
-    Resource(const char* path) :
+    Resource(const char* path):
         assetManager(application->activity->assetManager),
         filePath(path),
         asset(NULL) {
         //
-    }
+    };
     status open() {
         asset = AAssetManager_open(assetManager, filePath, AASSET_MODE_UNKNOWN);
         return (asset != NULL) ? STATUS_OK : STATUS_ERROR;
-    }
+    };
     const char* getPath() {
         return filePath;
-    }
+    };
     status read(void* buffer, size_t count) {
         int32_t readCount = AAsset_read(asset, (char*)buffer, count);
         return (readCount == count) ? STATUS_OK : STATUS_ERROR;
-    }
+    };
     void close() {
         if (asset != NULL) {
             AAsset_close(asset);
             asset = NULL;
         }
-    }
+    };
     ResourceDescriptor descript() {
         ResourceDescriptor rd = { -1, 0, 0 };
         AAsset* asset = AAssetManager_open(assetManager, filePath, AASSET_MODE_UNKNOWN);
@@ -47,10 +47,10 @@ public:
             AAsset_close(asset);
         }
         return rd;
-    }
+    };
     off_t getLength() {
         return AAsset_getLength(asset);
-    }
+    };
 };
 
 #endif

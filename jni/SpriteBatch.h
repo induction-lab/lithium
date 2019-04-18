@@ -7,23 +7,24 @@
 #include "TimeManager.h"
 #include "Sprite.h"
 
-class SpriteBatch : public GraphicsComponent {
+class SpriteBatch: public GraphicsComponent {
 public:
     SpriteBatch():
         sprites(), vertices(), indexes(),
         shaderProgram(0),
-        aPosition(0), aTexture(0), uProjection(0), uTexture(0) {
+        aPosition(0), aTexture(0), uProjection(0), uTexture(0), uColor(0), uOpaque(0) {
         GraphicsManager::getInstance()->registerComponent(this);
-    }
+    };
     ~SpriteBatch() {
         for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
             delete (*it);
         }
         sprites.clear();
-    }
+    };
     Sprite* registerSprite(const char* texturePath, int32_t width, int32_t height) {
         int32_t spriteCount = sprites.size();
-        int32_t index = spriteCount * 4; // Points to 1st vertex.
+        // Points to 1st vertex.
+        int32_t index = spriteCount * 4;
         // Precomputes the index buffer.
         indexes.push_back(index+0);
         indexes.push_back(index+1);
@@ -39,7 +40,7 @@ public:
         sprites.push_back(sprite);
         sprite->load();
         return sprite;
-    }
+    };
     status load() {
         // Creates and retrieves shader attributes and uniforms.
         Shader* shader = GraphicsManager::getInstance()->loadShader("shaders/Sprite.shader");
@@ -47,7 +48,9 @@ public:
         aPosition = glGetAttribLocation(shaderProgram, "aPosition");
         aTexture = glGetAttribLocation(shaderProgram, "aTexture");
         uProjection = glGetUniformLocation(shaderProgram, "uProjection");
-        uTexture = glGetUniformLocation(shaderProgram, "u_texture");
+        uTexture = glGetUniformLocation(shaderProgram, "uTexture");
+        uColor = glGetUniformLocation(shaderProgram, "uColor");
+        uOpaque = glGetUniformLocation(shaderProgram, "uOpaque");
         // Loads sprites.
         for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
             if ((*it)->load() != STATUS_OK) goto ERROR;
@@ -56,7 +59,7 @@ public:
 ERROR:
         LOG_ERROR("Error loading sprite batch");
         return STATUS_ERROR;
-    }
+    };
     void draw() {
         // Selects sprite shader and passes its parameters.
         glUseProgram(shaderProgram);
@@ -82,10 +85,19 @@ ERROR:
             GLuint currentTextureId = sprite->textureId;
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, sprite->textureId);
+            // Sprite color & opaque.
+            Vector currentColor = sprite->color;
+            float currentOpaque = sprite->opaque;
+            glUniform3fv(uColor, 1, sprite->color.data());
+            glUniform1fv(uOpaque, 1, &sprite->opaque);
             // Generate sprite vertices for current textures.
             do {
                 sprite = sprites[currentSprite];
-                if (sprite->textureId == currentTextureId) {
+                if (
+                    sprite->color == currentColor &&
+                    sprite->opaque == currentOpaque &&
+                    sprite->textureId == currentTextureId
+                ) {
                     Sprite::Vertex* spriteVertices = (&vertices[currentSprite * 4]);
                     sprite->draw(spriteVertices, timeStep);
                 } else {
@@ -101,13 +113,13 @@ ERROR:
         glDisableVertexAttribArray(aPosition);
         glDisableVertexAttribArray(aTexture);
         glDisable(GL_BLEND);
-    }
+    };
 private:
     std::vector<Sprite*> sprites;
     std::vector<Sprite::Vertex> vertices;
     std::vector<GLushort> indexes;
     GLuint shaderProgram;
-    GLuint aPosition, aTexture, uProjection, uTexture;
+    GLuint aPosition, aTexture, uProjection, uTexture, uColor, uOpaque;
 };
 
-#endif
+#endif // __SPRITEBATCH_H__

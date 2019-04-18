@@ -11,8 +11,11 @@ void main() {
 #ifdef FRAGMENT
 precision mediump float;
 uniform sampler2D uTexture;
+uniform vec3 uColor;
+uniform float uOpaque;
 varying vec2 vTexture;
 void main() {
-    gl_FragColor = texture2D(uTexture, vTexture);
+    vec4 color = vec4(uColor.x, uColor.y, uColor.z, uOpaque);
+    gl_FragColor = texture2D(uTexture, vTexture) * color;
 }
 #endif

@@ -11,7 +11,7 @@
 
 class SoundManager: public Singleton<SoundManager> {
 public:
-    SoundManager() :
+    SoundManager():
         engineObj(NULL),
         engine(NULL),
         outputMixObj(NULL),
@@ -25,11 +25,8 @@ public:
     };
     ~SoundManager() {
         LOG_INFO("Destructing SoundManager.");
-        for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
-            SAFE_DELETE(*it);
-        };
-        sounds.clear();
-    }
+        reset();
+    };
     status start() {
         LOG_INFO("Starting SoundManager.");
         SLresult result;
@@ -60,15 +57,15 @@ ERROR:
         LOG_ERROR("Error while starting SoundManager.");
         stop();
         return STATUS_ERROR;
-    }
+    };
     status loadResources() {
         LOG_DEBUG("Loads sound resources.");
-        // Loads resources
+        // Loads resources.
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
             if ((*it)->load() != STATUS_OK) return STATUS_ERROR;
         };
         return STATUS_OK;
-    }
+    };
     void stop() {
         LOG_INFO("Stopping SoundManager.");
         // Stops and destroys Music player.
@@ -91,6 +88,13 @@ ERROR:
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
             (*it)->unload();
         }
+    };
+    void reset() {
+        stopMusic();
+        for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
+            SAFE_DELETE(*it);
+        };
+        sounds.clear();        
     }
     status playMusic(const char* path) {
         SLresult result;
@@ -128,7 +132,7 @@ ERROR:
 ERROR:
         LOG_ERROR("Error playing music.");
         return STATUS_ERROR;
-    }
+    };
     void stopMusic() {
         LOG_INFO("Stopping Music.");
         if (playerPlay != NULL) {
@@ -142,7 +146,7 @@ ERROR:
                 playerSeek = NULL;
             }
         }
-    }
+    };
     Sound* registerSound(const char* path) {
         // Finds out if sound already loaded.
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
@@ -152,12 +156,12 @@ ERROR:
         Sound* sound = new Sound(path);
         sounds.push_back(sound);
         return sound;
-    }
+    };
     void playSound(Sound* sound) {
         int32_t currentQueue = ++currentQueue;
         SoundQueue& soundQueue = soundQueues[currentQueue % QUEUE_COUNT];
         soundQueue.playSound(sound);
-    }
+    };
 private:
     // OpenSL ES engine.
     SLObjectItf engineObj;
@@ -176,4 +180,4 @@ private:
     std::vector<Sound*> sounds;
 };
 
-#endif
+#endif // __SOUNDMANAGER_H__

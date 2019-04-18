@@ -8,15 +8,15 @@ class SoundManager;
 
 class Sound {
 public:
-    Sound(const char* path) :
+    Sound(const char* path):
         resource(path),
         buffer(NULL),
         length(0) {
         //
-    }
+    };
     const char* getPath() {
         return resource.getPath();
-    }
+    };
     uint8_t* getBuffer() {
         return buffer;
     };
@@ -34,14 +34,14 @@ public:
         resource.close();
         return STATUS_OK;
 ERROR:
-        LOG_ERROR("Error while reading sound");
+        LOG_ERROR("Error while reading sound.");
         return STATUS_ERROR;
-    }
+    };
     status unload() {
         SAFE_DELETE_ARRAY(buffer);
         length = 0;
         return STATUS_OK;
-    }
+    };
 private:
     friend class SoundManager;
     Resource resource;
@@ -49,4 +49,4 @@ private:
     off_t length;
 };
 
-#endif
+#endif // __SOUND_H__

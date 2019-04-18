@@ -51,7 +51,7 @@ static android_app* application;
 #include "EventLoop.h"
 #include "Activity.h"
 
-// Android entry point
+// Android entry point.
 void android_main(android_app* app) {
 	LOG_INFO("--- Let's go full native! ---");
 	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	

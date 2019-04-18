@@ -10,7 +10,7 @@
 template<class T>
 static T lerp(T a, T b, float k) {
     return a * (1.0f - k) + b * k;
-}
+};
 
 class Tweenable {
 public:
@@ -144,7 +144,7 @@ public:
         if ( !playing || t < startTime ) {
             return;
         }
-        // On start callback
+        // On start callback.
         if (!started) {
             started = true;
             complited = false;
@@ -198,13 +198,13 @@ protected:
     bool started, complited, isReverseFlag, playing, isAutoRemoveFlag;
     EaseFunc easing;
     int repeat;
-    // Main
+    // Main.
     Tweenable *targetObj;
     int type;
-    // Values
+    // Values.
     float* startValues;
     float* targetValues;
-    // Buffers
+    // Buffers.
     float *accessorBuffer;
     int accessorBufferSize;
     int combinedAttrsCnt;
@@ -212,4 +212,4 @@ protected:
 
 int Tween::combinedAttrsLimit = 3;
 
-#endif
+#endif // __TWEEN_H__
