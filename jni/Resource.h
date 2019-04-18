@@ -91,7 +91,7 @@ void writeConfig() {
     char configFile[255];
     sprintf(configFile, "%s/app_config.xml", internalPath);
     LOG_INFO("Write application config file it ...");
-    // Save the config file contents in the application's internal storage
+    // Save the config file contents in the application's internal storage.
     FILE* appConfigFile = std::fopen(configFile, "w+");
     if (appConfigFile == NULL) {
         LOG_ERROR("Could not create app configuration file.");

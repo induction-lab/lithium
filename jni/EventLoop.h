@@ -251,7 +251,7 @@ ERROR:
                 }
             }
         }
-    }
+    };
 private:
     // Private callbacks handling events occuring in the thread loop.
     static void callback_event(android_app* application, int32_t command) {

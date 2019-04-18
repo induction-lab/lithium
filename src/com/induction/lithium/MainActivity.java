@@ -16,7 +16,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 public class MainActivity extends NativeActivity {
-	public static final String APP_TITLE = "lithium";
+    public static final String APP_TITLE = "lithium";
     MainActivity activity;
     PopupWindow popupWindow;
     TextView label;
@@ -28,9 +28,9 @@ public class MainActivity extends NativeActivity {
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-    }
+    };
     public void showUI() {
-		Log.i(APP_TITLE, "[java] Show base UI from Java code.");
+        Log.i(APP_TITLE, "[java] Show base UI from Java code.");
         if (popupWindow != null) return;
         activity = this;
         this.runOnUiThread(new Runnable() {
@@ -49,7 +49,7 @@ public class MainActivity extends NativeActivity {
                 label = (TextView)popupView.findViewById(R.id.textViewFPS);
             }
         });
-    }
+    };
     public void updateFPS(final float fFPS) {
         if (label == null) return;
         activity = this;
@@ -59,5 +59,5 @@ public class MainActivity extends NativeActivity {
                 label.setText(String.format("%2.2f FPS", fFPS));
             }
         });
-    }
+    };
 }

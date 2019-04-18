@@ -62,33 +62,33 @@ public:
         sprite = pSprite;
         sprite->setLocation(location.x, location.y);
     };
-	void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-		switch (event) {
-		case Touch::TOUCH_DOWN:
-			if (pointInWidget(Location(x, y))) {
-				sprite->setFrames(1, 1, 0.0f, false);
-				if (downFunction != NULL) downFunction();
-			}
-			break;
-		case Touch::TOUCH_UP:
-			sprite->setFrames(0, 1, 0.0f, false);
-			if (pointInWidget(Location(x, y))) {
-				if (upFunction != NULL) upFunction();
-			}
-			break;
-		case Touch::TOUCH_MOVE:
-			if (!pointInWidget(Location(x, y))) {		
-				sprite->setFrames(0, 1, 0.0f, false);
-			}
-		}
-	};
+    void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
+        switch (event) {
+        case Touch::TOUCH_DOWN:
+            if (pointInWidget(Location(x, y))) {
+                sprite->setFrames(1, 1, 0.0f, false);
+                if (downFunction != NULL) downFunction();
+            }
+            break;
+        case Touch::TOUCH_UP:
+            sprite->setFrames(0, 1, 0.0f, false);
+            if (pointInWidget(Location(x, y))) {
+                if (upFunction != NULL) upFunction();
+            }
+            break;
+        case Touch::TOUCH_MOVE:
+            if (!pointInWidget(Location(x, y))) {       
+                sprite->setFrames(0, 1, 0.0f, false);
+            }
+        }
+    };
     void gestureTapEvent(int x, int y) {
         if (pointInWidget(Location(x, y))) {
-			if (clickFunction != NULL) clickFunction();
-		}
-    };	
+            if (clickFunction != NULL) clickFunction();
+        }
+    };  
     void gestureLongTapEvent(int x, int y, float time) {
-		gestureTapEvent(x, y);
+        gestureTapEvent(x, y);
     };
 };
 
@@ -98,42 +98,42 @@ public:
         checked(false) {
         //
     };
-	void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-		switch (event) {
-		case Touch::TOUCH_DOWN:
-			if (pointInWidget(Location(x, y))) {
-				if (downFunction != NULL) downFunction();				
-			}
-			break;
-		case Touch::TOUCH_UP:
-			if (pointInWidget(Location(x, y))) {
-				if (upFunction != NULL) upFunction();				
-			}
-			break;
-		default:
-			break;
-		}
-	};
+    void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
+        switch (event) {
+        case Touch::TOUCH_DOWN:
+            if (pointInWidget(Location(x, y))) {
+                if (downFunction != NULL) downFunction();               
+            }
+            break;
+        case Touch::TOUCH_UP:
+            if (pointInWidget(Location(x, y))) {
+                if (upFunction != NULL) upFunction();
+            }
+            break;
+        default:
+            break;
+        }
+    };
     void gestureTapEvent(int x, int y) {
         if (pointInWidget(Location(x, y))) {
-			checked = !checked;
-			setChecked(checked);
-		}
+            checked = !checked;
+            setChecked(checked);
+        }
     };
     void gestureLongTapEvent(int x, int y, float time) {
-		gestureTapEvent(x, y);
+        gestureTapEvent(x, y);
     };
     bool getChecked() {
         return checked;
     };
     void setChecked(bool checked) {
-		this->checked = checked;		
+        this->checked = checked;        
         if (checked) {
             sprite->setFrames(1, 1, 0.0f, false);
         } else {
             sprite->setFrames(0, 1, 0.0f, false);
         }
-        if (clickFunction != NULL) clickFunction();        
+        if (clickFunction != NULL) clickFunction();
     };
 private:
     bool checked;
@@ -142,6 +142,39 @@ private:
 class Background: public Widget {
 public:
     Background(int32_t width, int32_t height, Location location): Widget(width, height, location) {};
+};
+
+class Fruit: public Widget {
+public:
+    Fruit(int32_t width, int32_t height, Location location): Widget(width, height, location),
+    alive(true), dies(false), dead(false) {
+        //
+    };
+    void gestureTapEvent(int x, int y) {
+        if (!alive) return;
+        if (pointInWidget(Location(x, y))) {
+            if (clickFunction != NULL) clickFunction();
+        }
+    };  
+    void gestureLongTapEvent(int x, int y, float time) {
+        gestureTapEvent(x, y);
+    };
+    void update() {
+        if (!alive && !dies && !dead) {
+            sprite->setFrames(0, 5, 7.0f, false);
+            dies = true;
+        }
+        if (dies && sprite->animationEnded()) dies = false;
+        if (!alive && !dies && !dead) {
+            TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
+                ->target(0.0f)->remove(true)->start();
+            dead = true;
+            LOG_DEBUG("Fruit is dead.");
+        }
+    };
+    bool alive;
+    bool dies;
+    bool dead;
 };
 
 class Scene: public InputListener {
@@ -156,33 +189,40 @@ public:
             SAFE_DELETE(*it);
         }
         widgets.clear();
-    }
+    };
     Button* addButton(const char* path, int32_t width, int32_t height, Location location) {
         LOG_INFO("Creating new Button widget.");
         Button* button = (Button*) new Button(width, height, location);
         button->setSprite(spriteBatch->registerSprite(path, width, height));
         widgets.push_back(button);
         return button;
-    }
+    };
     CheckBox* addCheckBox(const char* path, int32_t width, int32_t height, Location location) {
         LOG_INFO("Creating new CheckBox widget.");
         CheckBox* checkBox = new CheckBox(width, height, location);
         checkBox->setSprite(spriteBatch->registerSprite(path, width, height));
         widgets.push_back(checkBox);
         return checkBox;
-    }
+    };
     Background* addBackground(const char* path, int32_t width, int32_t height, Location location) {
         LOG_INFO("Creating new Background widget.");
         Background* background = new Background(width, height, location);
         background->setSprite(spriteBatch->registerSprite(path, width, height));
         widgets.push_back(background);
         return background;
-    }
+    };
+    Fruit* addFruit(const char* path, int32_t width, int32_t height, Location location) {
+        LOG_INFO("Creating new Fruit widget.");
+        Fruit* fruit = new Fruit(width, height, location);
+        fruit->setSprite(spriteBatch->registerSprite(path, width, height));
+        widgets.push_back(fruit);
+        return fruit;
+    };
     void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();
         }
-	}
+    };
     virtual status start(void) = 0;
     virtual void pause(void) {};
     virtual void resume(void) {};
