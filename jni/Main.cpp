@@ -100,14 +100,14 @@ static int uiModeType;
 // √ fix upper kill animation
 // - add bonus kill type
 //   √ redish: '+' kill
+//   √ lemon: 'x' kill
+//   √ chili: big bomb (3 x 3) kill by spiral
 //   - cherry: kill all fruits type with whom swapped
-//   - lemon: 'x' kill
-//   - chili: big bomb (3 x 3) kill
 // √ accent random time
 // √ bonus random time
 // - game logo
 // - tutorial
-// - music pause (not necessary)
+// - music resume by pause (not necessary)
 // √ leafs for phone ui mode
 // .. refactoring to c++ best practics
 
