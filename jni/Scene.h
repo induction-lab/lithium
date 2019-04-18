@@ -215,8 +215,8 @@ public:
         //
     };
     int gestureTapEvent(int x, int y) {
-        Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (clickFunction != NULL) {
+            Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
             if (sprite->pointInSprite(point.x, point.y)) {
                 clickFunction();
                 return 1;
@@ -230,30 +230,6 @@ public:
     void setClickFunction(std::function<void()> callback) { clickFunction = callback; };    
 private:
     std::function<void()> clickFunction;
-};
-
-// Animation class.
-class Animation: public Widget {
-public:
-    Animation(int frames, float duration, float delay):
-        frames(frames),
-        duration(duration),
-        delay(delay),
-        started(false) {
-        //
-    };
-    void update() {
-        if (!started) {
-            TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, duration, Ease::Linear)->target(frames)->remove(true)
-                ->onComplete(std::bind(&Widget::onDead, this, std::placeholders::_1))
-                ->start(delay);
-            started = true;
-        }
-    };
-    int frames;
-    float duration;
-    float delay;
-    bool started;
 };
 
 // Base Scene.
@@ -303,12 +279,14 @@ public:
         widgets.push_back(background);
         return background;
     };
-    Animation* addAnimation(const char* path, int width, int height, Vector2 location, int frames, float duration, float delay = 0.0f) {
+    Background* addAnimation(const char* path, int width, int height, Vector2 location, int frames, float duration, float delay = 0.0f) {
         LOG_DEBUG("Creating new 'Animation' widget.");
-        Animation* animation = new Animation(frames, duration, delay);
+        Background* animation = new Background();
         animation->setSprite(spriteBatch->registerSprite(path, width, height), location);
         animation->sprite->order = 1;
         animation->spriteBatch = spriteBatch;
+        TweenManager::getInstance()->addTween(animation->sprite, TweenType::FRAME, duration, Ease::Linear)->target(frames)->remove(true)
+            ->onComplete(std::bind(&Widget::onDead, animation, std::placeholders::_1))->start(delay);
         widgets.push_back(animation);
         return animation;
     };

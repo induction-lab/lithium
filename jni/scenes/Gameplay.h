@@ -252,9 +252,8 @@ public:
                         n++;
                         int X = (int)frand(GRID_SIZE);
                         int Y = (int)frand(GRID_SIZE);
-                        if (fruits[X][Y]->type < 7 && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
+                        if (fruits[X][Y]->type < FRUITS_COUNT && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
                             LOG_DEBUG("Bonus!!!");
-                            printBoard();
                             Vector2 location = getSkrewedLocation(X, Y);
                             location.y = location.y + 40;                            
                             addAnimation("textures/BonusFruitCreate.png", 64, 96, location, 26, 1.2f, 0.5f);
@@ -472,7 +471,7 @@ public:
             case FruitKillType::DEAD_EXTRA: {
                 dyingFruits++;
                 Vector2 location = getSkrewedLocation(x, y);
-                Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f, delay);
+                Background* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f, delay);
                 a->sprite->angle = Deg(frand(360.0f));                
                 break;
             }
