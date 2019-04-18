@@ -63,7 +63,6 @@ static android_app* application;
 #define MIN_MATCH_UNBELIEVABLE_COUNT 25
 
 // Application default config.
-
 struct ConfigData {
     int soundVolume = 25;
     int musicVolume = 50;
@@ -96,13 +95,17 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - redraw bonus
+// + no backswap with scores
+// - redraw cherry bonus
 // - fix upper kill animation
-// - Add bonus kill
-// - Bonus random
-// - New logo
-// - Music pause
-// - .. Refactoring to C++ best practics
+// - add bonus kill type
+// - accent random time
+// + bonus random time
+// - game logo
+// - music pause
+// - tutorial
+// - leafs for phone ui mode
+// - .. refactoring to c++ best practics
 
 // Android entry point.
 void android_main(android_app* app) {

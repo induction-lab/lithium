@@ -40,18 +40,18 @@ public:
             int textLength = strlen(text);
             int textWidth = textLength * (width - CHAR_PADDING);
             // Recreate only changed sprite.
-            for (int count = 0; count < textLength; count++) {
+            for (int n = 0; n < textLength; n++) {
                 // Test if char changed.
-                bool q = ((count < lastTextLength) && (text[count] != lastText.c_str()[count]));
-                if (q) spriteBatch->unregisterSprite(sprites.at(count));
+                bool q = ((n < lastTextLength) && (text[n] != lastText.c_str()[n]));
+                if (q) spriteBatch->unregisterSprite(sprites.at(n));
                 // Get shift.
-                Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count * scale.x, location.y + frand(4) - 2.0f);
+                Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * n * scale.x, location.y + frand(4) - 2.0f);
                 if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
                 else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;
                 // Create new sprite.
-                if (q || (count >= lastTextLength)) {
+                if (q || (n >= lastTextLength)) {
                     Sprite* sprite = spriteBatch->registerSprite(path, width, height);
-                    sprite->setFrame(text[count]);
+                    sprite->setFrame(text[n]);
                     sprite->location = l;
                     sprite->scale = scale;
                     // Add animation.
@@ -62,13 +62,13 @@ public:
                         ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
                     startedTweens++;
                     t1->addChain(t2)->start();
-                    if (q) sprites.at(count) = sprite;
+                    if (q) sprites.at(n) = sprite;
                     else sprites.push_back(sprite);
-                } else sprites.at(count)->location.x = l.x;
+                } else sprites.at(n)->location.x = l.x;
             }
             // Delete tail.
             if (lastTextLength > textLength) {
-                for (int count = textLength; count < lastTextLength; count++) spriteBatch->unregisterSprite(sprites.at(count));
+                for (int n = textLength; n < lastTextLength; n++) spriteBatch->unregisterSprite(sprites.at(n));
                 sprites.erase(sprites.begin() + textLength, sprites.end());
             }
             lastText = text;
@@ -91,17 +91,16 @@ public:
     void setText(const char* text) {
         // Zoom animation.
         if (animation == TextAnimation::ZOOM) {
-            LOG_DEBUG("ZOOM");
             int textLength = strlen(text);
             int textWidth = textLength * (width - CHAR_PADDING);
-            for (int count = 0; count < textLength; count++) {
+            for (int n = 0; n < textLength; n++) {
                 // Get shift.
-                Vector2 l = Vector2(location.x + (width - (float)CHAR_PADDING * 1.05f) * count * scale.x, location.y + frand(4) - 2.0f);
+                Vector2 l = Vector2(location.x + (width - (float)CHAR_PADDING * 1.05f) * n * scale.x, location.y + frand(4) - 2.0f);
                 if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
                 else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;            
                 // Create new sprite.
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
-                sprite->setFrame(text[count]);
+                sprite->setFrame(text[n]);
                 sprite->location = l;
                 sprite->scale = Vector2(0.5f, 0.5f);
                 sprite->order = 5;
@@ -127,17 +126,17 @@ public:
         if (animation == TextAnimation::SLIDE) {
             int textLength = strlen(text);
             int textWidth = textLength * (width - CHAR_PADDING);
-            for (int count = 0; count < textLength; count++) {
+            for (int n = 0; n < textLength; n++) {
                 // Get shift.
-                Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count * scale.x, location.y + frand(4) - 2.0f);
+                Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * n * scale.x, location.y + frand(4) - 2.0f);
                 if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
                 else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;            
                 // Create new sprite.
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
-                sprite->setFrame(text[count]);
+                sprite->setFrame(text[n]);
                 sprite->location = l;
                 sprite->scale = scale;
-                sprite->order = (text[count] == 43)? 1 : 3; // set "+" to back
+                sprite->order = (text[n] == 43)? 1 : 3; // set "+" to back
                 sprite->opaque = 0.0f;
                 // Add animation.
                 Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
@@ -155,6 +154,11 @@ public:
         }
         newText = text;
         textChanged = true;
+    };
+    void reset() {
+        for (int n = 0; n < strlen(lastText.c_str()); n++) spriteBatch->unregisterSprite(sprites.at(n));
+        lastText = "\0";
+        textChanged = false;
     };
     Vector2 scale;
     Vector2 location;

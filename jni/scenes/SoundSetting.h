@@ -47,7 +47,9 @@ public:
         musicSlider->setPosition(configData->musicVolume);
         buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
-        volumeSound = SoundManager::getInstance()->registerSound("sounds/SoundVolume.wav");
+        aha01Sound = SoundManager::getInstance()->registerSound("sounds/Aha01.wav");
+        aha02Sound = SoundManager::getInstance()->registerSound("sounds/Aha02.wav");
+        aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");        
         SoundManager::getInstance()->loadResources();
         created = true;
         return STATUS_OK;
@@ -71,7 +73,11 @@ public:
     };
     void onSoundSliderUp() {
         if (musicSlider->getChanged()) return;
-        SoundManager::getInstance()->playSound(volumeSound);
+        switch ((int)frand(3)) {
+            case 0: SoundManager::getInstance()->playSound(aha01Sound); break;
+            case 1: SoundManager::getInstance()->playSound(aha02Sound); break;
+            case 2: SoundManager::getInstance()->playSound(aha03Sound); break;
+        }
     };
     void onMusicSliderSlide(int volume) {
         LOG_DEBUG("Set music volume to %d%%", musicSlider->precent);
@@ -98,7 +104,9 @@ public:
     Slider* musicSlider;
     Sound* buttonDownSound;
     Sound* buttonUpSound;
-    Sound* volumeSound;
+    Sound* aha01Sound;
+    Sound* aha02Sound;
+    Sound* aha03Sound;    
 };
 
 #endif // __SOUND_SETTING_H__

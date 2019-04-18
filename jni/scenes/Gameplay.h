@@ -50,9 +50,6 @@ public:
         moveSound = SoundManager::getInstance()->registerSound("sounds/Move.wav");
         noMoveSound = SoundManager::getInstance()->registerSound("sounds/NoMove.wav");
         scoreSound = SoundManager::getInstance()->registerSound("sounds/Score.wav");
-        aha01Sound = SoundManager::getInstance()->registerSound("sounds/Aha01.wav");
-        aha02Sound = SoundManager::getInstance()->registerSound("sounds/Aha02.wav");
-        aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");
         excellent01Sound = SoundManager::getInstance()->registerSound("sounds/Excellent01.wav");
         excellent02Sound = SoundManager::getInstance()->registerSound("sounds/Excellent02.wav");
         excellent03Sound = SoundManager::getInstance()->registerSound("sounds/Excellent03.wav");
@@ -156,15 +153,15 @@ public:
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
-            if (fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->accempted) {
+            if (fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->accenpted) {
                 // TODO !!!
                 Vector2 location = getSkrewedLocation(x, y);
-                fruits[x][y]->accempted = true;
+                fruits[x][y]->accenpted = true;
                 addAnimation("textures/AccentForBonus.png", 78, 78, location, 20, 1.2f, 0.5f);
             }
         }
         // It's bad time...
-        if (TimeManager::getInstance()->getTime() > lastGoodTime + 5.0f) {
+        if (TimeManager::getInstance()->getTime() > lastGoodTime + 15.0f) {
             if (TimeManager::getInstance()->getTime() > lastBadTime + 1.0f && scores > 0) {
                 lastBadTime = TimeManager::getInstance()->getTime();
                 SoundManager::getInstance()->playSound(scoreSound);
@@ -181,7 +178,6 @@ public:
             float halfHeight = renderHeight / 2;
             Vector2 location = Vector2(halfWidth, halfHeight);
             if (stepsComplited) {
-                LOG_WARN("scoresPerSwap=%d matchStep=%d", scoresPerSwap, matchStep);
                 if (scoresPerSwap >= MIN_MATCH_UNBELIEVABLE_COUNT) {
                     addSuperText("textures/Unbelievable.png", 360, 80, location, 15);
                     switch ((int)frand(3)) {
@@ -220,22 +216,24 @@ public:
                     scoresPerSwapText->setText(str.c_str());
                 }
                 scoresPerSwap = 0;
-                // Add bonus fruit.
-                int n = 0;
-                bool goodPlace = false;
-                while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
-                    n++;
-                    int X = (int)frand(GRID_SIZE);
-                    int Y = (int)frand(GRID_SIZE);
-                    if (fruits[X][Y]->type < 7 && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
-                        LOG_DEBUG("Bonus!!!");
-                        printBoard();
-                        Vector2 location = getSkrewedLocation(X, Y);
-                        location.y = location.y + 40;                            
-                        addAnimation("textures/BonusFruitCreate.png", 64, 96, location, 26, 1.2f, 0.5f);
-                        LOG_DEBUG("Kill %d %d for bonus.", X, Y);
-                        fruits[X][Y]->kill(0.0f, FruitKillType::REPLACE);
-                        goodPlace = true;
+                // Add bonus fruit (5 in 1).
+                if ((int)frand(5) == 0) {
+                    int n = 0;
+                    bool goodPlace = false;
+                    while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
+                        n++;
+                        int X = (int)frand(GRID_SIZE);
+                        int Y = (int)frand(GRID_SIZE);
+                        if (fruits[X][Y]->type < 7 && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
+                            LOG_DEBUG("Bonus!!!");
+                            printBoard();
+                            Vector2 location = getSkrewedLocation(X, Y);
+                            location.y = location.y + 40;                            
+                            addAnimation("textures/BonusFruitCreate.png", 64, 96, location, 26, 1.2f, 0.5f);
+                            LOG_DEBUG("Kill %d %d for bonus.", X, Y);
+                            fruits[X][Y]->kill(0.0f, FruitKillType::REPLACE);
+                            goodPlace = true;
+                        }
                     }
                 }
                 stepsComplited = false;
@@ -335,7 +333,7 @@ public:
     }
     // Select fruit.
     void onFruitClick(int X, int Y) {
-        LOG_DEBUG("Select %d %d, %d", X, Y, fruits[X][Y]->type);
+        LOG_DEBUG("Select %d %d, type=%d", X, Y, fruits[X][Y]->type);
         if (fruits[X][Y]->selected) {
             fruits[X][Y]->selected = false;
             SoundManager::getInstance()->playSound(clickSound);            
@@ -348,6 +346,7 @@ public:
         bool swaped = false;
         if (fruits[X][Y]->type >= FRUITS_COUNT) {
             matchStep = 1;
+            missStep = 0;
             fruits[X][Y]->kill(0.0f, FruitKillType::DEAD_EXTRA);
         } else {
             // Standart click.
@@ -394,15 +393,18 @@ public:
             case FruitMoveType::SWAP: {
                 swapedFruits--;
                 if (swapedFruits == 0) {
-                    // Come back miss fruits.
                     if (dyingFruits < MIN_MATCH_COUNT) {
-                        Vector2 prevIndex = fruits[x][y]->prevIndex;
-                        fruits[x][y]->moveTo((int)prevIndex.x, (int)prevIndex.y, 0.0f, FruitMoveType::SWAP_BACK);
-                        fruits[(int)prevIndex.x][(int)prevIndex.y]->moveTo(x, y, 0.0f, FruitMoveType::SWAP_BACK);
-                        std::swap(fruits[x][y], fruits[(int)prevIndex.x][(int)prevIndex.y]);
                         missStep++;
+                        // Come back miss fruits if scores low.
+                        if (scores - 2 * missStep <= 0) {
+                            Vector2 prevIndex = fruits[x][y]->prevIndex;
+                            fruits[x][y]->moveTo((int)prevIndex.x, (int)prevIndex.y, 0.0f, FruitMoveType::SWAP_BACK);
+                            fruits[(int)prevIndex.x][(int)prevIndex.y]->moveTo(x, y, 0.0f, FruitMoveType::SWAP_BACK);
+                            std::swap(fruits[x][y], fruits[(int)prevIndex.x][(int)prevIndex.y]);
+                            scoreText->reset();
+                            SoundManager::getInstance()->playSound(noMoveSound);
+                        }
                         updateScore(-2 * missStep);
-                        SoundManager::getInstance()->playSound(noMoveSound);
                     } else missStep = 0;
                 }
                 break;
@@ -432,6 +434,8 @@ public:
     };
     // Fruit callbacks.
     void onFruitKill(int x, int y, FruitKillType killType) {
+        // reset time limit
+        lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();        
         switch (killType) {
             case FruitKillType::DEAD: 
             case FruitKillType::DEAD_EXTRA: {
@@ -483,8 +487,6 @@ public:
         }
     };
     void onFruitDead(int x, int y, FruitKillType killType) {
-        // reset time limit
-        lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
         lostScores = -1;
         switch (killType) {
             case FruitKillType::DEAD:
@@ -548,9 +550,8 @@ public:
     }    
     // Scores.
     void updateScore(int value) {
-        // LOG_DEBUG("updateScore value=%d", value);
+        LOG_DEBUG("updateScore value=%d", value);
         if (scores < 0) return;
-        if (missStep > 0) value *= missStep;
         if (matchStep > 1) value *= matchStep;
         if (scores + value < 0) value = -scores;
         scores += value;        
@@ -634,9 +635,6 @@ private:
     Sound* moveSound;
     Sound* noMoveSound;
     Sound* scoreSound;
-    Sound* aha01Sound;
-    Sound* aha02Sound;
-    Sound* aha03Sound;
     Sound* excellent01Sound;
     Sound* excellent02Sound;
     Sound* excellent03Sound;
