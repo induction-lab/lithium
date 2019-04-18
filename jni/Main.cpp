@@ -1,7 +1,8 @@
 /* Let's go full native! */
 
 #define APP_TITLE "lithium"
-#define DEBUG_MODE
+// #define DEBUG_MODE
+// #define FPS_COUNTER
 #define SLOW_DOWN 1
 
 // Stuff for recieve log message.
@@ -106,7 +107,7 @@ static int uiModeType;
 //   √ chili: big bomb (3 x 3) kill by diamond spiral
 // √ accent random time
 // √ bonus random time
-// - game logo
+// √ game logo
 // - tutorial
 // - music resume by pause (not necessary)
 // √ leafs for phone ui mode

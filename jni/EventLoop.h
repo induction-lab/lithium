@@ -6,8 +6,6 @@
 #include <android/input.h>
 #include <android/sensor.h>
 
-#define FPS_COUNTER
-
 void showUI() {
     JNIEnv *jni;
     application->activity->vm->AttachCurrentThread(&jni, NULL);
@@ -187,12 +185,12 @@ ERROR:
             activityHandler->onDestroy();
             break;
         case APP_CMD_GAINED_FOCUS:
-            LOG_DEBUG("[onGainFocus]");      
+            LOG_DEBUG("[onGainFocus]");
             activate();
             activityHandler->onGainFocus();
             break;
         case APP_CMD_LOST_FOCUS:
-            LOG_DEBUG("[onLostFocus]");      
+            LOG_DEBUG("[onLostFocus]");
             activityHandler->onLostFocus();
             deactivate();
             break;
@@ -201,11 +199,11 @@ ERROR:
             activityHandler->onLowMemory();
             break;
         case APP_CMD_PAUSE:
-            LOG_DEBUG("[onPause]");      
+            LOG_DEBUG("[onPause]");
             activityHandler->onPause();
             break;
         case APP_CMD_RESUME:
-            LOG_DEBUG("[onResume]");     
+            LOG_DEBUG("[onResume]");
             activityHandler->onResume();
             break;
         case APP_CMD_SAVE_STATE:
@@ -250,7 +248,7 @@ ERROR:
 #ifdef INPUTMANAGER_SENSORS_EVENTS
     void processSensorEvent() {
         if (sensorEventQueue != NULL) {
-            ASensorEvent event;         
+            ASensorEvent event;
             while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0) {
                 switch (event.type) {
                 case ASENSOR_TYPE_ACCELEROMETER:
@@ -308,7 +306,7 @@ private:
             accelerometer = NULL;
         }
     };
-#endif // INPUTMANAGER_SENSORS_EVENTS    
+#endif // INPUTMANAGER_SENSORS_EVENTS
 private:
     // Saves application state when application is active/paused.
     bool enabled;

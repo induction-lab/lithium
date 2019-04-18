@@ -87,9 +87,9 @@ public:
         vertices.push_back(Vector2(p2 + length2 * miter2));
         vertices.push_back(Vector2(p2 - length2 * miter2));
     };
-    float thickness;    
+    float thickness;
     Vector color;
-    float opaque;    
+    float opaque;
 private:
     std::vector<Vector> points;
     std::vector<Vector2> vertices;

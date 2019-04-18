@@ -26,8 +26,8 @@ public:
     };
     virtual void onDead(Tweenable* t) {
         dead = true;
-    };    
-    bool dead;    
+    };
+    bool dead;
     Sprite* sprite;
 protected:
     friend class Scene;
@@ -72,13 +72,13 @@ public:
             }
         }
         return 0;
-    };  
+    };
     int gestureLongTapEvent(int x, int y, float time) {
         return gestureTapEvent(x, y);
     };
     void setDownFunction(std::function<void()> callback) { downFunction = callback; };
     void setUpFunction(std::function<void()> callback) { upFunction = callback; };
-    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };    
+    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };
 private:
     std::function<void()> downFunction;
     std::function<void()> upFunction;
@@ -100,7 +100,7 @@ public:
         bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
             case Touch::TOUCH_DOWN:
-                if (inSprite && downFunction != NULL) downFunction();               
+                if (inSprite && downFunction != NULL) downFunction();
                 break;
             case Touch::TOUCH_UP:
                 if (inSprite && upFunction != NULL) upFunction();
@@ -123,7 +123,7 @@ public:
         return checked;
     };
     void setChecked(bool checked) {
-        this->checked = checked;        
+        this->checked = checked;
         if (checked) sprite->setFrame(1);
         else sprite->setFrame(0);
         if (clickFunction != NULL) clickFunction();
@@ -223,11 +223,11 @@ public:
             }
         }
         return 0;
-    };  
+    };
     int gestureLongTapEvent(int x, int y, float time) {
         return gestureTapEvent(x, y);
     };
-    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };    
+    void setClickFunction(std::function<void()> callback) { clickFunction = callback; };
 private:
     std::function<void()> clickFunction;
 };
@@ -305,7 +305,7 @@ public:
         t2->addChain(t3);
         t2->addChain(t4);
         t3->onComplete(std::bind(&Widget::onDead, bonusText, std::placeholders::_1));
-        t2->start();        
+        t2->start();
         bonusText->spriteBatch = spriteBatch;
         widgets.push_back(bonusText);
         return bonusText;
@@ -332,7 +332,7 @@ public:
             widgets.push_back(superText);
         }
         return NULL;
-    };    
+    };
     RasterFont* addRasterFont(const char* path, int width, int height, Vector2 location, Justification just, TextAnimation animation = TextAnimation::NONE) {
         RasterFont* rasterFont = new RasterFont(path, width, height, location, just, animation);
         rasterFont->spriteBatch = spriteBatch;
@@ -341,13 +341,12 @@ public:
     };
     virtual void update() {
         for (std::vector<Widget*>::const_reverse_iterator it = widgets.rbegin(); it < widgets.rend(); ++it) {
-            (*it)->update();
             if ((*it)->dead) {
                 // Delete dead widget.
                 LOG_DEBUG("Delete dead widget.");
                 spriteBatch->unregisterSprite((*it)->sprite);
                 widgets.erase(std::remove(widgets.begin(), widgets.end(), *it), widgets.end());
-            }
+            } else (*it)->update();
         }
     };
     virtual status start(void) = 0;

@@ -8,6 +8,7 @@ private:
     bool sceneChanged;      // scene must be changed
     Scene *scene;           // scene to be used
     Scene *nextScene;
+    bool configSaved;
     // Change current scene.
     status setScene(Scene *scn) {
         if (scene != NULL) {
@@ -30,7 +31,8 @@ public:
         firstStart(true),
         paused(false),
         scene(NULL),
-        sceneChanged(false) {
+        sceneChanged(false),
+        configSaved(false) {
         LOG_DEBUG("Creating Activity.");
     };
     ~Activity() {
@@ -45,6 +47,7 @@ public:
 protected:
     status onActivate() {
         LOG_INFO("Activate Engine.");
+        configSaved = false;
         if (firstStart) {
             LOG_DEBUG("First start detected ...");
             if (setStartScene() != STATUS_OK) return STATUS_ERROR;
@@ -81,11 +84,17 @@ protected:
         readConfig();
     };
     void onDestroyWindow() {
-        writeConfig();
+        if (!configSaved) {
+            writeConfig();
+            configSaved = true;
+        }
     };
     void onDestroy() {
         clearGameState();
-        writeConfig();
+        if (!configSaved) {
+            writeConfig();
+            configSaved = true;
+        }
         if (scene != NULL) SAFE_DELETE(scene);
     };
 };

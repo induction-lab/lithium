@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.induction.lithium"
-      android:versionCode="1"
-      android:versionName="1.0">
+      android:versionCode="2"
+      android:versionName="lithium.0.2.78">
 	<uses-sdk android:targetSdkVersion="26"
               android:minSdkVersion="21" />
     <application android:label="@string/app_name"
+                 android:icon="@mipmap/ic_launcher"
+                 android:roundIcon="@mipmap/ic_launcher"
 				 android:allowBackup="false"
 				 android:theme="@style/AppTheme">
         <activity android:name="com.induction.lithium.MainActivity"
                   android:label="@string/app_name"
-                  android:icon="@mipmap/icon"
                   android:hasCode="true"
                   android:launchMode="singleInstance"
 				  android:screenOrientation="portrait"
