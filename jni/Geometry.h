@@ -458,10 +458,10 @@ inline Matrix OrthographicMatrix(float l, float r, float b, float t, float n, fl
     float sy = 1 / (t - b);
     float sz = 1 / (f - n);
     return Matrix(
-        sx * 2.0f,      0.0f,     0.0f, -(r+l) * sx,
-             0.0f, sy * 2.0f,     0.0f, -(t+b) * sy,
-             0.0f,      0.0f,sz * 2.0f, -(n+f) * sz,
-             0.0f,      0.0f,     0.0f,        1.0f
+        sx * 2.0f,      0.0f,      0.0f, -(r+l) * sx,
+             0.0f, sy * 2.0f,      0.0f, -(t+b) * sy,
+             0.0f,      0.0f, sz * 2.0f, -(n+f) * sz,
+             0.0f,      0.0f,      0.0f,        1.0f
         );
 };
 
@@ -532,24 +532,22 @@ inline Matrix Transpose(Matrix m) {
 
 // Transforms a 3D vector by a given matrix, projecting the result back into w = 1.
 inline Vector TransformCoord(const Vector &v, const Matrix &m) {
-
     float x = v.x * m.m11 + v.y * m.m12 + v.z * m.m13 + m.m14;
     float y = v.x * m.m21 + v.y * m.m22 + v.z * m.m23 + m.m24;
     float z = v.x * m.m31 + v.y * m.m32 + v.z * m.m33 + m.m34;
     float w = m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44;
     if (w != 0.0f) return Vector(x, y, z) / w;
-    else return EmptyVector;
+    return EmptyVector;
 };
 
 // Transforms a 3D vector by a given matrix, projecting the result back into w = 1.
 inline Vector TransformNormal(const Vector &v, const Matrix &m) {
-
     float x = v.x * m.m11 + v.y * m.m12 + v.z * m.m13;
     float y = v.x * m.m21 + v.y * m.m22 + v.z * m.m23;
     float z = v.x * m.m31 + v.y * m.m32 + v.z * m.m33;
     float w = m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44;
     if (w != 0.0f) return Vector(x, y, z) / w;
-    else return EmptyVector;
+    return EmptyVector;
 };
 
 inline void PrintMatrix(Matrix m) {

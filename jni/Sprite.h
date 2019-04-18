@@ -10,7 +10,7 @@ public:
     struct Vertex {
         GLfloat x, y, u, v;
     };
-    Sprite(const char* texturePath, int32_t width, int32_t height):
+    Sprite(const char* texturePath, int width, int height):
         location(),
         angle(0.0f),
         scale(Vector2(1.0f, 1.0f)),
@@ -23,7 +23,7 @@ public:
         animSpeed(0.0f), animFrame(0.0f), animLoop(false) {
         //
     };
-    void setFrames(int32_t startFrame, int32_t frameCount, float speed, bool loop) {
+    void setFrames(int startFrame, int frameCount, float speed, bool loop) {
         animStartFrame = startFrame;
         animFrame = 0.0f, animSpeed = speed, animLoop = loop;
         animFrameCount = frameCount;
@@ -107,6 +107,23 @@ public:
     Location getLocation() {
         return location;
     };
+    int getWidth() {
+        return spriteWidth;
+    };
+    int getHeight() {
+        return spriteHeight;
+    };
+    bool pointInSprite(int x, int y) {
+        Vector points[4];
+        transform(points);
+        std::swap(points[2], points[3]);
+        bool inside = false;
+        int size = sizeof(points)/sizeof(points[0]);
+        for (int i = 0, j = size - 1; i < size; j = i++) {
+            if (((points[i].y > y) != (points[j].y >= y)) && (x < (points[j].x - points[i].x) * (y - points[i].y) / (points[j].y - points[i].y) + points[i].x)) inside = !inside;
+        }
+        return inside;
+    };
 protected:
     friend class SpriteBatch;
     status load() {
@@ -121,19 +138,19 @@ protected:
     };
     void draw(Vertex vertices[4], float timeStep) {
         if (sheetWidth == 0 || sheetHeight == 0) return;
-        int32_t currentFrame, currentFrameX, currentFrameY;
+        int currentFrame, currentFrameX, currentFrameY;
         // Updates animation in loop mode.
         animFrame += timeStep * animSpeed;
         if (animLoop) {
-            currentFrame = (animStartFrame + int32_t(animFrame) % animFrameCount);
+            currentFrame = (animStartFrame + int(animFrame) % animFrameCount);
         } else {
             // Updates animation in one-shot mode.
             if (animationEnded()) {
                 currentFrame = animStartFrame + (animFrameCount-1);
             } else {
-                currentFrame = animStartFrame + int32_t(animFrame);
+                currentFrame = animStartFrame + int(animFrame);
             }
-        }
+        };
         // Computes frame X and Y indexes from its id.
         currentFrameX = currentFrame % frameXCount;
         // currentFrameY is converted from OpenGL coordinates to top-left coordinates.
@@ -143,34 +160,13 @@ protected:
         GLfloat u2 = GLfloat((currentFrameX + 1) * spriteWidth) / GLfloat(sheetWidth);
         GLfloat v1 = GLfloat(currentFrameY * spriteHeight) / GLfloat(sheetHeight);
         GLfloat v2 = GLfloat((currentFrameY + 1) * spriteHeight) / GLfloat(sheetHeight);
-        // Apply transformations.
-        Matrix matrix = IdentityMatrix;
-        matrix.Translate(location.x, location.y, 0.0f);
-        matrix.Rotate(angle, AxisZ);
-        matrix.Scale(scale.x, scale.y, 1.0f);
-        float halfWidth = (float)spriteWidth * 0.5f;
-        float halfHeight = (float)spriteHeight * 0.5f;
-        Vector n1 = matrix * Vector(-halfWidth, -halfHeight, 0.0f);
-        Vector n2 = matrix * Vector(-halfWidth,  halfHeight, 0.0f);
-        Vector n3 = matrix * Vector( halfWidth, -halfHeight, 0.0f);
-        Vector n4 = matrix * Vector( halfWidth,  halfHeight, 0.0f);
+        Vector points[4];
+        transform(points);
         // Fill sprite vertices.
-        vertices[0].x = n1.x;
-        vertices[0].y = n1.y;
-        vertices[0].u = u1;
-        vertices[0].v = v1;
-        vertices[1].x = n2.x;
-        vertices[1].y = n2.y;
-        vertices[1].u = u1;
-        vertices[1].v = v2;
-        vertices[2].x = n3.x;
-        vertices[2].y = n3.y;
-        vertices[2].u = u2;
-        vertices[2].v = v1;
-        vertices[3].x = n4.x;
-        vertices[3].y = n4.y;
-        vertices[3].u = u2;
-        vertices[3].v = v2;
+        vertices[0].x = points[0].x; vertices[0].y = points[0].y; vertices[0].u = u1; vertices[0].v = v1;
+        vertices[1].x = points[1].x; vertices[1].y = points[1].y; vertices[1].u = u1; vertices[1].v = v2;
+        vertices[2].x = points[2].x; vertices[2].y = points[2].y; vertices[2].u = u2; vertices[2].v = v1;
+        vertices[3].x = points[3].x; vertices[3].y = points[3].y; vertices[3].u = u2; vertices[3].v = v2;
     };
 public:
     // Tratsormations.
@@ -180,14 +176,27 @@ public:
     Vector color;
     float opaque;
 private:
+    void transform(Vector points[4]) {
+        // Apply transformations.
+        Matrix matrix = IdentityMatrix;
+        matrix.Translate(location.x, location.y, 0.0f);
+        matrix.Rotate(angle, AxisZ);
+        matrix.Scale(scale.x, scale.y, 1.0f);
+        float halfWidth = (float)spriteWidth * 0.5f;
+        float halfHeight = (float)spriteHeight * 0.5f;
+        points[0] = matrix * Vector(-halfWidth, -halfHeight, 0.0f);
+        points[1] = matrix * Vector(-halfWidth,  halfHeight, 0.0f);
+        points[2] = matrix * Vector( halfWidth, -halfHeight, 0.0f);
+        points[3] = matrix * Vector( halfWidth,  halfHeight, 0.0f);
+    }
     const char* texturePath;
     GLuint textureId;
     // Frame.
-    int32_t sheetHeight, sheetWidth;
-    int32_t spriteHeight, spriteWidth;
-    int32_t frameXCount, frameYCount, frameCount;
+    int spriteWidth, spriteHeight;
+    int sheetWidth, sheetHeight;
+    int frameXCount, frameYCount, frameCount;
     // Animation.
-    int32_t animStartFrame, animFrameCount;
+    int animStartFrame, animFrameCount;
     float animSpeed, animFrame;
     bool animLoop;
 };

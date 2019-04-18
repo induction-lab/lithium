@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-// Eases
+// Eases.
 typedef float (*EaseFunc)(float);
 
 namespace Ease {

@@ -49,8 +49,7 @@ public:
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerObj)->GetInterface(playerObj, SL_IID_BUFFERQUEUE, &playerQueue);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
-        // Starts the sound player. Nothing can be heard while the
-        // sound queue remains empty.
+        // Starts the sound player. Nothing can be heard while the sound queue remains empty.
         result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         return STATUS_OK;

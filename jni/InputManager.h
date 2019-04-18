@@ -24,7 +24,7 @@ struct TouchPointerData {
 // Defines a touch screen event.
 class Touch {
 public:
-    static const unsigned int MAX_TOUCH_POINTS = 10; // Maximum simultaneous touch points supported.
+    static const unsigned int MAX_TOUCH_POINTS = 10; // maximum simultaneous touch points supported
     enum TouchEvent {
         TOUCH_DOWN,
         TOUCH_UP,
@@ -38,7 +38,7 @@ private:
 #define GESTURE_SWIPE_DURATION_MAX          400 * 0.001
 #define GESTURE_LONG_TAP_DURATION_MIN       GESTURE_TAP_DURATION_MAX
 #define GESTURE_DRAG_START_DURATION_MIN     GESTURE_LONG_TAP_DURATION_MIN
-#define GESTURE_DRAG_DISTANCE_MIN           30
+#define GESTURE_DRAG_DISTANCE_MIN           15
 #define GESTURE_SWIPE_DISTANCE_MIN          50
 #define GESTURE_PINCH_DISTANCE_MIN          GESTURE_DRAG_DISTANCE_MIN
 
@@ -53,15 +53,16 @@ public:
     InputListener(void);
     virtual ~InputListener(void);
     virtual void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {};
-    virtual void gestureDragEvent(int x, int y) {};
-    virtual void gestureDropEvent(int x, int y) {};
-    virtual void gestureSwipeEvent(int x, int y, int direction) {};
-    virtual void gestureTapEvent(int x, int y) {};
-    virtual void gestureLongTapEvent(int x, int y, float time) {};
-    virtual void gesturePinchEvent(int x, int y, float scale) {};
-    virtual void backEvent() {};
+    virtual int gestureDragEvent(int x, int y) { return 0; };
+    virtual int gestureDropEvent(int x, int y) { return 0; };
+    virtual int gestureSwipeEvent(int x, int y, int direction) { return 0; };
+    virtual int gestureTapEvent(int x, int y) { return 0; };
+    virtual int gestureLongTapEvent(int x, int y, float time) { return 0; };
+    virtual int gesturePinchEvent(int x, int y, float scale) { return 0; };
+    virtual int backEvent() { return 0; };
     virtual void keyDownEvent(int keyCode) {};
     virtual void keyUpEvent(int keyCode) {};
+    int n;
 };
 
 class InputManager: public Singleton<InputManager> {
@@ -92,6 +93,7 @@ public:
 public:
     void registerListener(InputListener *listener) {
         LOG_DEBUG("Register InputListener %d.", listeners.size() + 1);
+        listener->n = listeners.size();
         listeners.push_back(listener);
     };
     void unregisterListener(InputListener *listener) {
@@ -188,7 +190,7 @@ public:
             }
             pointer0.pressed = false;
             primaryTouchId = -1;
-            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
+            if (MULTI_TOUTCH || primaryTouchId == pointerId) {
                 onTouchEvent(Touch::TOUCH_UP, x, y, pointerId);
             }
             break;
@@ -245,7 +247,7 @@ public:
             }
             pointer1.pressed = false;
             if (primaryTouchId == pointerId) primaryTouchId = -1;
-            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId) ) {
+            if (MULTI_TOUTCH || primaryTouchId == pointerId) {
                 onTouchEvent(Touch::TOUCH_UP, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
             }
             break;
@@ -305,7 +307,7 @@ public:
                         }
                     }
                 }
-                if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
+                if (MULTI_TOUTCH || primaryTouchId == pointerId) {
                     onTouchEvent(Touch::TOUCH_MOVE, AMotionEvent_getX(event, i), AMotionEvent_getY(event, i), pointerId);
                 }
             }
@@ -365,7 +367,6 @@ public:
         return 0;
     };
     int32_t onAccelerometerEvent(ASensorEvent* event) {
-
     #ifdef INPUTMANAGER_LOG_SENSOR_EVENTS
         LOG_DEBUG("ASensorEvent=%d", event->version);
         LOG_DEBUG("ASensorEvent=%d", event->sensor);
@@ -373,59 +374,58 @@ public:
         LOG_DEBUG("ASensorEvent=%d", event->type);
         LOG_DEBUG("ASensorEvent=%f,%f,%f,%d", event->acceleration.x, event->acceleration.y, event->acceleration.z, event->acceleration.status);
 #endif // INPUTMANAGER_LOG_SENSOR_EVENTS
+        // Not implemented yet.
         return 0;
     };
 private:
     // Send event to listeners ...
     void onTouchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
             (*it)->touchEvent(event, x, y, pointerId);
         }
     };
     void onGestureDragEvent(int x, int y) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureDragEvent(x, y);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gestureDragEvent(x, y)) break;
         }
     };
     void onGestureDropEvent(int x, int y) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureDropEvent(x, y);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gestureDropEvent(x, y)) break;
         }
     };
     void onGestureSwipeEvent(int x, int y, int direction) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureSwipeEvent(x, y, direction);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gestureSwipeEvent(x, y, direction)) break;
         }
     };
     void onGestureTapEvent(int x, int y) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureTapEvent(x, y);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gestureTapEvent(x, y)) break;
         }
     };
     void onGestureLongTapEvent(int x, int y, float time) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gestureLongTapEvent(x, y, time);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gestureLongTapEvent(x, y, time)) break;
         }
     };
     void onGesturePinchEvent(int x, int y, float scale) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            (*it)->gesturePinchEvent(x, y, scale);
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->gesturePinchEvent(x, y, scale)) break;
         }
     };
     void onBackEvent() {
-        int size = listeners.size();
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
-            if (size != listeners.size()) break;
-            (*it)->backEvent();
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
+            if ((*it)->backEvent()) break;
         }
     };
     void onKeyDownEvent(int keyCode) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
             (*it)->keyDownEvent(keyCode);
         }
     };
     void onKeyUpEvent(int keyCode) {
-        for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
+        for (std::vector<InputListener*>::const_reverse_iterator  it = listeners.rbegin(); it < listeners.rend(); ++it) {
             (*it)->keyUpEvent(keyCode);
         }
     }; 

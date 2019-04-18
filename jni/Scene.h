@@ -9,7 +9,7 @@
 
 class Widget: public InputListener {
 public:
-    Widget(int32_t width, int32_t height, Location location):
+    Widget(int width, int height, Location location):
         width(width), height(height), location(location),
         sprite(NULL),
         downFunction(NULL),
@@ -18,15 +18,6 @@ public:
         //
     };
     virtual void update() {};
-    bool pointInWidget(Location point) {
-        point = GraphicsManager::getInstance()->screenToRender(point.x, point.y);
-        float halfWidth = width * 0.5f;
-        float halfHeight = height * 0.5f;
-        return ((point.x > location.x - halfWidth ) &&
-                (point.x < location.x + halfWidth ) &&
-                (point.y > location.y - halfHeight) &&
-                (point.y < location.y + halfHeight));
-    };
     void setDownFunction(std::function<void()> callback) {
         downFunction = callback;
     };
@@ -43,8 +34,9 @@ public:
     Sprite* sprite;
 protected:
     friend class Scene;
-    int32_t width, height;
+    int width, height;
     Location location;
+    SpriteBatch* spriteBatch;
     std::function<void()> downFunction;
     std::function<void()> upFunction;
     std::function<void()> clickFunction;
@@ -52,61 +44,63 @@ protected:
 
 class Button: public Widget {
 public:
-    Button(int32_t width, int32_t height, Location location): Widget(width, height, location) {
+    Button(int width, int height, Location location): Widget(width, height, location) {
         //
     };
-    Sprite* getSprite() {
-        return sprite;
-    };
-    void setSprite(Sprite* pSprite) {
-        sprite = pSprite;
-        sprite->setLocation(location.x, location.y);
-    };
     void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
         case Touch::TOUCH_DOWN:
-            if (pointInWidget(Location(x, y))) {
+            if (inSprite) {
                 sprite->setFrames(1, 1, 0.0f, false);
                 if (downFunction != NULL) downFunction();
             }
             break;
         case Touch::TOUCH_UP:
             sprite->setFrames(0, 1, 0.0f, false);
-            if (pointInWidget(Location(x, y))) {
+            if (inSprite) {
                 if (upFunction != NULL) upFunction();
             }
             break;
         case Touch::TOUCH_MOVE:
-            if (!pointInWidget(Location(x, y))) {       
+            if (!inSprite) {       
                 sprite->setFrames(0, 1, 0.0f, false);
             }
         }
     };
-    void gestureTapEvent(int x, int y) {
-        if (pointInWidget(Location(x, y))) {
-            if (clickFunction != NULL) clickFunction();
+    int gestureTapEvent(int x, int y) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sprite->pointInSprite(point.x, point.y)) {
+            if (clickFunction != NULL) {
+                clickFunction();
+                return 1;
+            }
         }
+        return 0;
     };  
-    void gestureLongTapEvent(int x, int y, float time) {
-        gestureTapEvent(x, y);
+    int gestureLongTapEvent(int x, int y, float time) {
+        return gestureTapEvent(x, y);
     };
 };
 
 class CheckBox: public Widget {
 public:
-    CheckBox(int32_t width, int32_t height, Location location): Widget(width, height, location),
+    CheckBox(int width, int height, Location location): Widget(width, height, location),
         checked(false) {
         //
     };
     void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
         case Touch::TOUCH_DOWN:
-            if (pointInWidget(Location(x, y))) {
+            if (inSprite) {
                 if (downFunction != NULL) downFunction();               
             }
             break;
         case Touch::TOUCH_UP:
-            if (pointInWidget(Location(x, y))) {
+            if (inSprite) {
                 if (upFunction != NULL) upFunction();
             }
             break;
@@ -114,14 +108,17 @@ public:
             break;
         }
     };
-    void gestureTapEvent(int x, int y) {
-        if (pointInWidget(Location(x, y))) {
+    int gestureTapEvent(int x, int y) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sprite->pointInSprite(point.x, point.y)) {
             checked = !checked;
             setChecked(checked);
+            return 1;
         }
+        return 0;
     };
-    void gestureLongTapEvent(int x, int y, float time) {
-        gestureTapEvent(x, y);
+    int gestureLongTapEvent(int x, int y, float time) {
+        return gestureTapEvent(x, y);
     };
     bool getChecked() {
         return checked;
@@ -139,25 +136,80 @@ private:
     bool checked;
 };
 
+class Slider: public Widget {
+public:
+    Slider(int width, int height, Location location): Widget(width, height, location) {};
+    void setSliderHandle(const char* path, int width, int height, int position) {
+        this->sliderHandle = spriteBatch->registerSprite(path, width, height);
+        int x = location.x - sprite->getWidth() / 2;
+        float minWidth = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+        sliderHandle->setLocation(minWidth, location.y);
+    };
+    int gestureDragEvent(int x, int y) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sliderHandle->pointInSprite(point.x, point.y)) {
+            float minWidth = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+            float maxWidth = sprite->getLocation().x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
+            if (point.x < minWidth) {
+                sliderHandle->setLocation(minWidth, location.y);
+                return 0;
+            }
+            if (point.x > maxWidth) {
+                sliderHandle->setLocation(maxWidth, location.y);
+                return 0;
+            }
+            sliderHandle->setLocation(point.x, location.y);
+            return 1;
+        }
+        return 0;
+    };
+    int gestureTapEvent(int x, int y) {
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sprite->pointInSprite(point.x, point.y)) {
+            float minWidth = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+            float maxWidth = sprite->getLocation().x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
+            if (point.x < minWidth) {
+                sliderHandle->setLocation(minWidth, location.y);
+                return 0;
+            }
+            if (point.x > maxWidth) {
+                sliderHandle->setLocation(maxWidth, location.y);
+                return 0;
+            }
+            sliderHandle->setLocation(point.x, location.y);            
+            return 1;
+        }
+        return 0;
+    };
+    int gestureLongTapEvent(int x, int y, float time) {
+        return gestureTapEvent(x, y);
+    };
+private:
+    Sprite* sliderHandle;
+};
+
 class Background: public Widget {
 public:
-    Background(int32_t width, int32_t height, Location location): Widget(width, height, location) {};
+    Background(int width, int height, Location location): Widget(width, height, location) {};
 };
 
 class Fruit: public Widget {
 public:
-    Fruit(int32_t width, int32_t height, Location location): Widget(width, height, location),
+    Fruit(int width, int height, Location location): Widget(width, height, location),
     alive(true), dies(false), dead(false) {
         //
     };
-    void gestureTapEvent(int x, int y) {
-        if (!alive) return;
-        if (pointInWidget(Location(x, y))) {
+    int gestureTapEvent(int x, int y) {
+        if (!alive) return false;
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        if (sprite->pointInSprite(point.x, point.y)) {
             if (clickFunction != NULL) clickFunction();
+            return 1;
         }
+        return 0;
     };  
-    void gestureLongTapEvent(int x, int y, float time) {
-        gestureTapEvent(x, y);
+    int gestureLongTapEvent(int x, int y, float time) {
+        return gestureTapEvent(x, y);
     };
     void update() {
         if (alive) return;
@@ -192,31 +244,43 @@ public:
         }
         widgets.clear();
     };
-    Button* addButton(const char* path, int32_t width, int32_t height, Location location) {
+    Button* addButton(const char* path, int width, int height, Location location) {
         LOG_INFO("Creating new Button widget.");
         Button* button = (Button*) new Button(width, height, location);
         button->setSprite(spriteBatch->registerSprite(path, width, height));
+        button->spriteBatch = spriteBatch;
         widgets.push_back(button);
         return button;
     };
-    CheckBox* addCheckBox(const char* path, int32_t width, int32_t height, Location location) {
+    CheckBox* addCheckBox(const char* path, int width, int height, Location location) {
         LOG_INFO("Creating new CheckBox widget.");
         CheckBox* checkBox = new CheckBox(width, height, location);
         checkBox->setSprite(spriteBatch->registerSprite(path, width, height));
+        checkBox->spriteBatch = spriteBatch;
         widgets.push_back(checkBox);
         return checkBox;
     };
-    Background* addBackground(const char* path, int32_t width, int32_t height, Location location) {
+    Slider* addSlider(const char* path, int width, int height, Location location) {
+        LOG_INFO("Creating new Slider widget.");
+        Slider* slider = new Slider(width, height, location);
+        slider->setSprite(spriteBatch->registerSprite(path, width, height));
+        slider->spriteBatch = spriteBatch;
+        widgets.push_back(slider);
+        return slider;
+    };
+    Background* addBackground(const char* path, int width, int height, Location location) {
         LOG_INFO("Creating new Background widget.");
         Background* background = new Background(width, height, location);
         background->setSprite(spriteBatch->registerSprite(path, width, height));
+        background->spriteBatch = spriteBatch;
         widgets.push_back(background);
         return background;
     };
-    Fruit* addFruit(const char* path, int32_t width, int32_t height, Location location) {
+    Fruit* addFruit(const char* path, int width, int height, Location location) {
         LOG_INFO("Creating new Fruit widget.");
         Fruit* fruit = new Fruit(width, height, location);
         fruit->setSprite(spriteBatch->registerSprite(path, width, height));
+        fruit->spriteBatch = spriteBatch;
         widgets.push_back(fruit);
         return fruit;
     };

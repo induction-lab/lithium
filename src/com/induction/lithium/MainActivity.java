@@ -44,7 +44,7 @@ public class MainActivity extends NativeActivity {
                 params.setMargins(0, 0, 0, 0);
                 activity.setContentView(mainLayout, params);
                 // Show our UI over NativeActivity window
-                popupWindow.showAtLocation(mainLayout, Gravity.CENTER | Gravity.TOP, 0, 50);
+                popupWindow.showAtLocation(mainLayout, Gravity.CENTER | Gravity.TOP, 0, 35);
                 popupWindow.update();
                 label = (TextView)popupView.findViewById(R.id.textViewFPS);
             }

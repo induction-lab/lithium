@@ -46,7 +46,7 @@ public:
 
 class EventLoop {
 public:
-    EventLoop() :
+    EventLoop():
         enabled(false),
         quit(false),
         activityHandler(NULL),
@@ -85,9 +85,7 @@ public:
             // Event processing loop.
             while ((result = ALooper_pollAll(enabled ? 0 : -1, NULL, &events, (void**) &source)) >= 0) {
                 // An event has to be processed.
-                if (source != NULL) {
-                    source->process(application, source);
-                }
+                if (source != NULL) source->process(application, source);
                 // Application is getting destroyed.
                 if (application->destroyRequested) {
                     LOG_INFO("Exiting event loop.");

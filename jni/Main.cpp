@@ -53,8 +53,8 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    // bool mute = false;
-    bool mute = true;
+    bool mute = false;
+    // bool mute = true;
 };
 ConfigData* configData;
 

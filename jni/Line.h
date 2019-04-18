@@ -43,7 +43,7 @@ public:
         LOG_DEBUG("Add line point at %f %f", v.x, v.y);
         points.push_back(v);
         vertices.clear();
-        for(int i = 0; i < points.size();++i) {
+        for(int i = 0; i < points.size(); ++i) {
             int a = ((i-1) < 0) ? 0 : (i-1);
             int b = i;
             int c = ((i+1) >= points.size()) ? points.size()-1 : (i+1);
@@ -57,7 +57,7 @@ public:
     };
     void drawSegment(Vector p0, Vector p1, Vector p2, Vector p3) {
         // Skip if zero length.
-        if(p1 == p2) return;
+        if (p1 == p2) return;
         // 1) Define the line between the two points.
         Vector line = Normalize(p2 - p1);
         // 2) Find the normal vector of this line.

@@ -21,10 +21,10 @@ public:
         }
         sprites.clear();
     };
-    Sprite* registerSprite(const char* texturePath, int32_t width, int32_t height) {
-        int32_t spriteCount = sprites.size();
+    Sprite* registerSprite(const char* texturePath, int width, int height) {
+        int spriteCount = sprites.size();
         // Points to 1st vertex.
-        int32_t index = spriteCount * 4;
+        int index = spriteCount * 4;
         // Precomputes the index buffer.
         indexes.push_back(index+0);
         indexes.push_back(index+1);
@@ -74,11 +74,11 @@ ERROR:
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // Renders all sprites in batch.
-        const int32_t vertexPerSprite = 4;
-        const int32_t indexPerSprite = 6;
+        const int vertexPerSprite = 4;
+        const int indexPerSprite = 6;
         float timeStep = TimeManager::getInstance()->getFrameElapsedTime();
-        int32_t spriteCount = sprites.size();
-        int32_t currentSprite = 0, firstSprite = 0;
+        int spriteCount = sprites.size();
+        int currentSprite = 0, firstSprite = 0;
         while (bool canDraw = (currentSprite < spriteCount)) {
             // Switches texture.
             Sprite* sprite = sprites[currentSprite];

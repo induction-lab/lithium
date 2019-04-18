@@ -50,8 +50,7 @@ protected:
             LOG_DEBUG("First start detected ...");
             if (setStartScene() != STATUS_OK) return STATUS_ERROR;
             firstStart = false;
-        } // TODO:
-        if state saved. Change scene.
+        }
         SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
         return STATUS_OK;
     };
@@ -82,7 +81,7 @@ protected:
 };
 
 // Scenes.
-#include "scenes/Sounds.h"
+#include "scenes/SoundSetting.h"
 #include "scenes/Gameplay.h"
 #include "scenes/MainMenu.h"
 
