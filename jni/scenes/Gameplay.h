@@ -41,11 +41,11 @@ public:
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Time bar.
-        timeLimitBar = addBackground("textures/TimeLimitBar.png", 126, 24, Vector2(halfWidth, halfHeight + 145));
+        timeLimitBar = addBackground("textures/TimeLimitBar.png", 100, 34, Vector2(halfWidth, halfHeight + 160));
         timeLimitBar->sprite->order = 1;
-        lastTime = TimeManager::getInstance()->getTime();
-        alert = addBackground("textures/Alert.png", 35, 27, Vector2(halfWidth - 40, halfHeight + 157));
-        alert->sprite->order = 2;
+        lastGoodTime = TimeManager::getInstance()->getTime();
+        clock = addBackground("textures/TimeLimitClock.png", 26, 28, Vector2(halfWidth - 30, halfHeight + 150));
+        clock->sprite->order = 2;
         // Load sounds.
         grub01Sound = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
         grub02Sound = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
@@ -149,24 +149,25 @@ public:
         if (scoreText != NULL) scoreText->update();
         if (changedScoreText != NULL) changedScoreText->update();
         particleSystem->update();
-        if (TimeManager::getInstance()->getTime() > lastTime + 0.7f) {
-            lastTime = TimeManager::getInstance()->getTime();
+        
+        if (TimeManager::getInstance()->getTime() > lastGoodTime + 0.7f) {
+            lastGoodTime = TimeManager::getInstance()->getTime();
             Tween* t1 = TweenManager::getInstance()->addTween(timeLimitBar->sprite, TweenType::SCALE_XY, 0.37f, Ease::Exponential::Out)
                 ->target(1.15f, 1.15f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(timeLimitBar->sprite, TweenType::SCALE_XY, 0.37f, Ease::Exponential::In)
                 ->target(1.0f, 1.0f)->remove(true);
             t1->addChain(t2)->start();
-            Tween* t3 = TweenManager::getInstance()->addTween(alert->sprite, TweenType::SCALE_X, 0.37f, Ease::Exponential::InOut)
-                ->target(1.2f)->remove(true)->delay(0.2f);
-            Tween* t4 = TweenManager::getInstance()->addTween(alert->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
-                ->target(1.4f)->remove(true);                
-            Tween* t5= TweenManager::getInstance()->addTween(alert->sprite, TweenType::SCALE_X, 0.37f, Ease::Sinusoidal::InOut)
+            Tween* t3 = TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_X, 0.37f, Ease::Exponential::InOut)
+                ->target(1.1f)->remove(true)->delay(0.2f);
+            Tween* t4 = TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
+                ->target(1.3f)->remove(true);                
+            Tween* t5= TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_X, 0.37f, Ease::Sinusoidal::InOut)
                 ->target(1.0f, 1.0f)->remove(true);
-            Tween* t6= TweenManager::getInstance()->addTween(alert->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
+            Tween* t6= TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
                 ->target(1.0f, 1.0f)->remove(true);                
             t3->addChain(t5)->start();
             t4->addChain(t6)->start();
-            if (timeLimitBar->sprite->getFrame() < 12) {
+            if (timeLimitBar->sprite->getFrame() < 8) {
                 timeLimitBar->sprite->setFrame(timeLimitBar->sprite->getFrame() + 1);
                 switch ((int)frand(3)) {
                     case 0: SoundManager::getInstance()->playSound(squishy01Sound); break;
@@ -184,6 +185,7 @@ public:
                 }                
             }
         }
+        
     };
     // Just for debug.
     void printBoard(bool full = true) {
@@ -436,7 +438,7 @@ public:
     Background* gameBox;
     // Time Limit Bar.
     Background* timeLimitBar;
-    Background* alert;
+    Background* clock;
     // Bonus text.
     Background* bonusText;
     bool bonusTextAnimated;
@@ -486,7 +488,7 @@ public:
     Sound* partyFolks03Sound;
     Sound* partyFolks04Sound;
     Sound* partyFolks05Sound;
-    float lastTime;
+    float lastGoodTime;
 };
 
 #endif // __GAMEPLAY_H__
