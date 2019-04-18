@@ -61,14 +61,14 @@ public:
             }
         }
     };
-	void reset() {
-		for (std::vector<Sprite*>::iterator it = sprites.begin(); it != sprites.end(); ++it) {
+    void reset() {
+        for (std::vector<Sprite*>::iterator it = sprites.begin(); it != sprites.end(); ++it) {
             SAFE_DELETE(*it);
-		}
+        }
         indexes.clear();
         vertices.clear();
-		sprites.clear();
-	}
+        sprites.clear();
+    }
     status load() {
         // Creates and retrieves shader attributes and uniforms.
         Shader* shader = GraphicsManager::getInstance()->loadShader("shaders/Sprite.shader");

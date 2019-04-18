@@ -249,13 +249,6 @@ public:
         widgets.push_back(background);
         return background;
     };
-    Background* addBackground() {
-        LOG_INFO("Creating new 'Background' widget.");
-        Background* background = new Background();
-        background->spriteBatch = spriteBatch;
-        widgets.push_back(background);
-        return background;
-    };    
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();

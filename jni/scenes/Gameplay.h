@@ -18,7 +18,8 @@ public:
             SAFE_DELETE(*it);
         }
         fruits.clear();
-        if (rasterFont != NULL) SAFE_DELETE(rasterFont);
+        if (scoreText != NULL) SAFE_DELETE(scoreText);
+        if (changedScoreText != NULL) SAFE_DELETE(changedScoreText);
     };
     status start() {
         if (created) return STATUS_OK;
@@ -60,9 +61,11 @@ public:
         wowSound = SoundManager::getInstance()->registerSound("sounds/Wow.wav");
         hahaSound = SoundManager::getInstance()->registerSound("sounds/Haha.wav");
         SoundManager::getInstance()->loadResources();
-        // Create score points bar.
-        rasterFont = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE);
-        rasterFont->setText("0000000");
+        // Create score points text.
+        scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
+        scoreText->setText("0000000");
+        changedScoreText = new RasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
+        changedScoreText->scale = Vector2(0.7f, 0.7f);
         scores = 0;
         // Create fruits.
         for (int y = 0; y < GRID_SIZE; y++)
@@ -72,19 +75,13 @@ public:
             case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
             case 2: SoundManager::getInstance()->playSound(zipDown03Sound); break;
         }
-        // Create wow board.
-        wowSprite = spriteBatch->registerSprite("textures/Wow.png", 214, 75);
-        x2Sprite = spriteBatch->registerSprite("textures/x2.png", 130, 80);
-        x3Sprite = spriteBatch->registerSprite("textures/x3.png", 130, 80);
-        x4Sprite = spriteBatch->registerSprite("textures/x4.png", 130, 80);
-        x5Sprite = spriteBatch->registerSprite("textures/x5.png", 130, 80);
-        wowSprite->location = x2Sprite->location = x3Sprite->location = x4Sprite->location = x5Sprite->location = Vector2(halfWidth, halfHeight);
-        wowSprite->scale = x2Sprite->scale = x3Sprite->scale = x4Sprite->scale = x5Sprite->scale = Vector2(0.2f, 0.2f);
-        wowSprite->opaque = x2Sprite->opaque = x3Sprite->opaque = x4Sprite->opaque = x5Sprite->opaque = 0.0f;
-        wowSprite->order = x2Sprite->order = x3Sprite->order = x4Sprite->order = x5Sprite->order = 1;
-        wowBoard = addBackground();
-        wowBoardAnimated = false;
-        matchStep = 0;
+        // Create bonus text.
+        bonusText = addBackground("textures/BonusText.png", 214, 75, Vector2(halfWidth, halfHeight));
+        bonusText->sprite->scale = Vector2(0.5f, 0.5f);
+        bonusText->sprite->opaque = 0.0f;
+        bonusText->sprite->order = 1;
+        bonusTextAnimated = false;
+        matchStep = 1;
         // First test for match.
         testForMatch();
         created = true;
@@ -133,12 +130,12 @@ public:
     };
     // Update scene.
     void update() {
-        Scene::update();
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (getFruit(x, y) != NULL) getFruit(x, y)->update();
         }
-        if (rasterFont != NULL) rasterFont->update();
+        if (scoreText != NULL) scoreText->update();
+        if (changedScoreText != NULL) changedScoreText->update();
     };
     void dropFruits(int X, int Y) {
         // LOG_DEBUG("Drop fruits ...");
@@ -233,37 +230,37 @@ public:
                 case 3: SoundManager::getInstance()->playSound(grub04Sound); break;
                 case 4: SoundManager::getInstance()->playSound(grub05Sound); break;
             }
-            // Show wow board.
-            if (result >= MIN_MATCH_WOW_COUNT && matchStep == 0) {
-                showWowBoard(-1);
-                updateScore(result * 2);
-            } else if (matchStep >= 1) {
-                showWowBoard(matchStep);
-                SoundManager::getInstance()->playSound(hahaSound);
+            // Show bones text.
+            if (result >= MIN_MATCH_WOW_COUNT) {
+                showBonusText(-1);
+                updateScore(result * matchStep * 2);
+            } else if (matchStep > 1) {
+                showBonusText(matchStep);
                 updateScore(result * matchStep);
             } else updateScore(result);
             matchStep++;
-        } else matchStep = 0;
+        } else matchStep = 1;
         dyingFruits = result;
         return result;
     };
-    void showWowBoard(int step) {
-        if (!wowBoardAnimated) {
+    void showBonusText(int step) {
+        if (!bonusTextAnimated) {
             switch (step) {
-                case 2: wowBoard->sprite = x2Sprite; break;
-                case 3: wowBoard->sprite = x3Sprite; break;
-                case 4: wowBoard->sprite = x4Sprite; break;
-                case 5: wowBoard->sprite = x5Sprite; break;
+                case 2: bonusText->sprite->setFrame(1); break;
+                case 3: bonusText->sprite->setFrame(2); break;
+                case 4: bonusText->sprite->setFrame(3); break;
+                case 5: bonusText->sprite->setFrame(4); break;
                 default: {
-                    wowBoard->sprite = wowSprite;
+                    bonusText->sprite->setFrame(0);
                     SoundManager::getInstance()->playSound(wowSound);
                 }
             }
-            Tween* t1 = TweenManager::getInstance()->addTween(wowBoard->sprite, TweenType::OPAQUE, 0.3f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
-            Tween* t2 = TweenManager::getInstance()->addTween(wowBoard->sprite, TweenType::SCALE_XY, 0.3f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
-            Tween* t3 = TweenManager::getInstance()->addTween(wowBoard->sprite, TweenType::SCALE_XY, 0.3f, Ease::Back::Out)->target(0.2f, 0.2f)->remove(true)->delay(0.7f);
-            Tween* t4 = TweenManager::getInstance()->addTween(wowBoard->sprite, TweenType::OPAQUE, 0.3f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f)
-                ->onComplete(std::bind(&Gameplay::onWowBoardComplete, this));
+            if (step > 1) SoundManager::getInstance()->playSound(hahaSound);
+            Tween* t1 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
+            Tween* t2 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
+            Tween* t3 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
+            Tween* t4 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f)
+                ->onComplete(std::bind(&Gameplay::onBonusTextComplete, this));
             t2->addChain(t3);
             t2->addChain(t4);
             t2->start();
@@ -309,6 +306,7 @@ public:
                 case 1: SoundManager::getInstance()->playSound(Lift02Sound); break;
                 case 2: SoundManager::getInstance()->playSound(Lift03Sound); break;
             }
+            matchStep = 1;
         } else if (testForMatch() < MIN_MATCH_COUNT) updateScore(-2);
     };
     void onFruitDead(int X, int Y) {
@@ -316,15 +314,17 @@ public:
         dropFruits(X, Y);
         if (dyingFruits <= 0) updateBoard();
     };
-    void onWowBoardComplete() {
-        wowBoardAnimated = false;
+    void onBonusTextComplete() {
+        bonusTextAnimated = false;
     };
     void updateScore(int value) {
         scores += value;
         if (scores < 0) scores = 0;
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
-        rasterFont->setText(str.c_str());        
+        std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
+        scoreText->setText(str.c_str());
+        changedScoreText->setText(changedStr.c_str());
     };
     int backEvent() {
         activity->setStartScene();
@@ -340,20 +340,16 @@ public:
     };
     Background* background;
     Background* gameBox;
-    // Wow board.
-    Background* wowBoard;
-    Sprite* wowSprite;
-    Sprite* x2Sprite;
-    Sprite* x3Sprite;
-    Sprite* x4Sprite;
-    Sprite* x5Sprite;
-    bool wowBoardAnimated;
+    // Bonus text.
+    Background* bonusText;
+    bool bonusTextAnimated;
     int matchStep;
     // Fruits.
     int dyingFruits;
     std::vector<Fruit*> fruits;
     // Score points.
-    RasterFont* rasterFont;
+    RasterFont* scoreText;
+    RasterFont* changedScoreText;
     int scores;
     // Sounds.
     Sound* grub01Sound;

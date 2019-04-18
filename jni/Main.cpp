@@ -79,6 +79,9 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
+// - font fix
+// - font scale
+// - particle system
 // - save state
 // - music pause
 // - test for swap
