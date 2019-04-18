@@ -60,7 +60,15 @@ static android_app* application;
 struct ConfigData {
     int soundVolume = 70;
     int musicVolume = 50;
-    int fruitsType[GRID_SIZE][GRID_SIZE];
+    int fruitsType[GRID_SIZE][GRID_SIZE] = {
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1}
+    };
+    bool newBoard = true;
     int ScorePoints = 0;
     int missStep = 0;
 };

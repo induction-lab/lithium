@@ -75,8 +75,7 @@ public:
         // Create fruits.
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
-            int fruitType = (configData->fruitsType[x][y] == 0) ? -1 : configData->fruitsType[x][y];
-            addFruit(x, y, fruitType);
+            addFruit(x, y, configData->fruitsType[x][y]);
         }
         switch ((int)frand(3)) {
             case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
@@ -132,13 +131,15 @@ public:
         if (changedScoreText != NULL) changedScoreText->update();
     };
     // Just for debug.
-    void printBoard() {
+    void printBoard(bool full = true) {
         LOG_DEBUG("-------------------------------------");
         for (int y = 0; y < GRID_SIZE; y++) {
             std::string str = "|";
             for (int x = 0; x < GRID_SIZE; x++) {
-                str += std::to_string((int)fruits[x][y]->index.x) + " ";
-                str += std::to_string((int)fruits[x][y]->index.y) + " ";
+                if (full) {
+                    str += std::to_string((int)fruits[x][y]->index.x) + " ";
+                    str += std::to_string((int)fruits[x][y]->index.y) + " ";
+                }
                 str += std::to_string((int)fruits[x][y]->type) + "|";
             }
             str += "\n";
@@ -146,7 +147,7 @@ public:
         }
     };    
     void dropFruits(int x, int y) {
-        // LOG_DEBUG("Drop fruits ... %d %d", x, y);
+        LOG_DEBUG("Drop fruits ... %d %d", x, y);
         // Move down all upper fruits.
         for (int p = y; p > 0; p--) {
             std::swap(fruits[x][p], fruits[x][p - 1]);
@@ -154,7 +155,8 @@ public:
         };
     };
     void updateBoard() {
-        // LOG_DEBUG("Update board ...");
+        LOG_DEBUG("Update board ...");
+        printBoard(false);
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y]->alive) {
@@ -173,7 +175,7 @@ public:
         testForMatch();
     };
     int testForMatch() {
-        // LOG_DEBUG("Testing match fruits ...");
+        LOG_DEBUG("Testing match fruits ...");
         int result = 0;
         int count, type;
         // Horizontal test.
@@ -246,7 +248,7 @@ public:
     };
     // Select fruit.
     void onFruitClick(int X, int Y) {
-        // LOG_DEBUG("click %d %d", X, Y);
+        LOG_DEBUG("click %d %d", X, Y);
         if (!fruits[X][Y]->alive) return;
         if (dyingFruits > 0) return;
         bool swaped = false;
@@ -265,7 +267,7 @@ public:
                     case 0: SoundManager::getInstance()->playSound(zipUp01Sound); break;
                     case 1: SoundManager::getInstance()->playSound(zipUp02Sound); break;
                     case 2: SoundManager::getInstance()->playSound(zipUp03Sound); break;
-                }                
+                }
                 break;
             }
             if (swaped) break;
