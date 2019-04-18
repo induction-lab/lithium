@@ -1,6 +1,8 @@
 #ifndef __MAINMENU_H__
 #define __MAINMENU_H__
 
+#include "Level.h"
+
 class MainMenu : public Scene {
 private:
     Activity* activity;
@@ -15,6 +17,10 @@ public:
     };
     status start() {
         LOG_INFO("Start MainMenu scene.");
+        // ----
+        Level level;
+        level.loadFromFile("levels/bezier.txt");
+        // ----
         spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();

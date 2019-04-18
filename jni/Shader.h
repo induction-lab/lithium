@@ -26,7 +26,7 @@ public:
         char infoLog[256];
         // Opens Shader file.
         if (resource.open() != STATUS_OK) {
-            LOG_ERROR("Error open shader resource");
+            LOG_ERROR("Error open shader resource.");
             resource.close();
             return STATUS_ERROR;
         }
@@ -34,7 +34,7 @@ public:
         GLint shaderLength = resource.getLength();
         char *shaderBuffer = new char[shaderLength];
         if (resource.read(shaderBuffer, shaderLength) != STATUS_OK) {
-            LOG_ERROR("Error reading shader resource");
+            LOG_ERROR("Error reading shader resource.");
             resource.close();
             SAFE_DELETE_ARRAY(shaderBuffer);
             return STATUS_ERROR;
