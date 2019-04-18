@@ -96,10 +96,10 @@ public:
         bonusAnimated = false;
         matchStep = 1;
         missStep = configData->missStep;
-        // First test for match.
-        testForMatch();
         particleSystem = new ParticleSystem();
         lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
+        // First test for match.
+        testForMatch();        
         created = true;
         return STATUS_OK;
     };
@@ -135,8 +135,8 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
         }
+        // It's bad time...
         if (TimeManager::getInstance()->getTime() > lastGoodTime + 5.0f) {
-            // It's bad time...
             if (TimeManager::getInstance()->getTime() > lastBadTime + 1.0f && scores > 0) {
                 lastBadTime = TimeManager::getInstance()->getTime();
                 updateScore(-1);
@@ -356,8 +356,8 @@ public:
         if (step > 1) SoundManager::getInstance()->playSound(hahaSound);
         Tween* t1 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
         Tween* t2 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
-        Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
-        Tween* t4 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f);
+        Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.15f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
+        Tween* t4 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f);
         t2->addChain(t3);
         t2->addChain(t4);
         t2->start();
