@@ -124,9 +124,9 @@ public:
         bonus02Sound = SoundManager::getInstance()->registerSound("sounds/Bonus02.wav");
         bonus03Sound = SoundManager::getInstance()->registerSound("sounds/Bonus03.wav");
         bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");
-        accept01Sound = SoundManager::getInstance()->registerSound("sounds/Accept01.wav");
-        accept02Sound = SoundManager::getInstance()->registerSound("sounds/Accept02.wav");
-        accept03Sound = SoundManager::getInstance()->registerSound("sounds/Accept03.wav");
+        aha01Sound = SoundManager::getInstance()->registerSound("sounds/Aha01.wav");
+        aha02Sound = SoundManager::getInstance()->registerSound("sounds/Aha02.wav");
+        aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = addRasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
@@ -195,9 +195,9 @@ public:
             "textures/PearFruit.png",
             "textures/TomatoFruit.png",
             "textures/RedishFruit.png",
-            "textures/CherryFruit.png",
             "textures/LemonFruit.png",
             "textures/ChilliFruit.png",
+            "textures/CherryFruit.png"            
         };
         fruit->sprite = spriteBatch->registerSprite(fruitTextures[fruitType], 64, 64);
         fruit->sprite->location = getSkrewedLocation(x, -1);
@@ -221,27 +221,29 @@ public:
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
-            if (created && fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->dropped) {
+            if (created && fruits[x][y]->type >= FRUITS_COUNT) {
                 if (TimeManager::getInstance()->getTime() > fruits[x][y]->lastAccentTime + 5.0f) {
-                    Tween* t1= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
-                        ->remove(true)->target(1.2f, 1.2f);
-                    Tween* t2= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
-                        ->remove(true)->target(1.0f, 1.0f);
-                    t1->addChain(t2)->start();
-                    if ((int)frand(0) == 0) {
+                    if ((int)frand(2) == 0  && swapedFruits == 0 && droppedFruits == 0) {
                         Vector2 location = getSkrewedLocation(x, y);
-                        switch ((int)frand(3)) {
-                            case 0: SoundManager::getInstance()->playSound(accept01Sound); break;
-                            case 1: SoundManager::getInstance()->playSound(accept02Sound); break;
-                            case 2: SoundManager::getInstance()->playSound(accept03Sound); break;
+                        Tween* t1= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
+                            ->remove(true)->target(1.2f, 1.2f);
+                        Tween* t2= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
+                            ->remove(true)->target(1.0f, 1.0f);
+                        t1->addChain(t2)->start(0.1f);
+                        if ((int)frand(5) == 0) {
+                            switch ((int)frand(3)) {
+                                case 0: SoundManager::getInstance()->playSound(aha01Sound); break;
+                                case 1: SoundManager::getInstance()->playSound(aha02Sound); break;
+                                case 2: SoundManager::getInstance()->playSound(aha03Sound); break;
+                            }
                         }
-                        addAnimation("textures/AccentForBonus.png", 78, 78, Vector2(location.x, location.y + 2.5f), 20, 1.2f, 0.5f);
+                        addAnimation("textures/AccentForBonus.png", 78, 78, Vector2(location.x, location.y + 2.5f), 18, 1.0f, 0.5f);
                     }
                     fruits[x][y]->lastAccentTime = TimeManager::getInstance()->getTime();
                 }
             }
         }
-        // It's bad time...
+        // If player stupid...
         if (TimeManager::getInstance()->getTime() > lastGoodTime + 15.0f) {
             if (TimeManager::getInstance()->getTime() > lastBadTime + 1.0f && scores > 0) {
                 lastBadTime = TimeManager::getInstance()->getTime();
@@ -298,7 +300,7 @@ public:
                 }
                 scoresPerSwap = 0;
                 // Add bonus fruit (shance 5).
-                if ((int)frand(0) == 0) {
+                if ((int)frand(5) == 0) {
                     int n = 0;
                     bool goodPlace = false;
                     while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
@@ -533,27 +535,39 @@ public:
     void onFruitDying(int x, int y, FruitKillType killType) {
         switch(killType) {
             case FruitKillType::DEAD_EXTRA: {
-                if (fruits[x][y]->type >= FRUITS_COUNT) {
-                    LOG_DEBUG("Kill bonus!!!");
-                    for (int Y = 0; Y < GRID_SIZE; Y++)
-                    for (int X = 0; X < GRID_SIZE; X++) {
-                        fruits[X][Y]->selected = false;
+                // Bonus fruit dead type.
+                switch (fruits[x][y]->type) {
+                    case 7: { // reddish: '+' kill
+                        LOG_DEBUG("Kill reddish!!!");
+                        for (int Y = 0; Y < GRID_SIZE; Y++) for (int X = 0; X < GRID_SIZE; X++) fruits[X][Y]->selected = false;
+                        int p;
+                        float delay;
+                        for (p = y + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[x][p]->alive) 
+                            fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+                        for (p = y - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[x][p]->alive)
+                            fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+                        for (p = x + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[p][y]->alive)
+                            fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
+                        for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[p][y]->alive)
+                            fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
+                        break;
                     }
-                    int p;
-                    float delay;
-                    for (p = y + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[x][p]->alive) {
-                        fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+                    case 8: { // lemon: 'x' kill
+                        LOG_DEBUG("Kill lemon!!!");                        
+                        /// not empleementted yet.
+                        break;
                     }
-                    for (p = y - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[x][p]->alive) {
-                        fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+                    case 9: { // chili: big bomb (3 x 3) kill
+                        LOG_DEBUG("Kill chili!!!");
+                        /// not empleementted yet.
+                        break;
                     }
-                    for (p = x + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[p][y]->alive) {
-                        fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
+                    case 10: { // cherry: kill all fruits type with whom swapped
+                        LOG_DEBUG("Kill cherry!!!");                        
+                        /// not empleementted yet.
+                        break;
                     }
-                    for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[p][y]->alive) {
-                        fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
-                    }
-                }                
+                }
             }
             case FruitKillType::DEAD: {
                 switch ((int)frand(3)) {
@@ -740,9 +754,9 @@ private:
     Sound* bonus02Sound;
     Sound* bonus03Sound;
     Sound* bonus04Sound;
-    Sound* accept01Sound;
-    Sound* accept02Sound;
-    Sound* accept03Sound;
+    Sound* aha01Sound;
+    Sound* aha02Sound;
+    Sound* aha03Sound;
 };
 
 #endif // __GAMEPLAY_H__

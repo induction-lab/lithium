@@ -95,17 +95,21 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// + no backswap with scores
-// - redraw cherry bonus
-// + fix upper kill animation
+// √ no backswap with scores
+// √ redraw bonus fruit shadow
+// √ fix upper kill animation
 // - add bonus kill type
-// + accent random time
-// + bonus random time
+//   √ redish: '+' kill
+//   - cherry: kill all fruits type with whom swapped
+//   - lemon: 'x' kill
+//   - chili: big bomb (3 x 3) kill
+// √ accent random time
+// √ bonus random time
 // - game logo
-// - music pause
 // - tutorial
-// + leafs for phone ui mode
-// - .. refactoring to c++ best practics
+// - music pause (not necessary)
+// √ leafs for phone ui mode
+// .. refactoring to c++ best practics
 
 // Android entry point.
 void android_main(android_app* app) {

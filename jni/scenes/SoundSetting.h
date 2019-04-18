@@ -106,7 +106,7 @@ public:
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         aha01Sound = SoundManager::getInstance()->registerSound("sounds/Aha01.wav");
         aha02Sound = SoundManager::getInstance()->registerSound("sounds/Aha02.wav");
-        aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");        
+        aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");
         SoundManager::getInstance()->loadResources();
         created = true;
         return STATUS_OK;
@@ -178,7 +178,7 @@ public:
     Sound* buttonUpSound;
     Sound* aha01Sound;
     Sound* aha02Sound;
-    Sound* aha03Sound;    
+    Sound* aha03Sound;
 };
 
 #endif // __SOUND_SETTING_H__

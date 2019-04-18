@@ -294,7 +294,7 @@ public:
         LOG_DEBUG("Creating new 'BonusText' widget.");
         Background* bonusText = new Background();
         bonusText->setSprite(spriteBatch->registerSprite(path, width, height), location);
-        bonusText->sprite->order = 1;
+        bonusText->sprite->order = 5;
         bonusText->sprite->scale = Vector2(0.5f, 0.5f);
         bonusText->sprite->opaque = 0.0f;
         bonusText->sprite->setFrame(frame);
@@ -315,7 +315,7 @@ public:
         for (int n = 0; n < frames; n++) {
             Background* superText = new Background();
             superText->setSprite(spriteBatch->registerSprite(path, width, height), location);
-            superText->sprite->order = 1;
+            superText->sprite->order = 5;
             superText->sprite->scale = Vector2(0.3f, 0.3f);
             superText->sprite->opaque = 0.0f;
             superText->sprite->setFrame(n);
