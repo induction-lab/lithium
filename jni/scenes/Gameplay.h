@@ -31,25 +31,33 @@ public:
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Apple.
-        apple = addFruit("textures/apple.png", 64, 64, Location(halfWidth - 64.0, halfHeight - 50.0f));
+        apple = addFruit("textures/apple.png", 64, 64, Location(halfWidth - 64.0, halfHeight + 64.0f));
         apple->setClickFunction(std::bind(&Gameplay::onAppleClick, this));
         TweenManager::getInstance()->addTween(apple->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
         TweenManager::getInstance()->addTween(apple->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());        
         // Tomato.
-        tomato = addFruit("textures/tomato.png", 64, 64, Location(halfWidth, halfHeight - 50.0f));
+        tomato = addFruit("textures/tomato.png", 64, 64, Location(halfWidth, halfHeight + 64.0f));
         tomato->setClickFunction(std::bind(&Gameplay::onTomatoClick, this));
         TweenManager::getInstance()->addTween(tomato->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
         TweenManager::getInstance()->addTween(tomato->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
         // Pear.
-        pear = addFruit("textures/pear.png", 64, 64, Location(halfWidth + 64.0f, halfHeight - 50.0f));
+        pear = addFruit("textures/pear.png", 64, 64, Location(halfWidth + 64.0f, halfHeight + 64.0f));
         pear->setClickFunction(std::bind(&Gameplay::onPearClick, this));
         TweenManager::getInstance()->addTween(pear->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
         TweenManager::getInstance()->addTween(pear->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
+                    
+        // Orange.
+        orange = addFruit("textures/orange.png", 64, 64, Location(halfWidth - 64.0f, halfHeight));
+        orange->setClickFunction(std::bind(&Gameplay::onOrangeClick, this));
+        TweenManager::getInstance()->addTween(orange->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
+        TweenManager::getInstance()->addTween(orange->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
 
         line = new Line(5.0f);
@@ -58,6 +66,8 @@ public:
         grub01 = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
         grub02 = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
         grub03 = SoundManager::getInstance()->registerSound("sounds/Grub03.wav");
+        grub04 = SoundManager::getInstance()->registerSound("sounds/Grub04.wav");
+        grub05 = SoundManager::getInstance()->registerSound("sounds/Grub05.wav");
         SoundManager::getInstance()->loadResources();
         
         created = true;
@@ -88,6 +98,11 @@ public:
         SoundManager::getInstance()->playSound(grub03);
         LOG_DEBUG("Kill pear.");
     };
+    void onOrangeClick() {
+        orange->alive = false;
+        SoundManager::getInstance()->playSound(grub04);
+        LOG_DEBUG("Kill pear.");
+    };    
     void backEvent() {
         activity->setStartScene();
     };
@@ -96,13 +111,17 @@ public:
         if (direction == SWIPE_DIRECTION_RIGHT) activity->setStartScene();
     };
     Background* background;
+    // Fruits.
     Fruit* apple;
     Fruit* tomato;
     Fruit* pear;
+    Fruit* orange;
     Line* line;
     Sound* grub01;
     Sound* grub02;
     Sound* grub03;
+    Sound* grub04;
+    Sound* grub05;
 };
 
 #endif

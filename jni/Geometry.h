@@ -575,10 +575,10 @@ public:
     float z;        // z component of quaternion
 
     // Default constructor.
-    inline Quaternion(void): w(0.0f), x(0.0f), y(0.0f), z(0.0f) {}
+    inline Quaternion(void): w(0.0f), x(0.0f), y(0.0f), z(0.0f) {};
 
     // Construct quaternion from real component w and imaginary x,y,z.
-    inline Quaternion(float W, float X, float Y, float Z): w(W), x(X), y(Y), z(Z) {}
+    inline Quaternion(float W, float X, float Y, float Z): w(W), x(X), y(Y), z(Z) {};
 
 
     // Construct quaternion from angle-axis.

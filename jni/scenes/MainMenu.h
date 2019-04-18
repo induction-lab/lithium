@@ -79,7 +79,7 @@ public:
             SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
             configData->musicOn = true;
         } else {
-            SoundManager::getInstance()->stopMusic(false);
+            SoundManager::getInstance()->stopMusic();
             configData->musicOn = false;
         }
     };

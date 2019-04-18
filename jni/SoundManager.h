@@ -20,7 +20,6 @@ public:
         playerObj(NULL),
         playerPlay(NULL),
         playerSeek(NULL),
-        musicPath(NULL),
         soundQueues(),
         currentQueue(0),
         sounds() {
@@ -57,7 +56,6 @@ public:
         if (sounds.size() > 0) {
             if (loadResources() != STATUS_OK) goto ERROR;
         }
-        if (musicPath != NULL && playMusic(musicPath) != STATUS_OK) goto ERROR;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting SoundManager.");
@@ -96,7 +94,6 @@ ERROR:
         }
     };
     void reset() {
-        stopMusic(false);
         if (engine == NULL) return;
         for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
             soundQueues[i].reset();
@@ -108,6 +105,7 @@ ERROR:
         sounds.clear();        
     }
     status playMusic(const char* path) {
+        stopMusic();
         SLresult result;
         LOG_INFO("Opening music: %s", path);
         Resource resource(path);
@@ -138,13 +136,12 @@ ERROR:
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
-        musicPath = path;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error playing music.");
         return STATUS_ERROR;
     };
-    void stopMusic(bool paused = true) {
+    void stopMusic() {
         LOG_DEBUG("Stopping Music.");
         if (playerPlay != NULL) {
             SLuint32 playerState;
@@ -155,7 +152,6 @@ ERROR:
                 playerObj = NULL;
                 playerPlay = NULL;
                 playerSeek = NULL;
-                if (!paused) musicPath = NULL;
             }
         }
     };
@@ -184,7 +180,6 @@ private:
     SLObjectItf playerObj;
     SLPlayItf playerPlay;
     SLSeekItf playerSeek;
-    const char* musicPath;
     // Sound players.
     static const int32_t QUEUE_COUNT = 4;
     SoundQueue soundQueues[QUEUE_COUNT];
