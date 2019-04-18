@@ -10,7 +10,7 @@ enum class Justification {
 
 // Text animation.
 enum class TextAnimation {
-    NONE, SCALE, SLIDE
+    NONE, SCALE, SLIDE, ZOOM
 };
 
 class RasterFont: public Widget {
@@ -58,7 +58,7 @@ public:
                     Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.1f, Ease::Sinusoidal::InOut)
                         ->target(1.5f, 1.5f)->remove(true);
                     Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Sinusoidal::InOut)
-                        ->target(1.0f, 1.0f)->remove(true)
+                        ->target(scale.x, scale.y)->remove(true)
                         ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
                     startedTweens++;
                     t1->addChain(t2)->start();
@@ -77,6 +77,7 @@ public:
     };
     void onAnimatedComplete(Tweenable* t) {
         switch (animation) {
+            case TextAnimation::ZOOM:
             case TextAnimation::SLIDE: {
                 spriteBatch->unregisterSprite((Sprite*)t);
                 break;
@@ -88,6 +89,40 @@ public:
         }
     };
     void setText(const char* text) {
+        // Zoom animation.
+        if (animation == TextAnimation::ZOOM) {
+            LOG_DEBUG("ZOOM");
+            int textLength = strlen(text);
+            int textWidth = textLength * (width - CHAR_PADDING);
+            for (int count = 0; count < textLength; count++) {
+                // Get shift.
+                Vector2 l = Vector2(location.x + (width - (float)CHAR_PADDING * 1.05f) * count * scale.x, location.y + frand(4) - 2.0f);
+                if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
+                else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;            
+                // Create new sprite.
+                Sprite* sprite = spriteBatch->registerSprite(path, width, height);
+                sprite->setFrame(text[count]);
+                sprite->location = l;
+                sprite->scale = Vector2(0.5f, 0.5f);
+                sprite->order = 5;
+                sprite->opaque = 0.0f;
+                // Add animation.
+                Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Exponential::Out)
+                    ->target(1.0f)->remove(true);
+                Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Exponential::In)
+                    ->target(0.0f)->remove(true)->delay(1.5f);
+                Tween* t3 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.15f, Ease::Exponential::Out)
+                    ->target(scale.x, scale.y)->remove(true);
+                Tween* t4 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.5f, Ease::Exponential::In)
+                    ->target(0.5f, 0.5f)->remove(true)->delay(1.5f)
+                    ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
+                t1->addChain(t2);
+                t1->start();
+                t3->addChain(t4);
+                t3->start();
+                startedTweens++;
+            }
+        }
         // Slide animation.
         if (animation == TextAnimation::SLIDE) {
             int textLength = strlen(text);
@@ -106,25 +141,25 @@ public:
                 sprite->opaque = 0.0f;
                 // Add animation.
                 Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
-                    ->target(1.0f)->remove(true)->start();                
+                    ->target(1.0f)->remove(true);
                 Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_Y, 0.25f, Ease::Back::Out)
                     ->target(location.y + 21.0f)->remove(true);
                 Tween* t3 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
                     ->target(0.0f)->remove(true)->delay(0.5f)
                     ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
-                startedTweens++;
+                t1->start();
                 t2->addChain(t3);
                 t2->start();
+                startedTweens++;
             }
         }
         newText = text;
         textChanged = true;
     };
     Vector2 scale;
+    Vector2 location;
 private:
     int width, height;
-    Vector2 location;
-    Vector2 lastLocation;
     const char* path;
     std::string newText;
     std::string lastText;

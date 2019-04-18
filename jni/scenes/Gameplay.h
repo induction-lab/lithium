@@ -73,6 +73,8 @@ public:
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = addRasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
+        scoresPerSwapText = addRasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight), Justification::MIDDLE, TextAnimation::ZOOM);
+        scoresPerSwapText->scale = Vector2(1.2f, 1.2f);
         changedScoreText = addRasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
         changedScoreText->scale = Vector2(0.7f, 0.7f);
         scores = configData->ScorePoints;
@@ -86,10 +88,10 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             addFruit(x, y, configData->fruitsType[x][y]);
         }
-        needBonusFruit = false;
         SoundManager::getInstance()->playSound(fruitsStartSound);
         printBoard();
         matchStep = 0;
+        stepsComplited = false;
         missStep = configData->missStep;
         lostScores = configData->lostScores;
         particleSystem = new ParticleSystem();
@@ -172,7 +174,7 @@ public:
             float halfWidth = renderWidth / 2;
             float halfHeight = renderHeight / 2;
             Vector2 location = Vector2(halfWidth, halfHeight);
-            if (needBonusFruit) {
+            if (stepsComplited) {
                 LOG_WARN("scoresPerSwap=%d matchStep=%d", scoresPerSwap, matchStep);
                 if (scoresPerSwap >= MIN_MATCH_UNBELIEVABLE_COUNT) {
                     addSuperText("textures/Unbelievable.png", 360, 80, location, 15);
@@ -181,6 +183,9 @@ public:
                         case 1: SoundManager::getInstance()->playSound(unbelievable02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(unbelievable03Sound); break;                    
                     }
+                    std::string str = std::to_string(scoresPerSwap);
+                    scoresPerSwapText->location = Vector2(halfWidth + 80, halfHeight - 37);
+                    scoresPerSwapText->setText(str.c_str());                    
                 } else if (scoresPerSwap >= MIN_MATCH_EXELENT_COUNT) {
                     addSuperText("textures/Excellent.png", 360, 80, location, 10);
                     switch ((int)frand(3)) {
@@ -188,6 +193,9 @@ public:
                         case 1: SoundManager::getInstance()->playSound(excellent02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(excellent03Sound); break;                    
                     }
+                    std::string str = std::to_string(scoresPerSwap);
+                    scoresPerSwapText->location = Vector2(halfWidth + 55, halfHeight - 34);
+                    scoresPerSwapText->setText(str.c_str());                    
                 } else if (scoresPerSwap >= MIN_MATCH_WONDERFUL_COUNT) {
                     addSuperText("textures/Wonderful.png", 360, 80, location, 12);
                     switch ((int)frand(3)) {
@@ -195,9 +203,15 @@ public:
                         case 1: SoundManager::getInstance()->playSound(wonderful02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(wonderful03Sound); break;                    
                     }
+                    std::string str = std::to_string(scoresPerSwap);
+                    scoresPerSwapText->location = Vector2(halfWidth + 46, halfHeight - 32);
+                    scoresPerSwapText->setText(str.c_str());                    
                 } else if (scoresPerSwap >= MIN_MATCH_FINE_COUNT) {
                     addSuperText("textures/Fine.png", 360, 80, location, 5);
                     SoundManager::getInstance()->playSound(fineSound);
+                    std::string str = std::to_string(scoresPerSwap);
+                    scoresPerSwapText->location = Vector2(halfWidth + 39, halfHeight - 30);
+                    scoresPerSwapText->setText(str.c_str());
                 }
                 scoresPerSwap = 0;
                 // Add bonus fruit.
@@ -218,7 +232,7 @@ public:
                         goodPlace = true;
                     }
                 }
-                needBonusFruit = false;
+                stepsComplited = false;
             }
         }
     };
@@ -470,7 +484,7 @@ public:
                 }
                 if (dyingFruits == 0) {
                     updateBoard();
-                    needBonusFruit = true;
+                    stepsComplited = true;
                 }
                 break;
             }
@@ -528,7 +542,9 @@ public:
         if (created) {
             if (value > 0) scoresPerSwap += value;
             std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
-            if (value != 0) changedScoreText->setText(changedStr.c_str());        
+            if (value != 0) {
+                changedScoreText->setText(changedStr.c_str());
+            }
         } else scores = value;
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
@@ -572,7 +588,7 @@ private:
     int lostScores;
     // Fruits.
     Fruit* fruits[GRID_SIZE][GRID_SIZE];
-    bool needBonusFruit;
+    bool stepsComplited;
     // Fruit Animations.
     int dyingFruits;
     int swapedFruits;
@@ -580,6 +596,7 @@ private:
     // Score points.
     RasterFont* scoreText;
     RasterFont* changedScoreText;
+    RasterFont* scoresPerSwapText;
     int scores;
     int scoresPerSwap;
     // Particle system.
@@ -620,7 +637,7 @@ private:
     Sound* bonus01Sound;
     Sound* bonus02Sound;
     Sound* bonus03Sound;
-    Sound* bonus04Sound;    
+    Sound* bonus04Sound;
 };
 
 #endif // __GAMEPLAY_H__
