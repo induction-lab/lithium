@@ -440,10 +440,10 @@ public:
                 if (!fruits[x][y]->dead) {
                     Vector2 location = getSkrewedLocation(x, y);
                     Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
-                    a->sprite->angle = frand(360.0f);
+                    a->sprite->angle = Rad(frand(360.0f));
                 }
-                if (fruits[x][y]->type >= 7) {
-                    LOG_DEBUG("Kill Redish!!!");
+                if (fruits[x][y]->type >= FRUITS_COUNT) {
+                    LOG_DEBUG("Kill bonus!!!");
                     for (int Y = 0; Y < GRID_SIZE; Y++)
                     for (int X = 0; X < GRID_SIZE; X++) {
                         fruits[X][Y]->selected = false;

@@ -96,7 +96,9 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - Add bonus
+// - redraw bonus
+// - fix upper kill animation
+// - Add bonus kill
 // - Bonus random
 // - New logo
 // - Music pause

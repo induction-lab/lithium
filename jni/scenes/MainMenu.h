@@ -49,16 +49,20 @@ public:
         soundSettingsButton->setClickFunction(std::bind(&MainMenu::onSoundsButtonClick, this));
         TweenManager::getInstance()->addTween(soundSettingsButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
-
-        // - test -
         if (configData->firstSrtart) {
             Background* boom = addBackground("textures/StartScreen.png", 360, 640, Vector2(halfWidth, halfHeight));
             TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)
-                ->target(43)->remove(true)->start(5.0f);
+                ->target(43.0f)->remove(true)->start(6.0f);
+            Background* induction = addBackground("textures/induction.png", 239, 142, Vector2(halfWidth, halfHeight));
+            Tween* t1 = TweenManager::getInstance()->addTween(induction->sprite, TweenType::FRAME, 1.15f, Ease::Linear)
+                ->target(30.0f)->remove(true);
+            Tween* t2 = TweenManager::getInstance()->addTween(induction->sprite, TweenType::OPAQUE, 0.5f, Ease::Linear)
+                ->target(0.0f)->remove(true)->delay(3.0f);
+            t1->addChain(t2);
+            t1->start(1.0f);
+            
             configData->firstSrtart = false;
         }
-        // --------
-
         buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
