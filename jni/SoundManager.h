@@ -52,6 +52,7 @@ public:
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
         if (loadResources() != STATUS_OK) goto ERROR;
+        if (playedMusic != "") playMusic(playedMusic);
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting SoundManager.");
@@ -128,6 +129,7 @@ ERROR:
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
+        playedMusic = path;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error playing music.");
@@ -163,6 +165,7 @@ ERROR:
         soundQueue.playSound(sound);
     };
 private:
+    const char* playedMusic = ""; // temporary pump...
     // OpenSL ES engine.
     SLObjectItf engineObj;
     SLEngineItf engine;

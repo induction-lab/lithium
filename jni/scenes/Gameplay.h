@@ -18,7 +18,7 @@ public:
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
         SpriteBatch* spriteBatch = new SpriteBatch();
-        Sprite* background = spriteBatch->registerSprite("textures/Background.png", 360, 640);
+        Sprite* background = spriteBatch->registerSprite("textures/Background_temp.png", 360, 640);
         background->setLocation(renderWidth / 2, renderHeight / 2);
         return STATUS_OK;
     };
@@ -29,14 +29,15 @@ public:
         Location location = GraphicsManager::getInstance()->screenToRender((float)x, (float)y);
         switch (event) {
         case Touch::TOUCH_RELEASE:
-            InputManager::getInstance()->unregisterListener(this);
-            activity->setStartScene();
+            // InputManager::getInstance()->unregisterListener(this);
+            // activity->setStartScene();
             break;
         default:
             break;
         }
     };
     void backEvent() {
+        InputManager::getInstance()->unregisterListener(this);
         activity->setStartScene();
     }
 };

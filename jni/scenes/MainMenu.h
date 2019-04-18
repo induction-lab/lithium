@@ -23,7 +23,7 @@ public:
         Sprite* gameBox = spriteBatch->registerSprite("textures/GameBox.png", 360, 380);
         gameBox->setLocation(renderWidth / 2, renderHeight / 2);
         sprite = spriteBatch->registerSprite("textures/Play.png", 104, 100);
-        sprite->setLocation(renderWidth / 2, renderHeight / 2 - 60.0f);
+        sprite->setLocation(renderWidth / 2, renderHeight / 2 - 80.0f);
         Tween* t0 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start();
         Tween* t1 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
