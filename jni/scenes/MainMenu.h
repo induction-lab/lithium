@@ -31,6 +31,27 @@ public:
             ->target(1.03f)->remove(false)->loop()->reverse()->start();
         Tween* t2 = TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
+        // Animated leafs.
+        if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) {
+            leaf01 = addBackground("textures/Leaf01.png", 360, 239, Vector2(halfWidth + 35.0f, renderHeight - 40.0f));
+            leaf01->sprite->pivot = Vector(0.0f, 120.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf01->sprite);
+            leaf02 = addBackground("textures/Leaf02.png", 159, 157, Vector2(60.0f, renderHeight - 70.0f));
+            leaf02->sprite->pivot = Vector(-80.0f, 78.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf02->sprite);
+            leaf03 = addBackground("textures/Leaf03.png", 239, 211, Vector2(renderWidth - 65.0f, renderHeight - 100.0f));
+            leaf03->sprite->pivot = Vector(120.0f, 105.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf03->sprite);
+            leaf04 = addBackground("textures/Leaf04.png", 286, 225, Vector2(halfWidth, 90.0f));
+            leaf04->sprite->pivot = Vector(0.0f, -112.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf04->sprite);
+            leaf05 = addBackground("textures/Leaf05.png", 230, 210, Vector2(60.0f, 90.0f));
+            leaf05->sprite->pivot = Vector(-115.0f, -105.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf05->sprite);
+            leaf06 = addBackground("textures/Leaf06.png", 164, 223, Vector2(renderWidth - 65.0f, 90.0f));
+            leaf06->sprite->pivot = Vector(82.0f, -110.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf06->sprite);
+        }            
         exitButton = addButton("textures/ExitButton.png", 80, 78, Vector2(halfWidth - 85, halfHeight - 80));
         exitButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         exitButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
@@ -73,6 +94,13 @@ public:
     void update() {
         Scene::update();
     };
+    // Repeat leaf animation.
+    void onLeafTweenComplete(Tweenable* leaf) {
+        TweenManager::getInstance()->addTween((Sprite*)leaf, TweenType::ROTATION_CW, 1.5f, Ease::Sinusoidal::InOut)
+            ->target(frand(4.0f) - 2.0f)->remove(true)->reverse()
+            ->onComplete(std::bind(&MainMenu::onLeafTweenComplete, this, std::placeholders::_1))
+            ->start();
+    };
     void onAnyButtonDown() {
         SoundManager::getInstance()->playSound(buttonDownSound);
     };
@@ -105,6 +133,14 @@ public:
     };
     Background* background;
     Background* gameBox;
+    // Leafs.
+    Background* leaf01;
+    Background* leaf02;
+    Background* leaf03;
+    Background* leaf04;
+    Background* leaf05;
+    Background* leaf06;
+    // Controls.
     Button* exitButton;
     Button* playButton;
     Button* soundSettingsButton;

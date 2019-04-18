@@ -38,25 +38,26 @@ public:
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Animated leafs.
-        leaf01 = addBackground("textures/Leaf01.png", 360, 239, Vector2(halfWidth + 35.0f, renderHeight - 40.0f));
-        TweenManager::getInstance()->addTween(leaf01->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
-        leaf02 = addBackground("textures/Leaf02.png", 159, 157, Vector2(60.0f, renderHeight - 70.0f));
-        TweenManager::getInstance()->addTween(leaf02->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
-        leaf03 = addBackground("textures/Leaf03.png", 239, 211, Vector2(renderWidth - 65.0f, renderHeight - 100.0f));
-        TweenManager::getInstance()->addTween(leaf03->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
-        // -
-        leaf04 = addBackground("textures/Leaf04.png", 286, 225, Vector2(halfWidth, 90.0f));
-        TweenManager::getInstance()->addTween(leaf04->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start();
-        leaf05 = addBackground("textures/Leaf05.png", 230, 210, Vector2(60.0f, 90.0f));
-        TweenManager::getInstance()->addTween(leaf05->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
-        leaf06 = addBackground("textures/Leaf06.png", 164, 223, Vector2(renderWidth - 65.0f, 90.0f));
-        TweenManager::getInstance()->addTween(leaf06->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
-            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
+        if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) {
+            leaf01 = addBackground("textures/Leaf01.png", 360, 239, Vector2(halfWidth + 35.0f, renderHeight - 40.0f));
+            leaf01->sprite->pivot = Vector(0.0f, 120.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf01->sprite);
+            leaf02 = addBackground("textures/Leaf02.png", 159, 157, Vector2(60.0f, renderHeight - 70.0f));
+            leaf02->sprite->pivot = Vector(-80.0f, 78.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf02->sprite);
+            leaf03 = addBackground("textures/Leaf03.png", 239, 211, Vector2(renderWidth - 65.0f, renderHeight - 100.0f));
+            leaf03->sprite->pivot = Vector(120.0f, 105.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf03->sprite);
+            leaf04 = addBackground("textures/Leaf04.png", 286, 225, Vector2(halfWidth, 90.0f));
+            leaf04->sprite->pivot = Vector(0.0f, -112.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf04->sprite);
+            leaf05 = addBackground("textures/Leaf05.png", 230, 210, Vector2(60.0f, 90.0f));
+            leaf05->sprite->pivot = Vector(-115.0f, -105.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf05->sprite);
+            leaf06 = addBackground("textures/Leaf06.png", 164, 223, Vector2(renderWidth - 65.0f, 90.0f));
+            leaf06->sprite->pivot = Vector(82.0f, -110.0f, 0.0f);
+            onLeafTweenComplete((Tweenable*)leaf06->sprite);
+        }
         // Load sounds.
         clickSound = SoundManager::getInstance()->registerSound("sounds/Click.wav");
         doubleSound = SoundManager::getInstance()->registerSound("sounds/Double.wav");
@@ -117,6 +118,13 @@ public:
         testForMatch();        
         created = true;
         return STATUS_OK;
+    };
+    // Repeat leaf animation.
+    void onLeafTweenComplete(Tweenable* leaf) {
+        TweenManager::getInstance()->addTween((Sprite*)leaf, TweenType::ROTATION_CW, 1.5f, Ease::Sinusoidal::InOut)
+            ->target(frand(4.0f) - 2.0f)->remove(true)->reverse()
+            ->onComplete(std::bind(&Gameplay::onLeafTweenComplete, this, std::placeholders::_1))
+            ->start();
     };
     // Just for debug.
     void printBoard(bool full = true) {
@@ -190,7 +198,7 @@ public:
             }
         }
         particleSystem->update();
-        // Add bonus redich fruit to empty place.
+        // Add bonus fruit to empty place.
         if (matchStep == 0 && swapedFruits == 0 && droppedFruits == 0) {
             float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
             float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
@@ -236,8 +244,8 @@ public:
                     scoresPerSwapText->setText(str.c_str());
                 }
                 scoresPerSwap = 0;
-                // Add bonus fruit (5 in 1).
-                if ((int)frand(5) == 0) {
+                // Add bonus fruit (shance 5).
+                if ((int)frand(0) == 0) {
                     int n = 0;
                     bool goodPlace = false;
                     while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
@@ -468,9 +476,11 @@ public:
         switch(killType) {
             case FruitKillType::DEAD_EXTRA: {
                 if (!fruits[x][y]->dead) {
-                    Vector2 location = getSkrewedLocation(x, y);
+                    Vector2 location;
+                    if (fruits[x][y]->prevIndex.y == y || fruits[x][y]->prevIndex.y == 0) location = getSkrewedLocation(x, y);
+                    else location = getSkrewedLocation(x, fruits[x][y]->prevIndex.y);
                     Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
-                    a->sprite->angle = Rad(frand(360.0f));
+                    a->sprite->angle = Deg(frand(360.0f));
                 }
                 if (fruits[x][y]->type >= FRUITS_COUNT) {
                     LOG_DEBUG("Kill bonus!!!");

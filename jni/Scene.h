@@ -216,8 +216,8 @@ public:
     };
     int gestureTapEvent(int x, int y) {
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
-        if (sprite->pointInSprite(point.x, point.y)) {
-            if (clickFunction != NULL) {
+        if (clickFunction != NULL) {
+            if (sprite->pointInSprite(point.x, point.y)) {
                 clickFunction();
                 return 1;
             }

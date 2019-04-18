@@ -95,17 +95,17 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// + no backswap with scores
-// - redraw cherry bonus
-// - fix upper kill animation
-// - add bonus kill type
-// - accent random time
-// + bonus random time
-// - game logo
-// - music pause
-// - tutorial
-// ? leafs for phone ui mode (x aspect ratio?)
-// - .. refactoring to c++ best practics
+// + no backswap with scores.
+// - redraw cherry bonus.
+// - fix upper kill animation (add delay? move to kill).
+// - add bonus kill type.
+// - accent random time.
+// + bonus random time.
+// - game logo.
+// - music pause.
+// - tutorial.
+// + leafs for phone ui mode (fix aspect ratio?).
+// - .. refactoring to c++ best practics.
 
 // Android entry point.
 void android_main(android_app* app) {

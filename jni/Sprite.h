@@ -14,7 +14,7 @@ public:
         order(0),
         location(),
         angle(0.0f),
-        pivot(AxisZ),
+        pivot(Vector()),
         scale(Vector2(1.0f, 1.0f)),
         color(Vector(1.0f, 1.0f, 1.0f)), opaque(1.0f),
         texturePath(texturePath), textureId(0),
@@ -178,7 +178,9 @@ private:
         // Apply transformations.
         Matrix matrix = IdentityMatrix;
         matrix.Translate(location.x, location.y, 0.0f);
-        matrix.Rotate(angle, pivot);
+        matrix.Translate(pivot.x, pivot.y, 0.0f);
+        matrix.Rotate(angle, AxisZ);
+        matrix.Translate(-pivot.x, -pivot.y, 0.0f);
         matrix.Scale(scale.x, scale.y, 1.0f);
         float halfWidth = (float)spriteWidth * 0.5f;
         float halfHeight = (float)spriteHeight * 0.5f;
