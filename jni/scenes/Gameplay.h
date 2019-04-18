@@ -4,7 +4,6 @@
 /* Main gameplay stuff */
 
 #include "Fruit.h"
-#include "RasterFont.h"
 #include "ParticleSystem.h"
 
 class Gameplay: public Scene {
@@ -19,8 +18,6 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             SAFE_DELETE(fruits[x][y]);
         }
-        // if (scoreText != NULL) SAFE_DELETE(scoreText);
-        if (changedScoreText != NULL) SAFE_DELETE(changedScoreText);
         if (particleSystem != NULL) SAFE_DELETE(particleSystem);
     };
     status start() {
@@ -77,8 +74,8 @@ public:
         bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
-        /// scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
-        changedScoreText = new RasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
+        scoreText = addRasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
+        changedScoreText = addRasterFont("textures/WhiteFont.png", 64, 64, Vector2(halfWidth + 90, halfHeight - 158), Justification::RIGHT, TextAnimation::SLIDE);
         changedScoreText->scale = Vector2(0.7f, 0.7f);
         scores = configData->ScorePoints;
         updateScore(scores, true);
@@ -120,7 +117,7 @@ public:
     // New fruit.
     void addFruit(int x, int y, int fruitType = -1) {
         // LOG_DEBUG("Creating new fruit.");
-        if (fruitType == -1) fruitType = (int)frand(3);
+        if (fruitType == -1) fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
         const char* fruitTextures[8] = {
             "textures/AppleFruit.png",
@@ -165,7 +162,6 @@ public:
                 updateScore(-1);
             }
         }
-        /// if (scoreText != NULL) scoreText->update();
         if (changedScoreText != NULL) changedScoreText->update();
         particleSystem->update();        
     };
@@ -281,7 +277,8 @@ public:
         if (droppedFruits > 0) return;
         bool swaped = false;
         if (fruits[X][Y]->type == 7) {
-            fruits[X][Y]->kill();
+            matchStep = 1;
+            fruits[X][Y]->kill(0.0f, FruitKillType::DEAD_EXTRA);
         } else {
             // Standart click.
             // -----------------
@@ -371,41 +368,54 @@ public:
     };
     // Fruit callbacks.
     void onFruitKill(int x, int y, FruitKillType killType) {
+        if (killType == FruitKillType::DEAD) dyingFruits++;
         if (fruits[x][y]->type == 7) {
             LOG_DEBUG("Kill Redish!!!");
-            TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::OPAQUE, 0.7f, Ease::Linear)->target(0.0f)->remove(true)->start();
-            Vector2 location = getSkrewedLocation(x, y);
-            addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
             for (int Y = 0; Y < GRID_SIZE; Y++)
             for (int X = 0; X < GRID_SIZE; X++) {
                 fruits[X][Y]->selected = false;
             }
             int p;
             float delay;
-            for (p = y + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f)
-                if (fruits[x][p]->alive) fruits[x][p]->kill(delay);
-            for (p = y - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f)
-                if (fruits[x][p]->alive) fruits[x][p]->kill(delay);
-            for (p = x + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f)
-                if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
-            for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f)
-                if (fruits[p][y]->alive) fruits[p][y]->kill(delay);
+            for (p = y + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[x][p]->alive) {
+                if (fruits[x][p]->type < FRUITS_COUNT) fruits[x][p]->kill(delay, FruitKillType::DEAD);
+                else fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+            }
+            for (p = y - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[x][p]->alive) {
+                if (fruits[x][p]->type < FRUITS_COUNT) fruits[x][p]->kill(delay, FruitKillType::DEAD);
+                else fruits[x][p]->kill(delay, FruitKillType::DEAD_EXTRA);
+            }
+            for (p = x + 1, delay = 0.0f; p < GRID_SIZE; p++, delay += 0.25f) if (fruits[p][y]->alive) {
+                if (fruits[p][y]->type < FRUITS_COUNT) fruits[p][y]->kill(delay);
+                else fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
+            }
+            for (p = x - 1, delay = 0.0f; p >= 0; p--, delay += 0.25f) if (fruits[p][y]->alive) {
+                if (fruits[p][y]->type < FRUITS_COUNT) fruits[p][y]->kill(delay);
+                else fruits[p][y]->kill(delay, FruitKillType::DEAD_EXTRA);
+            }
             updateScore(dyingFruits);
         }
-        if (killType == FruitKillType::DEAD) dyingFruits++;
     };
     void onFruitDying(int x, int y, FruitKillType killType) {
-        if (killType == FruitKillType::DEAD) {
-            switch ((int)frand(3)) {
-                case 0: SoundManager::getInstance()->playSound(match_1Sound); break;
-                case 1: SoundManager::getInstance()->playSound(match_2Sound); break;
-                case 2: SoundManager::getInstance()->playSound(match_3Sound); break;
+        switch(killType) {
+            case FruitKillType::DEAD_EXTRA: {
+                Vector2 location = getSkrewedLocation(x, y);
+                addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
+                lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime(); // reset time limit
+                break;
             }
-            // Reset time limit.
-            lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
-            // Emit star particles.
-            if (SLOW_DOWN == 1) particleSystem->emit(3, getSkrewedLocation(x, y));
-        }    
+            case FruitKillType::DEAD: {
+                switch ((int)frand(3)) {
+                    case 0: SoundManager::getInstance()->playSound(match_1Sound); break;
+                    case 1: SoundManager::getInstance()->playSound(match_2Sound); break;
+                    case 2: SoundManager::getInstance()->playSound(match_3Sound); break;
+                }
+                // Emit star particles.
+                if (SLOW_DOWN == 1) particleSystem->emit(3, getSkrewedLocation(x, y));
+                lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime(); // reset time limit
+                break;
+            }
+        }
     };
     void onFruitDead(int x, int y, FruitKillType killType) {
         switch (killType) {
@@ -481,7 +491,7 @@ public:
         }
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
-        /// scoreText->setText(str.c_str());
+        scoreText->setText(str.c_str());
     };
     // Back to main scene.
     int backEvent() {
@@ -491,7 +501,7 @@ public:
         return 1;
     };
     int gestureSwipeEvent(int x, int y, int direction) {
-        // if (dyingFruits > 0) return 0;
+        if (dyingFruits > 0) return 0;
         if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return 0;
         if (direction == SWIPE_DIRECTION_RIGHT) {
             // saveGameState();

@@ -13,7 +13,7 @@ enum class TextAnimation {
     NONE, SCALE, SLIDE
 };
 
-class RasterFont {
+class RasterFont: public Widget {
 public:
     const int CHAR_PADDING = 44;
     RasterFont(const char* path, int width, int height, Vector2 location, Justification just, TextAnimation animation = TextAnimation::NONE):
@@ -26,14 +26,12 @@ public:
         scale(Vector2(1.0f, 1.0f)),
         just(just) {
         // LOG_DEBUG("Create RasterFont.")
-        spriteBatch = new SpriteBatch();
     };
     ~RasterFont() {
         // LOG_DEBUG("Delete RasterFont.")
         sprites.clear();
     };
     void update() {
-        /*
         if (animation == TextAnimation::SCALE) {
             if (startedTweens > 0) return;
             if (newText.compare(lastText) == 0 && !textChanged) return;
@@ -56,12 +54,12 @@ public:
                     sprite->setFrame(text[count]);
                     sprite->location = l;
                     sprite->scale = scale;
-                    if (animation == TextAnimation::SLIDE) sprite->opaque = 0.0f;
                     // Add animation.
                     Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.1f, Ease::Sinusoidal::InOut)
                         ->target(1.5f, 1.5f)->remove(true);
                     Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Sinusoidal::InOut)
-                        ->target(1.0f, 1.0f)->remove(true)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
+                        ->target(1.0f, 1.0f)->remove(true)
+                        ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
                     startedTweens++;
                     t1->addChain(t2)->start();
                     if (q) sprites.at(count) = sprite;
@@ -76,16 +74,20 @@ public:
             lastText = text;
             textChanged = false;
         }
-        */
-    }
-    void onAnimatedComplete() {
-        if (animation == TextAnimation::SLIDE) {
-            LOG_DEBUG("complete sprites = %d", sprites.size());
+    };
+    void onAnimatedComplete(Tweenable* t) {
+        switch (animation) {
+            case TextAnimation::SLIDE: {
+                spriteBatch->unregisterSprite((Sprite*)t);
+                break;
+            }
+            case TextAnimation::SCALE: {
+                startedTweens--;
+                break;
+            }
         }
-        startedTweens--;
-    }
+    };
     void setText(const char* text) {
-        /*
         // Slide animation.
         if (animation == TextAnimation::SLIDE) {
             int textLength = strlen(text);
@@ -100,32 +102,29 @@ public:
                 sprite->setFrame(text[count]);
                 sprite->location = l;
                 sprite->scale = scale;
-                sprites.push_back(sprite);
+                sprite->order = 1;
+                sprite->opaque = 0.0f;
                 // Add animation.
-                LOG_DEBUG("sprites = %d", sprites.size());
-                for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
-                    Tween* t1 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
-                        ->target(1.0f)->remove(true);                
-                    Tween* t2 = TweenManager::getInstance()->addTween(*it, TweenType::POSITION_Y, 0.25f, Ease::Back::Out)
-                        ->target(location.y + 21.0f)->remove(true)->start();
-                    Tween* t3 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.35f, Ease::Sinusoidal::InOut)
-                        ->target(0.0f)->remove(true)->delay(0.5f)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
-                    startedTweens++;
-                    t1->addChain(t3);
-                    t1->start();
-                }
+                Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
+                    ->target(1.0f)->remove(true)->start();                
+                Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_Y, 0.25f, Ease::Back::Out)
+                    ->target(location.y + 21.0f)->remove(true);
+                Tween* t3 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
+                    ->target(0.0f)->remove(true)->delay(0.5f)
+                    ->onComplete(std::bind(&RasterFont::onAnimatedComplete, this, std::placeholders::_1));
+                startedTweens++;
+                t2->addChain(t3);
+                t2->start();
             }
         }
         newText = text;
         textChanged = true;
-        */
     };
     Vector2 scale;
 private:
     int width, height;
     Vector2 location;
     Vector2 lastLocation;
-    SpriteBatch* spriteBatch;
     const char* path;
     std::string newText;
     std::string lastText;

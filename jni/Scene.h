@@ -34,6 +34,8 @@ protected:
     SpriteBatch* spriteBatch;
 };
 
+#include "RasterFont.h"
+
 // Button Widget.
 class Button: public Widget {
 public:
@@ -275,6 +277,7 @@ public:
         }
     };
     void onDead(Tweenable* t) {
+        // !!! LOG_DEBUG("!!! %s", ((Sprite*)(t))->texturePath);
         Widget::onDead(t);
         // ??? ...
     };
@@ -349,15 +352,21 @@ public:
         widgets.push_back(bonusText);
         return bonusText;
     };
+    RasterFont* addRasterFont(const char* path, int width, int height, Vector2 location, Justification just, TextAnimation animation = TextAnimation::NONE) {
+        RasterFont* rasterFont = new RasterFont(path, width, height, location, just, animation);
+        rasterFont->spriteBatch = spriteBatch;
+        widgets.push_back(rasterFont);
+        return rasterFont;
+    };
     virtual void update() {
-        for (std::vector<Widget*>::reverse_iterator it = widgets.rbegin(); it < widgets.rend(); ++it) {
+        for (std::vector<Widget*>::const_reverse_iterator it = widgets.rbegin(); it < widgets.rend(); ++it) {
             (*it)->update();
             if ((*it)->dead) {
-                // Delete animation.
-                LOG_DEBUG("Delete animation.");
+                // Delete dead widget.
+                LOG_DEBUG("Delete dead widget.");
                 spriteBatch->unregisterSprite((*it)->sprite);
                 widgets.erase(std::remove(widgets.begin(), widgets.end(), *it), widgets.end());
-            }            
+            }
         }
     };
     virtual status start(void) = 0;

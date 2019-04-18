@@ -23,7 +23,7 @@ enum class FruitMoveType {
 };
 
 enum class FruitKillType {
-    UNKNOWN, DEAD, REPLACE
+    UNKNOWN, DEAD, REPLACE, DEAD_EXTRA
 };
 
 // Fruit.
@@ -79,36 +79,6 @@ public:
             animated = false;
         }
     };
-    void kill(float delay = 0.0f, FruitKillType fruitkillType = FruitKillType::DEAD) {
-        killType = fruitkillType;
-        if (alive) {
-            alive = false;
-            if (killFunction != NULL) killFunction(index.x, index.y, killType);
-        }
-        if (type >= FRUITS_COUNT) {
-            onDead();
-            return;
-        }
-        if (!dead) {
-            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
-                ->onStart(std::bind(&Fruit::onDying, this))
-                ->target(4.0f)->remove(true);
-            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
-                ->target(0.0f)->remove(true)
-                ->onComplete(std::bind(&Fruit::onDead, this));
-            t1->addChain(t2)->start(delay);
-        }
-    };
-    void onMoved() {
-        if (movedFunction != NULL) movedFunction(index.x, index.y, moveType);
-    };
-    void onDying() {
-        if (dyingFunction != NULL) dyingFunction(index.x, index.y, killType);
-    };
-    void onDead() {
-        dead = true;
-        if (deadFunction != NULL) deadFunction(index.x, index.y, killType);
-    };
     void moveTo(int x, int y, float delay = 0.0f, FruitMoveType fruitMoveType = FruitMoveType::UNKNOWN) {
         moveType = fruitMoveType;
         if (moveFunction != NULL) moveFunction(index.x, index.y, moveType);
@@ -117,10 +87,47 @@ public:
         Vector2 location = getSkrewedLocation(x, y);
         moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
             ->target(location.x, location.y)->remove(true)
-            ->onComplete(std::bind(&Fruit::onMoved, this))
+            ->onComplete(std::bind(&Fruit::onMoved, this, std::placeholders::_1))
             ->start(delay);
         selected = false;
     };
+    void kill(float delay = 0.0f, FruitKillType fruitkillType = FruitKillType::DEAD) {
+        killType = fruitkillType;
+        if (alive) {
+            alive = false;
+            if (killFunction != NULL) killFunction(index.x, index.y, killType);
+        }
+        if (type >= FRUITS_COUNT) {
+            TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.7f, Ease::Linear)
+                ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
+                ->target(0.0f)->remove(true)
+                ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1))
+                ->start(delay);
+            onDead(sprite);
+            return;
+        }
+        if (!dead) {
+            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
+                ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
+                ->target(4.0f)->remove(true);
+            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
+                ->target(0.0f)->remove(true)
+                ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1));
+            t1->addChain(t2)->start(delay);
+        }
+    };
+    // Tween callbacks.
+    void onMoved(Tweenable* t) {
+        if (movedFunction != NULL) movedFunction(index.x, index.y, moveType);
+    };
+    void onDying(Tweenable* t) {
+        if (dyingFunction != NULL) dyingFunction(index.x, index.y, killType);
+    };
+    void onDead(Tweenable* t) {
+        dead = true;
+        if (deadFunction != NULL) deadFunction(index.x, index.y, killType);
+    };
+    // Fruit callbacks.
     void setClickFunction(std::function<void(int, int)> callback) {
         clickFunction = callback;
     };
