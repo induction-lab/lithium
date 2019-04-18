@@ -110,10 +110,18 @@ public:
     int32_t getSpriteWidth() {
         return spriteWidth;
     }
+    bool pointInSprite(Location point) {
+        float halfWidth = spriteWidth * 0.5f;
+        float halfHeight = spriteHeight * 0.5f;
+        return ((point.x > location.x - halfWidth ) &&
+                (point.x < location.x + halfWidth ) &&
+                (point.y > location.y - halfHeight) &&
+                (point.y < location.y + halfHeight));
+    }
 protected:
     friend class SpriteBatch;
     status load() {
-        Texture* texture = GraphicsManager::getInstance()->loadTexture(texturePath, GL_NEAREST, GL_CLAMP_TO_EDGE);
+        Texture* texture = GraphicsManager::getInstance()->loadTexture(texturePath, GL_LINEAR, GL_CLAMP_TO_EDGE);
         textureId = texture->getTextureId();
         sheetWidth = texture->getWidth();
         sheetHeight = texture->getHeight();
@@ -146,6 +154,7 @@ protected:
         GLfloat u2 = GLfloat((currentFrameX + 1) * spriteWidth) / GLfloat(sheetWidth);
         GLfloat v1 = GLfloat(currentFrameY * spriteHeight) / GLfloat(sheetHeight);
         GLfloat v2 = GLfloat((currentFrameY + 1) * spriteHeight) / GLfloat(sheetHeight);
+        // Apply transformations.
         Vector translate = Vector(location.x, location.y, 0.0f);
         Vector n1 = Vector(-float(spriteWidth / 2), -float(spriteHeight / 2), 0.0f);
         n1 = ScaleMatrix(Vector(scale.x, scale.y, 1.0f)) * n1;
@@ -163,6 +172,7 @@ protected:
         n4 = ScaleMatrix(Vector(scale.x, scale.y, 1.0f)) * n4;
         n4 = RotateMatrix(angle, AxisZ) * n4;
         n4 = TranslateMatrix(translate) * n4;
+        // Fill sprite vertices.
         vertices[0].x = n1.x;
         vertices[0].y = n1.y;
         vertices[0].u = u1;

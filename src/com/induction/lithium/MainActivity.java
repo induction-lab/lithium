@@ -22,7 +22,7 @@ public class MainActivity extends NativeActivity {
     TextView label;
     protected void onResume() {
         super.onResume();
-		Log.i(APP_TITLE, "Set immersive mode.");
+		Log.i(APP_TITLE, "[java] Set immersive mode.");
         // Hide toolbar
         int SDK_INT = android.os.Build.VERSION.SDK_INT;
         if(SDK_INT >= 11 && SDK_INT < 14) {
@@ -39,7 +39,7 @@ public class MainActivity extends NativeActivity {
         }
     }
     public void showUI() {
-		Log.i(APP_TITLE, "Show base UI from Java code.");
+		Log.i(APP_TITLE, "[java] Show base UI from Java code.");
         if (popupWindow != null) return;
         activity = this;
         this.runOnUiThread(new Runnable() {

@@ -5,9 +5,21 @@
 // Stuff for recieve log message
 #include <stdio.h>
 #include <android/log.h>
-#define LOG_INFO(...)  __android_log_print(ANDROID_LOG_INFO,  APP_TITLE, __VA_ARGS__)
-#define LOG_WARN(...)  __android_log_print(ANDROID_LOG_WARN,  APP_TITLE, __VA_ARGS__)
-#define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, __VA_ARGS__)
+#define LOG_INFO(x...) do { \
+	char buf[512]; \
+	sprintf(buf, x); \
+	__android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s: %s", __FILE__, buf); \
+} while (0)
+#define LOG_WARN(x...) do { \
+	char buf[512]; \
+	sprintf(buf, x); \
+	__android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s: %s", __FILE__, buf); \
+} while (0)
+#define LOG_ERROR(x...) do { \
+	char buf[512]; \
+	sprintf(buf, x); \
+	__android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s: %s", __FILE__, buf); \
+} while (0)
 #define LOG_DEBUG(x...) do { \
 	char buf[512]; \
 	sprintf(buf, x); \
@@ -31,10 +43,11 @@ static android_app* application;
 
 #include "Geometry.h"
 #include "TimeManager.h"
-#include "InputManager.h"
 #include "TweenManager.h"
 #include "GraphicsManager.h"
+#include "InputManager.h"
 #include "SoundManager.h"
+#include "Interface.h"
 #include "EventLoop.h"
 #include "Activity.h"
 

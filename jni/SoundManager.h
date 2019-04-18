@@ -26,7 +26,7 @@ public:
     ~SoundManager() {
         LOG_INFO("Destructing SoundManager.");
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
-            delete (*it);
+            SAFE_DELETE(*it);
         };
         sounds.clear();
     }
@@ -62,7 +62,7 @@ ERROR:
         return STATUS_ERROR;
     }
     status loadResources() {
-        LOG_DEBUG("Loads resources.");
+        LOG_DEBUG("Loads sound resources.");
         // Loads resources
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
             if ((*it)->load() != STATUS_OK) return STATUS_ERROR;

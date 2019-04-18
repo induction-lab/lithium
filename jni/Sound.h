@@ -38,8 +38,7 @@ ERROR:
         return STATUS_ERROR;
     }
     status unload() {
-        delete[] buffer;
-        buffer = NULL;
+        SAFE_DELETE_ARRAY(buffer);
         length = 0;
         return STATUS_OK;
     }

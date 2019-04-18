@@ -12,6 +12,13 @@
 #define MIN(a, b) (a < b ? a : b)
 #define CLAMP(x, lo, hi) (MIN(hi, MAX(lo, x)))
 
+struct Location {
+    Location(): x(0.0f), y(0.0f) {};
+    Location(float X, float Y): x(X), y(Y) {};
+    float x;
+    float y;
+};
+
 // Calculates radians by degrees
 inline float Rad(float Degrees) { return Degrees * (PI / 180.0f); };
 

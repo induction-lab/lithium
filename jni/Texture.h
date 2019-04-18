@@ -32,10 +32,8 @@ public:
     int32_t getWidth() {
         return width;
     }
-    status createFromData(unsigned char* pixelData, int textureWidth, int textureHeight, GLint format, int filter, int wrapMode) {
-        LOG_DEBUG("Create %d x %d texture.", textureWidth, textureHeight);
-        width = textureWidth;
-        height = textureHeight;
+    status createFromData(unsigned char* pixelData, int width, int height, GLint format, int filter, int wrapMode) {
+        LOG_DEBUG("Create %d x %d texture.", width, height);
         // Creates a new OpenGL texture.
         glGenTextures(1, &textureId);
         glBindTexture(GL_TEXTURE_2D, textureId);

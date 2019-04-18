@@ -28,7 +28,7 @@ public:
         LOG_INFO("Creating TweenManager.");
     };
     ~TweenManager() {
-        LOG_INFO("Destructing GraphicsManager.");
+        LOG_INFO("Destructing TweenManager.");
         clear();
     };
     static Tween* makeTween(Tweenable* target, int tweenType = -1, float duration = 1000, EaseFunc ease=Ease::Linear) {
@@ -48,7 +48,7 @@ public:
         return STATUS_OK;
     };
     void stop() {
-        LOG_INFO("Stopping GraphicsManager.");
+        LOG_INFO("Stopping TweenManager.");
         started = false;
     };
     status update() {

@@ -16,9 +16,9 @@ const int32_t DEFAULT_RENDER_WIDTH  = 360;
 
 class GraphicsComponent {
 public:
-    virtual status load() = 0;
-    virtual void draw() = 0;
-    virtual ~GraphicsComponent() {};
+    virtual status load(void) = 0;
+    virtual void draw(void) = 0;
+    virtual ~GraphicsComponent(void) {};
 };
 
 class GraphicsManager : public Singleton<GraphicsManager> {
@@ -34,7 +34,7 @@ public:
         renderFrameBuffer(0),
         renderVertexBuffer(0),
         renderTexture(0),
-        renderShaderProgram(0),
+        renderShader(0),
         aPosition(0), aTexture(0), uTexture(0),
         display(EGL_NO_DISPLAY),
         surface(EGL_NO_CONTEXT),
@@ -44,28 +44,6 @@ public:
     ~GraphicsManager() {
         LOG_INFO("Destructing GraphicsManager.");
         reset();
-        if (renderTexture != 0) {
-            glDeleteTextures(1, &renderTexture);
-            renderTexture = 0;
-        }
-        if (renderShaderProgram != 0) {
-            glDeleteProgram(renderShaderProgram);
-            renderShaderProgram = 0;
-        }
-        // Destroys OpenGL context.
-        if (display != EGL_NO_DISPLAY) {
-            eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-            if (context != EGL_NO_CONTEXT) {
-                eglDestroyContext(display, context);
-                context = EGL_NO_CONTEXT;
-            }
-            if (surface != EGL_NO_SURFACE) {
-                eglDestroySurface(display, surface);
-                surface = EGL_NO_SURFACE;
-            }
-            eglTerminate(display);
-            display = EGL_NO_DISPLAY;
-        }
     }
     int32_t getRenderWidth() {
         return renderWidth;
@@ -79,7 +57,7 @@ public:
     int32_t getScreenHeight() {
         return screenHeight;
     }
-    Location renderToScreen(int x, int y) {
+    Location screenToRender(int x, int y) {
         float nx = x * ((float)renderWidth / (float)screenWidth);
         float ny = ((float)screenHeight - y) * ((float)renderHeight / (float)screenHeight);
         return Location(nx, ny);
@@ -148,19 +126,17 @@ public:
         // Z-Buffer is useless as we are ordering draw calls ourselves.
         glDisable(GL_DEPTH_TEST);
         // Displays information about OpenGL.
-        LOG_INFO("OpenGL render context information:\n"
-                 "Renderer       : %s\n"
-                 "Vendor         : %s\n"
-                 "Version        : %s\n"
-                 "GLSL version   : %s\n"
-                 "OpenGL version : %d.%d\n",
-                 (const char*)glGetString(GL_RENDERER),
-                 (const char*)glGetString(GL_VENDOR),
-                 (const char*)glGetString(GL_VERSION),
-                 (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION),
-                 majorVersion, minorVersion
-                );
-        if (loadResources() != STATUS_OK) goto ERROR;
+        LOG_INFO("OpenGL render context information:");
+        LOG_INFO("Renderer       : %s\n", (const char*)glGetString(GL_RENDERER));
+        LOG_INFO("Vendor         : %s\n", (const char*)glGetString(GL_VENDOR));
+        LOG_INFO("Version        : %s\n", (const char*)glGetString(GL_VERSION));
+        LOG_INFO("GLSL version   : %s\n", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOG_INFO("OpenGL version : %d.%d\n", majorVersion, minorVersion);
+        LOG_INFO("Viewport       : %d x %d", screenWidth, screenHeight);
+        LOG_INFO("Offscreen      : %d x %d", renderWidth, renderWidth);
+        if (components.size() > 0) {
+            if (loadResources() != STATUS_OK) goto ERROR;
+        }
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting GraphicsManager.");
@@ -176,42 +152,67 @@ ERROR:
     }
     void stop() {
         LOG_INFO("Stopping GraphicsManager.");
-        LOG_DEBUG("Found %d textures.", textures.size());
-        // Releases textures.
-        for (std::map<const char*, Texture*>::iterator it = textures.begin(); it != textures.end(); ++it) {
-            SAFE_DELETE(it->second);
-        };
-        textures.clear();
-        LOG_DEBUG("Found %d shaders.", shaders.size());
-        // Releases shaders.
-        for (std::map<const char*, Shader*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
-            SAFE_DELETE(it->second);
-        };
-        shaders.clear();
-        LOG_DEBUG("Found %d vertex buffers.", vertexBuffers.size());
-        vertexBuffers.clear();
+        clear();
         // Releases offscreen rendering resources.
-        // Vertex buffer are released by the loops above.
+        if (renderVertexBuffer != 0) {
+            glDeleteBuffers(1, &renderVertexBuffer);
+            renderVertexBuffer = 0;
+        }
         if (renderFrameBuffer != 0) {
             glDeleteFramebuffers(1, &renderFrameBuffer);
             renderFrameBuffer = 0;
         }
-    }
-    void suspend() {
-        LOG_DEBUG("Suspend GraphicsManager.");
+        if (renderTexture != 0) {
+            glDeleteTextures(1, &renderTexture);
+            renderTexture = 0;
+        }
+        SAFE_DELETE(renderShader);        
+        // Destroys OpenGL context.
         if (display != EGL_NO_DISPLAY) {
             eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            if (context != EGL_NO_CONTEXT) {
+                eglDestroyContext(display, context);
+                context = EGL_NO_CONTEXT;
+            }
+            if (surface != EGL_NO_SURFACE) {
+                eglDestroySurface(display, surface);
+                surface = EGL_NO_SURFACE;
+            }
+            eglTerminate(display);
+            display = EGL_NO_DISPLAY;
         }
-        if (surface != EGL_NO_SURFACE) {
-            eglDestroySurface(display, surface);
-            surface = EGL_NO_SURFACE;
+    }
+    void clear() {
+        // Releases textures.
+        LOG_DEBUG("Found %d textures.", textures.size());
+        for (std::map<const char*, Texture*>::iterator it = textures.begin(); it != textures.end(); ++it) {
+            SAFE_DELETE(it->second);
+        };
+        textures.clear();
+        // Releases shaders.
+        LOG_DEBUG("Found %d shaders.", shaders.size());
+        for (std::map<const char*, Shader*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
+            SAFE_DELETE(it->second);
+        };
+        shaders.clear();
+    }
+    void registerComponent(GraphicsComponent* component) {
+        components.push_back(component);
+        component->load();
+    }
+    void reset() {
+        // Releases graphics components.
+        LOG_DEBUG("Found %d graphic components.", components.size());
+        for (std::vector<GraphicsComponent*>::iterator it = components.begin(); it < components.end(); ++it) {
+            SAFE_DELETE(*it);
         }
+        components.clear();
     }
     status update() {
         // Uses the offscreen FBO for scene rendering.
         glBindFramebuffer(GL_FRAMEBUFFER, renderFrameBuffer);
         glViewport(0, 0, renderWidth, renderHeight);
-        glClearColor(0.1f, 0.1f, 1.1f, 0.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // Render graphic components.
         for (std::vector<GraphicsComponent*>::iterator it = components.begin(); it < components.end(); ++it) {
@@ -224,7 +225,7 @@ ERROR:
         // Select the offscreen texture as source.
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, renderTexture);
-        glUseProgram(renderShaderProgram);
+        renderShader->apply();
         glUniform1i(uTexture, 0);
         // Indicates to OpenGL how position and uv coordinates are stored.
         glBindBuffer(GL_ARRAY_BUFFER, renderVertexBuffer);
@@ -271,36 +272,19 @@ ERROR:
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // Creates the vertex buffer
-        renderVertexBuffer = loadVertexBuffer(vertices, sizeof(vertices));
+        renderVertexBuffer = initVertexBuffer(vertices, sizeof(vertices));
         if (renderVertexBuffer == 0) goto ERROR;
         // Creates the shader used to render texture to screen.
-        Shader* shader;
-        shader = loadShader("shaders/Render.shader");
-        if (shader == NULL) goto ERROR;
-        renderShaderProgram = shader->getProgramId();
+        renderShader = new Shader();
+        if (renderShader->loadFromFile("shaders/Render.shader") != STATUS_OK) goto ERROR;
         // Creates and retrieves shader attributes and uniforms.
-        aPosition = glGetAttribLocation(renderShaderProgram,"aPosition");
-        aTexture  = glGetAttribLocation(renderShaderProgram, "aTexture");
-        uTexture  = glGetUniformLocation(renderShaderProgram,"uTexture");
-        LOG_INFO("Render dimensions: %d x %d", renderWidth, renderHeight);
+        aPosition = glGetAttribLocation(renderShader->getProgramId(),"aPosition");
+        aTexture  = glGetAttribLocation(renderShader->getProgramId(), "aTexture");
+        uTexture  = glGetUniformLocation(renderShader->getProgramId(),"uTexture");
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while loading offscreen buffer.");
         return STATUS_ERROR;
-    }
-    void registerComponent(GraphicsComponent* component) {
-        components.push_back(component);
-        component->load();
-    }
-    void unregisterComponent(GraphicsComponent* component) {
-        components.erase(std::find(components.begin(), components.end(), component));
-    }
-    void reset() {
-        // Releases graphics components.
-        for (std::vector<GraphicsComponent*>::iterator it = components.begin(); it < components.end(); ++it) {
-            delete (*it);
-        }
-        components.clear();
     }
     Texture* loadTexture(const char* path, int filter, int mode) {
         // Reuse texture, if already loaded
@@ -312,7 +296,7 @@ ERROR:
         textures.insert(std::pair<const char*, Texture*>(path, texture));
         return texture;
 ERROR:
-        delete texture;
+        SAFE_DELETE(texture);
         return NULL;
     }
     Shader* loadShader(const char* path) {
@@ -325,10 +309,10 @@ ERROR:
         shaders.insert(std::pair<const char*, Shader*>(path, shader));
         return shader;
 ERROR:
-        delete shader;
+        SAFE_DELETE(shader);
         return NULL;
     }
-    GLuint loadVertexBuffer(const void* buffer, int32_t bufferSize) {
+    GLuint initVertexBuffer(const void* buffer, int32_t bufferSize) {
         GLuint vertexBuffer;
         // Upload specified memory buffer into OpenGL.
         glGenBuffers(1, &vertexBuffer);
@@ -337,7 +321,6 @@ ERROR:
         // Unbinds the buffer.
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         if (glGetError() != GL_NO_ERROR) goto ERROR;
-        vertexBuffers.push_back(vertexBuffer);
         return vertexBuffer;
 ERROR:
         LOG_ERROR("Error loading vertex buffer.");
@@ -364,13 +347,12 @@ private:
     std::vector<GraphicsComponent*> components;
     std::map<const char*, Texture*> textures;
     std::map<const char*, Shader*> shaders;
-    std::vector<GLuint> vertexBuffers;
     // Rendering resources.
     GLint screenFrameBuffer;
     GLuint renderFrameBuffer;
     GLuint renderVertexBuffer;
     GLuint renderTexture;
-    GLuint renderShaderProgram;
+    Shader* renderShader;
     GLuint aPosition, aTexture, uTexture;
 };
 

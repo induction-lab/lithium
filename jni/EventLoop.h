@@ -58,7 +58,7 @@ public:
         application->userData = this;
         application->onAppCmd = callback_event;
         application->onInputEvent = callback_input;
-        LOG_INFO("Create services.");
+        LOG_INFO("Create services ...");
         TimeManager::getInstance();
         InputManager::getInstance();
         GraphicsManager::getInstance();
@@ -67,7 +67,7 @@ public:
     }
     ~EventLoop() {
         SAFE_DELETE(activityHandler);
-        LOG_DEBUG("Destructing base services.");
+        LOG_DEBUG("Destructing base services ...");
         TweenManager::dispose();
         SoundManager::dispose();
         GraphicsManager::dispose();
@@ -81,7 +81,7 @@ public:
         // Makes sure native glue is not stripped by the linker.
         app_dummy();
         activityHandler = activity;
-        LOG_INFO("Starting event loop");
+        LOG_INFO("Starting event loop.");
         while (true) {
             // Event processing loop.
             while ((result = ALooper_pollAll(enabled ? 0 : -1, NULL, &events, (void**) &source)) >= 0) {
@@ -131,7 +131,7 @@ protected:
             quit = false;
             enabled = true;
             // Starts services.
-            LOG_INFO("Activating services.");
+            LOG_INFO("Activating services ...");
             if (TimeManager::getInstance()->start() != STATUS_OK) goto ERROR;
             if (InputManager::getInstance()->start() != STATUS_OK) goto ERROR;
             if (GraphicsManager::getInstance()->start() != STATUS_OK) goto ERROR;
@@ -155,7 +155,7 @@ ERROR:
             sensorManager = NULL;
             activityHandler->onDeactivate();
             // Stop services.
-            LOG_INFO("Deactivating services.");
+            LOG_INFO("Deactivating services ...");
             TimeManager::getInstance()->stop();
             InputManager::getInstance()->stop();
             GraphicsManager::getInstance()->stop();
@@ -279,11 +279,11 @@ private:
             const char* vendor = ASensor_getVendor(accelerometer);
             float resolution = ASensor_getResolution(accelerometer);
             int32_t minDelay = ASensor_getMinDelay(accelerometer);
-            LOG_INFO("Activating accelerometer:");
-            LOG_INFO("Name       : %s", name);
-            LOG_INFO("Vendor     : %s", vendor);
-            LOG_INFO("Resolution : %f", resolution);
-            LOG_INFO("Min Delay  : %d", minDelay);
+            LOG_DEBUG("Activating accelerometer:");
+            LOG_DEBUG("Name       : %s", name);
+            LOG_DEBUG("Vendor     : %s", vendor);
+            LOG_DEBUG("Resolution : %f", resolution);
+            LOG_DEBUG("Min Delay  : %d", minDelay);
             // Uses maximum refresh rate.
             if (ASensorEventQueue_setEventRate(sensorEventQueue, accelerometer, minDelay) < 0) {
                 LOG_ERROR("Could not set accelerometer rate.");
