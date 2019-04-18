@@ -3,9 +3,6 @@
 
 /* Simple particle system */
 
-// Specify a limit for the size of our particle vector.
-const int MAX_PARTICLES = 10;
-
 class Particle {
 public:
     Particle() {
@@ -19,7 +16,7 @@ public:
         rotation = frandRange(-1.0f, 1.0f);
      };
     ~Particle() {
-        LOG_DEBUG("Delete Particle.");
+        // LOG_DEBUG("Delete Particle.");
     };
     const int FRAMES_TO_LIVE      = 300;
     const float MIN_PARTICLE_SIZE = 0.2f;
@@ -38,7 +35,7 @@ public:
         framesToLive--;
     };
     Vector2 speed;     // the current speed of the particle
-    float size;        // the size of the particle i.e. how big the pointsprite will be drawn
+    float size;        // the size of the particle
     float rotation;    // the rotation speed
     int framesToLive;  // number of frames before the particle is destroyed
     Sprite* sprite;
@@ -79,7 +76,7 @@ public:
         }
     };
     void addParticle(Vector2 location) {
-        LOG_DEBUG("Create new particle.");
+        // LOG_DEBUG("Create new particle.");
         Particle* particle = new Particle();
         particle->sprite = spriteBatch->registerSprite("textures/Particle.png", 47, 47);
         particle->sprite->location = location;

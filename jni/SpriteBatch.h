@@ -132,9 +132,7 @@ ERROR:
                 ) {
                     Sprite::Vertex* spriteVertices = (&vertices[currentSprite * 4]);
                     sprite->draw(spriteVertices);
-                } else {
-                    break;
-                }
+                } else break;
             } while (canDraw == (++currentSprite < spriteCount));
             // Renders sprites each time texture or other values changes.
             glDrawElements(GL_TRIANGLES, (currentSprite - firstSprite) * indexPerSprite, GL_UNSIGNED_SHORT, &indexes[firstSprite * indexPerSprite]);

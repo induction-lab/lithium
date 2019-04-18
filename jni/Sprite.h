@@ -21,10 +21,10 @@ public:
         spriteWidth(width), spriteHeight(height),
         frameCount(0), frameXCount(0), frameYCount(0),
         currentFrame(0) {
-        LOG_DEBUG("Create sprite.");
+        // LOG_DEBUG("Create sprite.");
     };
     ~Sprite() {
-        LOG_DEBUG("Delete sprite.");
+        // LOG_DEBUG("Delete sprite.");
     };
     void setFrame(int frame) {
         currentFrame = frame;
@@ -34,78 +34,78 @@ public:
     };
     int getValues(int tweenType, float* returnValues) {
         switch (tweenType) {
-        case TweenType::POSITION_X:
-            returnValues[0] = location.x;
-            return 1;
-        case TweenType::POSITION_Y:
-            returnValues[0] = location.y;
-            return 1;
-        case TweenType::POSITION_XY:
-            returnValues[0] = location.x;
-            returnValues[1] = location.y;
-            return 2;
-        case TweenType::ROTATION_CW:
-        case TweenType::ROTATION_CCW:
-            angle = returnValues[0] = angle;
-            return 1;
-        case TweenType::SCALE_X:
-            returnValues[0] = scale.x;
-            return 1;
-        case TweenType::SCALE_Y:
-            returnValues[0] = scale.y;
-            return 1;
-        case TweenType::SCALE_XY:
-            returnValues[0] = scale.x;
-            returnValues[1] = scale.y;
-            return 2;
-        case TweenType::OPAQUE:
-            returnValues[0] = opaque;
-            return 1;
-        case TweenType::COLOR:
-            returnValues[0] = color.x; // r
-            returnValues[1] = color.y; // g
-            returnValues[2] = color.z; // b
-            return 3;
-        case TweenType::FRAME:
-            returnValues[0] = currentFrame;
-            return 1;
+            case TweenType::POSITION_X:
+                returnValues[0] = location.x;
+                return 1;
+            case TweenType::POSITION_Y:
+                returnValues[0] = location.y;
+                return 1;
+            case TweenType::POSITION_XY:
+                returnValues[0] = location.x;
+                returnValues[1] = location.y;
+                return 2;
+            case TweenType::ROTATION_CW:
+            case TweenType::ROTATION_CCW:
+                angle = returnValues[0] = angle;
+                return 1;
+            case TweenType::SCALE_X:
+                returnValues[0] = scale.x;
+                return 1;
+            case TweenType::SCALE_Y:
+                returnValues[0] = scale.y;
+                return 1;
+            case TweenType::SCALE_XY:
+                returnValues[0] = scale.x;
+                returnValues[1] = scale.y;
+                return 2;
+            case TweenType::OPAQUE:
+                returnValues[0] = opaque;
+                return 1;
+            case TweenType::COLOR:
+                returnValues[0] = color.x; // r
+                returnValues[1] = color.y; // g
+                returnValues[2] = color.z; // b
+                return 3;
+            case TweenType::FRAME:
+                returnValues[0] = currentFrame;
+                return 1;
         }
         return 0;
     };
     void setValues(int tweenType, float* newValues) {
         switch (tweenType) {
-        case TweenType::POSITION_X:
-            location.x = newValues[0];
-            break;
-        case TweenType::POSITION_Y:
-            location.y = newValues[0];
-            break;
-        case TweenType::POSITION_XY:
-            location.x = newValues[0];
-            location.y = newValues[1];
-            break;
-        case TweenType::ROTATION_CW:
-        case TweenType::ROTATION_CCW:
-            angle = newValues[0];
-            break;
-        case TweenType::SCALE_X:
-            scale.x = newValues[0];
-            break;
-        case TweenType::SCALE_Y:
-            scale.y = newValues[0];
-            break;
-        case TweenType::SCALE_XY:
-            scale = Vector2(newValues[0], newValues[1]);
-            break;
-        case TweenType::OPAQUE:
-            opaque = newValues[0];
-            break;
-        case TweenType::COLOR:
-            color = Vector(newValues[0], newValues[1], newValues[2]);
-            break;
-        case TweenType::FRAME:
-            currentFrame = (int)round(newValues[0]);
-            break;
+            case TweenType::POSITION_X:
+                location.x = newValues[0];
+                break;
+            case TweenType::POSITION_Y:
+                location.y = newValues[0];
+                break;
+            case TweenType::POSITION_XY:
+                location.x = newValues[0];
+                location.y = newValues[1];
+                break;
+            case TweenType::ROTATION_CW:
+            case TweenType::ROTATION_CCW:
+                angle = newValues[0];
+                break;
+            case TweenType::SCALE_X:
+                scale.x = newValues[0];
+                break;
+            case TweenType::SCALE_Y:
+                scale.y = newValues[0];
+                break;
+            case TweenType::SCALE_XY:
+                scale = Vector2(newValues[0], newValues[1]);
+                break;
+            case TweenType::OPAQUE:
+                opaque = newValues[0];
+                break;
+            case TweenType::COLOR:
+                color = Vector(newValues[0], newValues[1], newValues[2]);
+                break;
+            case TweenType::FRAME:
+                currentFrame = (int)round(newValues[0]);
+                break;
         }
     };
     int getWidth() {

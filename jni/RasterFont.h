@@ -3,7 +3,7 @@
 
 #include "SpriteBatch.h"
 
-// For text justification
+// For text justification.
 enum class Justification {
     LEFT, MIDDLE, RIGHT
 };
@@ -41,16 +41,13 @@ public:
         int textWidth = textLength * (width - CHAR_PADDING);
         // Recreate only changed sprite.
         for (int count = 0; count < textLength; count++) {
-            // Test if char are not equal.
+            // Test if char changed.
             bool q = ((count < lastTextLength) && (text[count] != lastText.c_str()[count]));
             if (q) spriteBatch->unregisterSprite(sprites.at(count));
             // Get shift.
             Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count * scale.x, location.y + frand(4) - 2.0f);
-            if (just == Justification::MIDDLE) {
-                l.x = l.x - textWidth / 2 * scale.x;
-            } else if (just == Justification::RIGHT) {
-                l.x = l.x - textWidth * scale.x;
-            }
+            if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
+            else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;
             // Create new sprite.
             if (q || (count >= lastTextLength)) {
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
@@ -67,11 +64,8 @@ public:
                     startedTweens++;
                     t1->addChain(t2)->start();
                 }
-                if (q) {
-                    sprites.at(count) = sprite;
-                } else {
-                    sprites.push_back(sprite);
-                }
+                if (q) sprites.at(count) = sprite;
+                else sprites.push_back(sprite);
             } else sprites.at(count)->location.x = l.x;
         }
         // Delete tail.
@@ -82,18 +76,15 @@ public:
         // Slide animation.
         if (animation == TextAnimation::SLIDE) {
             for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
-                lastLocation = (*it)->location;
-                Tween* t1 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)
+                lastLocation = location;
+                Tween* t1 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
                     ->target(1.0f)->remove(true);                
                 Tween* t2 = TweenManager::getInstance()->addTween(*it, TweenType::POSITION_Y, 0.25f, Ease::Back::Out)
-                    ->target(lastLocation.y + 20.0f)->remove(true)->start();
-                Tween* t3 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)
-                    ->target(0.0f)->remove(true)->delay(1.0f)->delay(0.7f);
-                Tween* t4 = TweenManager::getInstance()->addTween(*it, TweenType::POSITION_Y, 0.25f, Ease::Sinusoidal::InOut)
-                    ->target(lastLocation.y)->remove(true)->delay(0.7f)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
+                    ->target(lastLocation.y + 21.0f)->remove(true)->start();
+                Tween* t3 = TweenManager::getInstance()->addTween(*it, TweenType::OPAQUE, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(0.0f)->remove(true)->delay(0.5f)->onComplete(std::bind(&RasterFont::onAnimatedComplete, this));
                 startedTweens++;
                 t1->addChain(t3);
-                t3->addChain(t4);
                 t1->start();
             }
         }
@@ -101,6 +92,7 @@ public:
         textChanged = false;
     }
     void onAnimatedComplete() {
+        if (animation == TextAnimation::SLIDE) location = lastLocation;
         startedTweens--;
     }
     void setText(const char* text) {

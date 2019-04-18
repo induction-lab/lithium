@@ -1,13 +1,13 @@
 #ifndef __GAMEPLAY_H__
 #define __GAMEPLAY_H__
 
+/* Main gameplay stuff */
+
 #include "Fruit.h"
 #include "RasterFont.h"
 #include "ParticleSystem.h"
 
 class Gameplay: public Scene {
-private:
-    Activity* activity;
 public:
     Gameplay(Activity* activity):
         activity(activity) {
@@ -40,12 +40,6 @@ public:
             ->target(1.03f)->remove(false)->loop()->reverse()->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
-        // Time bar.
-        timeLimitBar = addBackground("textures/TimeLimitBar.png", 100, 34, Vector2(halfWidth, halfHeight + 160));
-        timeLimitBar->sprite->order = 1;
-        lastGoodTime = TimeManager::getInstance()->getTime();
-        clock = addBackground("textures/TimeLimitClock.png", 26, 28, Vector2(halfWidth - 30, halfHeight + 150));
-        clock->sprite->order = 2;
         // Load sounds.
         grub01Sound = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
         grub02Sound = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
@@ -76,11 +70,6 @@ public:
         squishy01Sound = SoundManager::getInstance()->registerSound("sounds/Squishy01.wav");
         squishy02Sound = SoundManager::getInstance()->registerSound("sounds/Squishy02.wav");
         squishy03Sound = SoundManager::getInstance()->registerSound("sounds/Squishy03.wav");
-        partyFolks01Sound = SoundManager::getInstance()->registerSound("sounds/PartyFolks01.wav");
-        partyFolks02Sound = SoundManager::getInstance()->registerSound("sounds/PartyFolks02.wav");
-        partyFolks03Sound = SoundManager::getInstance()->registerSound("sounds/PartyFolks03.wav");
-        partyFolks04Sound = SoundManager::getInstance()->registerSound("sounds/PartyFolks04.wav");
-        partyFolks05Sound = SoundManager::getInstance()->registerSound("sounds/PartyFolks05.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
@@ -100,17 +89,17 @@ public:
         }
         printBoard();
         // Create bonus text.
-        bonusText = addBackground("textures/BonusText.png", 214, 75, Vector2(halfWidth, halfHeight));
-        bonusText->sprite->scale = Vector2(0.5f, 0.5f);
-        bonusText->sprite->opaque = 0.0f;
-        bonusText->sprite->order = 1;
-        bonusTextAnimated = false;
+        bonus = addBackground("textures/BonusText.png", 214, 75, Vector2(halfWidth, halfHeight));
+        bonus->sprite->scale = Vector2(0.5f, 0.5f);
+        bonus->sprite->opaque = 0.0f;
+        bonus->sprite->order = 1;
+        bonusAnimated = false;
         matchStep = 1;
         missStep = configData->missStep;
         // First test for match.
         testForMatch();
-        // WHAT?
         particleSystem = new ParticleSystem();
+        lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
         created = true;
         return STATUS_OK;
     };
@@ -146,46 +135,21 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
         }
-        if (scoreText != NULL) scoreText->update();
-        if (changedScoreText != NULL) changedScoreText->update();
-        particleSystem->update();
-        
-        if (TimeManager::getInstance()->getTime() > lastGoodTime + 0.7f) {
-            lastGoodTime = TimeManager::getInstance()->getTime();
-            Tween* t1 = TweenManager::getInstance()->addTween(timeLimitBar->sprite, TweenType::SCALE_XY, 0.37f, Ease::Exponential::Out)
-                ->target(1.15f, 1.15f)->remove(true);
-            Tween* t2 = TweenManager::getInstance()->addTween(timeLimitBar->sprite, TweenType::SCALE_XY, 0.37f, Ease::Exponential::In)
-                ->target(1.0f, 1.0f)->remove(true);
-            t1->addChain(t2)->start();
-            Tween* t3 = TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_X, 0.37f, Ease::Exponential::InOut)
-                ->target(1.1f)->remove(true)->delay(0.2f);
-            Tween* t4 = TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
-                ->target(1.3f)->remove(true);                
-            Tween* t5= TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_X, 0.37f, Ease::Sinusoidal::InOut)
-                ->target(1.0f, 1.0f)->remove(true);
-            Tween* t6= TweenManager::getInstance()->addTween(clock->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
-                ->target(1.0f, 1.0f)->remove(true);                
-            t3->addChain(t5)->start();
-            t4->addChain(t6)->start();
-            if (timeLimitBar->sprite->getFrame() < 8) {
-                timeLimitBar->sprite->setFrame(timeLimitBar->sprite->getFrame() + 1);
+        if (TimeManager::getInstance()->getTime() > lastGoodTime + 5.0f) {
+            // It's bad time...
+            if (TimeManager::getInstance()->getTime() > lastBadTime + 1.0f && scores > 0) {
+                lastBadTime = TimeManager::getInstance()->getTime();
+                updateScore(-1);
                 switch ((int)frand(3)) {
                     case 0: SoundManager::getInstance()->playSound(squishy01Sound); break;
                     case 1: SoundManager::getInstance()->playSound(squishy02Sound); break;
                     case 2: SoundManager::getInstance()->playSound(squishy03Sound); break;
                 }
-            } else { 
-                timeLimitBar->sprite->setFrame(0);
-                switch ((int)frand(5)) {
-                    case 0: SoundManager::getInstance()->playSound(partyFolks01Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(partyFolks02Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(partyFolks03Sound); break;
-                    case 3: SoundManager::getInstance()->playSound(partyFolks04Sound); break;
-                    case 4: SoundManager::getInstance()->playSound(partyFolks05Sound); break;                    
-                }                
             }
         }
-        
+        if (scoreText != NULL) scoreText->update();
+        if (changedScoreText != NULL) changedScoreText->update();
+        particleSystem->update();        
     };
     // Just for debug.
     void printBoard(bool full = true) {
@@ -203,28 +167,29 @@ public:
             LOG_DEBUG("%s", str.c_str());
         }
     };
+    // Move down all upper fruits index.
     void dropFruits(int x, int y) {
         LOG_DEBUG("Drop fruits ... %d %d", x, y);
-        // Move down all upper fruits.
         for (int p = y; p > 0; p--) {
             std::swap(fruits[x][p], fruits[x][p - 1]);
             std::swap(fruits[x][p]->index, fruits[x][p - 1]->index);
         };
     };
+    // Move fruits to index position. Delete dead fruits. Create new.
     void updateBoard() {
         LOG_DEBUG("Update board ...");
         printBoard(false);
         for (int y = 0; y < GRID_SIZE; y++)
-            for (int x = 0; x < GRID_SIZE; x++) {
-                if (fruits[x][y]->alive) {
-                    fruits[x][y]->moveTo(x, y);
-                    fruits[x][y]->selected = false;
-                } else {
-                    spriteBatch->unregisterSprite(fruits[x][y]->sprite);
-                    SAFE_DELETE(fruits[x][y]);
-                    addFruit(x, y, -1);
-                }
+        for (int x = 0; x < GRID_SIZE; x++) {
+            if (fruits[x][y]->alive) {
+                fruits[x][y]->moveTo(x, y);
+                fruits[x][y]->selected = false;
+            } else {
+                spriteBatch->unregisterSprite(fruits[x][y]->sprite);
+                SAFE_DELETE(fruits[x][y]);
+                addFruit(x, y, -1);
             }
+        }
         switch ((int)frand(3)) {
             case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
             case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
@@ -232,6 +197,7 @@ public:
         }
         testForMatch();
     };
+    // Test for match equals fruits in line.
     int testForMatch() {
         LOG_DEBUG("Testing match fruits ...");
         int result = 0;
@@ -253,9 +219,9 @@ public:
                 // Mutch count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = x - count + 1; p <= x; p++) if (fruits[p][y]->alive) {
-                            fruits[p][y]->kill();
-                            result++;
-                        }
+                        fruits[p][y]->kill();
+                        result++;
+                    }
                 }
             }
         }
@@ -276,9 +242,9 @@ public:
                 // Mutch count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = y + count - 1; p >= y; p--) if (fruits[x][p]->alive) {
-                            fruits[x][p]->kill();
-                            result++;
-                        }
+                        fruits[x][p]->kill();
+                        result++;
+                    }
                 }
             }
         }
@@ -291,12 +257,12 @@ public:
                 case 3: SoundManager::getInstance()->playSound(grub04Sound); break;
                 case 4: SoundManager::getInstance()->playSound(grub05Sound); break;
             }
-            // Show bones text.
+            // Show bonus text.
             if (result >= MIN_MATCH_WOW_COUNT) {
-                showBonusText(-1);
+                showBonus(-1);
                 updateScore(result * matchStep * 2);
             } else if (matchStep > 1) {
-                showBonusText(matchStep);
+                showBonus(matchStep);
                 updateScore(result * matchStep);
             } else updateScore(result);
             matchStep++;
@@ -310,30 +276,30 @@ public:
         if (!fruits[X][Y]->alive) return;
         if (dyingFruits > 0) return;
         bool swaped = false;
-        Vector2 s;
+        Vector2 prevIndex;
         for (int y = 0; y < GRID_SIZE; y++)
-            for (int x = 0; x < GRID_SIZE; x++) {
-                if (fruits[x][y]->selected && (fruits[x][y]->index != fruits[X][Y]->index)) {
-                    s = fruits[x][y]->index;
-                    fruits[x][y]->prevIndex = Vector2(x, y);
-                    fruits[x][y]->moveTo(X, Y);
-                    fruits[X][Y]->prevIndex = Vector2(X, Y);
-                    fruits[X][Y]->moveTo(x, y);
-                    std::swap(fruits[x][y], fruits[X][Y]);
-                    swaped = true;
-                    switch ((int)frand(3)) {
-                        case 0: SoundManager::getInstance()->playSound(zipUp01Sound); break;
-                        case 1: SoundManager::getInstance()->playSound(zipUp02Sound); break;
-                        case 2: SoundManager::getInstance()->playSound(zipUp03Sound); break;
-                    }
-                    break;
+        for (int x = 0; x < GRID_SIZE; x++) {
+            if (fruits[x][y]->selected && (fruits[x][y]->index != fruits[X][Y]->index)) {
+                prevIndex = fruits[x][y]->index;
+                fruits[x][y]->prevIndex = Vector2(x, y);
+                fruits[x][y]->moveTo(X, Y);
+                fruits[X][Y]->prevIndex = Vector2(X, Y);
+                fruits[X][Y]->moveTo(x, y);
+                std::swap(fruits[x][y], fruits[X][Y]);
+                swaped = true;
+                switch ((int)frand(3)) {
+                    case 0: SoundManager::getInstance()->playSound(zipUp01Sound); break;
+                    case 1: SoundManager::getInstance()->playSound(zipUp02Sound); break;
+                    case 2: SoundManager::getInstance()->playSound(zipUp03Sound); break;
                 }
-                if (swaped) break;
+                break;
             }
+            if (swaped) break;
+        }
         for (int y = 0; y < GRID_SIZE; y++)
-            for (int x = 0; x < GRID_SIZE; x++) {
-                fruits[x][y]->selected = false;
-            }
+        for (int x = 0; x < GRID_SIZE; x++) {
+            fruits[x][y]->selected = false;
+        }
         if (!swaped) {
             switch ((int)frand(3)) {
                 case 0: SoundManager::getInstance()->playSound(Lift01Sound); break;
@@ -343,22 +309,28 @@ public:
             fruits[X][Y]->selected = true;
             matchStep = 1;
         } else if (testForMatch() < MIN_MATCH_COUNT) {
-            std::swap(fruits[(int)s.x][(int)s.y], fruits[X][Y]);
-            std::swap(fruits[(int)s.x][(int)s.y]->index, fruits[X][Y]->index);
+            std::swap(fruits[(int)prevIndex.x][(int)prevIndex.y], fruits[X][Y]);
+            std::swap(fruits[(int)prevIndex.x][(int)prevIndex.y]->index, fruits[X][Y]->index);
             missStep++;
             updateScore(-2 * missStep);
         } else missStep = 0;
     };
+    // Fruit callbacks.
     void onFruitKill(int x, int y) {
+        // Reset time limit.
+        lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
+        // Emit star particles.
         particleSystem->emit(3, getSkrewedLocation(x, y));
     };
     void onFruitDead(int x, int y) {
         dyingFruits--;
         dropFruits(x, y);
         if (dyingFruits <= 0) updateBoard();
-     };
+    };
     void onFruitMoved(int x, int y) {
         if (missStep > 0) {
+            lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
+            // Come back miss fruits.
             fruits[x][y]->moveBack(0.15f);
             switch ((int)frand(5)) {
                 case 0: SoundManager::getInstance()->playSound(hurt01Sound); break;
@@ -370,41 +342,35 @@ public:
         }
     };
     // Bonus text.
-    void showBonusText(int step) {
-        if (!bonusTextAnimated) {
-            switch (step) {
-                case 2: bonusText->sprite->setFrame(1); break;
-                case 3: bonusText->sprite->setFrame(2); break;
-                case 4: bonusText->sprite->setFrame(3); break;
-                case 5: bonusText->sprite->setFrame(4); break;
-                default: {
-                    bonusText->sprite->setFrame(0);
-                    SoundManager::getInstance()->playSound(wowSound);
-                }
+    void showBonus(int step) {
+        switch (step) {
+            case 2: bonus->sprite->setFrame(1); break;
+            case 3: bonus->sprite->setFrame(2); break;
+            case 4: bonus->sprite->setFrame(3); break;
+            case 5: bonus->sprite->setFrame(4); break;
+            default: {
+                bonus->sprite->setFrame(0);
+                SoundManager::getInstance()->playSound(wowSound);
             }
-            if (step > 1) SoundManager::getInstance()->playSound(hahaSound);
-            Tween* t1 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
-            Tween* t2 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
-            Tween* t3 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
-            Tween* t4 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f)
-                ->onComplete(std::bind(&Gameplay::onBonusTextComplete, this));
-            t2->addChain(t3);
-            t2->addChain(t4);
-            t2->start();
-            bonusTextAnimated = true;
         }
+        if (step > 1) SoundManager::getInstance()->playSound(hahaSound);
+        Tween* t1 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
+        Tween* t2 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
+        Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
+        Tween* t4 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.7f);
+        t2->addChain(t3);
+        t2->addChain(t4);
+        t2->start();
     }
-    void onBonusTextComplete() {
-        bonusTextAnimated = false;
-    };
     // Scores.
     void updateScore(int value, bool firstStart = false) {
         if (scores < 0) return;
         if (!firstStart) {
-            if (scores + value < 0) scores = 0;
-            else scores += value;
+            if (scores + value < 0) value = -scores;
+            scores += value;
             std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
-            changedScoreText->setText(changedStr.c_str());
+            if (value != 0) changedScoreText->setText(changedStr.c_str());
+            if (value > 0) lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
         }
         std::string str = std::to_string(scores);
         while (str.size() < 7) str = "0" + str;
@@ -427,32 +393,36 @@ public:
         }
         return 0;
     };
+    // Save state.
     void saveGameState() {
         for (int y = 0; y < GRID_SIZE; y++)
-            for (int x = 0; x < GRID_SIZE; x++) {
-                configData->fruitsType[x][y] = fruits[x][y]->type;
-            }
+        for (int x = 0; x < GRID_SIZE; x++) {
+            configData->fruitsType[x][y] = fruits[x][y]->type;
+        }
         configData->ScorePoints = scores;
     };
+private:
+    Activity* activity;
+    // Decorations.
     Background* background;
     Background* gameBox;
-    // Time Limit Bar.
-    Background* timeLimitBar;
-    Background* clock;
     // Bonus text.
-    Background* bonusText;
-    bool bonusTextAnimated;
+    Background* bonus;
+    bool bonusAnimated;
     int matchStep;
     int missStep;
     // Fruits.
-    int dyingFruits;
     Fruit* fruits[GRID_SIZE][GRID_SIZE];
+    int dyingFruits;
     // Score points.
     RasterFont* scoreText;
     RasterFont* changedScoreText;
     int scores;
     // Particle system.
     ParticleSystem* particleSystem;
+    // For decrase points if player long time stupid.
+    float lastGoodTime;
+    float lastBadTime;    
     // Sounds.
     Sound* grub01Sound;
     Sound* grub02Sound;
@@ -483,12 +453,6 @@ public:
     Sound* squishy01Sound;
     Sound* squishy02Sound;
     Sound* squishy03Sound;
-    Sound* partyFolks01Sound;
-    Sound* partyFolks02Sound;
-    Sound* partyFolks03Sound;
-    Sound* partyFolks04Sound;
-    Sound* partyFolks05Sound;
-    float lastGoodTime;
 };
 
 #endif // __GAMEPLAY_H__

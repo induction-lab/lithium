@@ -42,18 +42,18 @@ public:
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
-        case Touch::TOUCH_DOWN:
-            if (inSprite) {
-                sprite->setFrame(1);
-                if (downFunction != NULL) downFunction();
-            }
-            break;
-        case Touch::TOUCH_UP:
-            sprite->setFrame(0);
-            if (inSprite && upFunction != NULL) upFunction();
-            break;
-        case Touch::TOUCH_MOVE:
-            if (!inSprite) sprite->setFrame(0);
+            case Touch::TOUCH_DOWN:
+                if (inSprite) {
+                    sprite->setFrame(1);
+                    if (downFunction != NULL) downFunction();
+                }
+                break;
+            case Touch::TOUCH_UP:
+                sprite->setFrame(0);
+                if (inSprite && upFunction != NULL) upFunction();
+                break;
+            case Touch::TOUCH_MOVE:
+                if (!inSprite) sprite->setFrame(0);
         }
     };
     int gestureTapEvent(int x, int y) {
@@ -92,12 +92,12 @@ public:
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         bool inSprite = sprite->pointInSprite(point.x, point.y);
         switch (event) {
-        case Touch::TOUCH_DOWN:
-            if (inSprite && downFunction != NULL) downFunction();               
-            break;
-        case Touch::TOUCH_UP:
-            if (inSprite && upFunction != NULL) upFunction();
-            break;
+            case Touch::TOUCH_DOWN:
+                if (inSprite && downFunction != NULL) downFunction();               
+                break;
+            case Touch::TOUCH_UP:
+                if (inSprite && upFunction != NULL) upFunction();
+                break;
         }
     };
     int gestureTapEvent(int x, int y) {
@@ -225,6 +225,23 @@ private:
     std::function<void()> clickFunction;
 };
 
+// Bonus Widget.
+class Bonus: public Widget {
+public:
+    Bonus():
+        t1(NULL),
+        t2(NULL),
+        t3(NULL),
+        t4(NULL) {
+        //
+    };
+    // Animation tweens.
+    Tween* t1;
+    Tween* t2;
+    Tween* t3;
+    Tween* t4;
+};
+
 // Base Scene.
 class Scene: public InputListener {
 public:
@@ -272,6 +289,14 @@ public:
         widgets.push_back(background);
         return background;
     };
+    Bonus* addBonus(const char* path, int width, int height, Vector2 location) {
+        LOG_INFO("Creating new 'Bonus' widget.");
+        Bonus* bonus = new Bonus();
+        bonus->setSprite(spriteBatch->registerSprite(path, width, height), location);
+        bonus->spriteBatch = spriteBatch;
+        widgets.push_back(bonus);
+        return bonus;
+    };    
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();
