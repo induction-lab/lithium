@@ -431,7 +431,8 @@ public:
             case FruitKillType::DEAD_EXTRA: {
                 if (!fruits[x][y]->dead) {
                     Vector2 location = getSkrewedLocation(x, y);
-                    addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
+                    Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
+                    a->sprite->angle = frand(360.0f);
                 }
                 if (fruits[x][y]->type == 7) {
                     LOG_DEBUG("Kill Redish!!!");
@@ -575,6 +576,7 @@ public:
         }
         configData->ScorePoints = scores;
         configData->lostScores = lostScores;
+        configData->firstSrtart = false;
     };
 private:
     Activity* activity;

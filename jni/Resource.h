@@ -61,6 +61,9 @@ void clearGameState() {
         configData->fruitsType[x][y] = -1;
     }
     configData->ScorePoints = 0;
+    configData->missStep = 0;
+    configData->lostScores = 0;    
+    configData->firstSrtart = true;
 };
 
 void readConfig() {

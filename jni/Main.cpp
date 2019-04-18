@@ -78,6 +78,7 @@ struct ConfigData {
     int ScorePoints = 0;
     int missStep = 0;
     int lostScores = 0;
+    bool firstSrtart = true;
 };
 ConfigData* configData;
 
