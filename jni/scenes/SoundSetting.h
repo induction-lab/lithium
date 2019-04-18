@@ -13,6 +13,7 @@ public:
         LOG_INFO("Scene SoundSetting Destructed.");
     };
     status start() {
+        if (created) return STATUS_OK;
         LOG_DEBUG("Start SoundSetting scene.");
         spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();

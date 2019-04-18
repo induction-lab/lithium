@@ -15,6 +15,7 @@ public:
         LOG_INFO("Scene Gameplay Destructed.");
     };
     status start() {
+        if (created) return STATUS_OK;
         LOG_DEBUG("Start Gameplay scene.");
         spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
@@ -96,7 +97,7 @@ public:
         if (!created) return false;
         Location point = GraphicsManager::getInstance()->screenToRender(x, y);
         // line->addPoint(Vector(point.x, point.y, 0.0f));
-        return false;
+        return 0;
     };
     void update() {
         Scene::update();

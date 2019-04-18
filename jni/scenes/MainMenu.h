@@ -14,6 +14,7 @@ public:
         LOG_INFO("Scene MainMenu Destructed.");
     };
     status start() {
+        if (created) return STATUS_OK;
         LOG_INFO("Start MainMenu scene.");
         spriteBatch = new SpriteBatch();
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
@@ -50,6 +51,7 @@ public:
 		buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
+        created = true;
         return STATUS_OK;
     };
     void update() {

@@ -174,6 +174,7 @@ ERROR:
         case APP_CMD_INIT_WINDOW:
             LOG_DEBUG("[onCreateWindow]");
             showUI();
+            readConfig(); // read config data ...
             activityHandler->onCreateWindow();
             break;
         case APP_CMD_DESTROY:
@@ -213,12 +214,11 @@ ERROR:
         case APP_CMD_STOP:
             LOG_DEBUG("[onStop]");
             activityHandler->onStop();
-            // QUIck and diRty hacK!
-            ANativeActivity_finish(application->activity);
             break;
         case APP_CMD_TERM_WINDOW:
             LOG_DEBUG("[onDestroyWindow]");
             activityHandler->onDestroyWindow();
+            writeConfig(); // save config data ...
             deactivate();
             break;
         default:

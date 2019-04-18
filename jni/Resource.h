@@ -103,7 +103,6 @@ void writeConfig() {
         }
     }
     std::fclose(appConfigFile);
-    SAFE_DELETE(configData);
 };
 
 #endif // __RESOURCE_H__

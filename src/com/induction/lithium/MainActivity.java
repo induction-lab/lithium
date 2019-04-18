@@ -29,6 +29,13 @@ public class MainActivity extends NativeActivity {
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
     }
+    protected void onDestroy() {
+        if (popupWindow != null) {
+            Log.i(APP_TITLE, "[java] Dismiss base UI from Java code.");
+            popupWindow.dismiss();
+        }
+        super.onDestroy();
+    }
     public void showUI() {
 		Log.i(APP_TITLE, "[java] Show base UI from Java code.");
         if (popupWindow != null) return;

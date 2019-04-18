@@ -15,7 +15,7 @@ private:
             GraphicsManager::getInstance()->reset();
             SoundManager::getInstance()->reset();
             TweenManager::getInstance()->reset();
-            SAFE_DELETE(scene);            
+            SAFE_DELETE(scene);
         }
         scene = scn;
         if (scene->start() != STATUS_OK) return STATUS_ERROR;
@@ -68,14 +68,15 @@ protected:
         return STATUS_OK;
     };
     void onPause() {
+        paused = true;
         if (scene != NULL) scene->pause();
     };
     void onResume() {
+        paused = false;
         if (scene != NULL) scene->resume();
-    };    
+    };
     void onDeactivate() {
         LOG_INFO("Dectivating Engine.");
-        SoundManager::getInstance()->stopMusic();
     };
     void onDestroy() {
         if (scene != NULL) SAFE_DELETE(scene);

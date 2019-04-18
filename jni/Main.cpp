@@ -53,8 +53,8 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    int soundVolume;// = 70;
-    int musicVolume;// = 50;
+    int soundVolume = 70;
+    int musicVolume = 50;
 };
 ConfigData* configData;
 
@@ -72,7 +72,6 @@ static int32_t uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - organize App Life Time! ...
 // - onSaveInstanceState ...
 // - Activity -> Scenes(name) ?
 
@@ -89,13 +88,10 @@ void android_main(android_app* app) {
     AConfiguration_fromAssetManager(configuration, application->activity->assetManager);
     uiModeType = AConfiguration_getUiModeType(configuration);
     AConfiguration_delete(configuration);
-    // Read config data.
-    readConfig();
     // Starts the game loop.
     EventLoop* eventLoop = new EventLoop();
     eventLoop->run(new Activity);
     SAFE_DELETE(eventLoop);
-    // Save config data.
-    writeConfig();
+    SAFE_DELETE(configData);
     LOG_INFO("--- Bye! ---");
 }
