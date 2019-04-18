@@ -22,7 +22,7 @@ set /p comment=Commit comment:
 if "%comment%" == "" goto:end
 git commit -m "%comment%"
 
-git pull https://%credentials1%:%credentials2%@github.com/induction-lab/lithium.git --allow-unrelated-histories
-git push --force https://%credentials1%:%credentials2%@github.com/induction-lab/lithium.git
+git pull https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --allow-unrelated-histories
+git push --force https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git
 
 :end

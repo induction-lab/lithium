@@ -4,7 +4,12 @@ setlocal enabledelayedexpansion
 echo --^> Run emulator...
 echo.
 
-if "%ROOT%" == "" set ROOT=..\..
+if "%ROOT%" == "" (
+    set ROOT=%~p0..\..
+    pushd !ROOT! & set ROOT=!CD! & popd
+    echo ROOT: !ROOT!
+)
+
 cd %ROOT%\SDK\emulator
 
 :: get version

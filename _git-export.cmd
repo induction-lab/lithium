@@ -24,7 +24,7 @@ for /d %%a in (..\git\*) do (
     git add .
     git status
     git commit -m "!filename!"
-    git pull https://%credentials1%:%credentials2%@github.com/induction-lab/lithium.git --allow-unrelated-histories
-    git push --force https://%credentials1%:%credentials2%@github.com/induction-lab/lithium.git
+    git pull https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --allow-unrelated-histories
+    git push --force https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git
     echo.
 )
