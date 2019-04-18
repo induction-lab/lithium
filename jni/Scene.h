@@ -143,7 +143,7 @@ public:
         //
     };
     void setSliderHandle(const char* path, int width, int height, int position) {
-        this->sliderHandle = spriteBatch->registerSprite(path, width, height);
+        sliderHandle = spriteBatch->registerSprite(path, width, height);
         int x = sprite->location.x - sprite->getWidth() / 2;
         float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
         sliderHandle->location = Vector2(minPosition, sprite->location.y);
@@ -187,7 +187,7 @@ public:
         float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
         float maxPosition = sprite->location.x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;        
         float clampX = CLAMP(x, minPosition, maxPosition);
-        return gestureTapEvent(x, y);
+        return gestureTapEvent(clampX, y);
     };    
     int precent;
     void setSlideFunction(std::function<void(float)> callback) { slideFunction = callback; };

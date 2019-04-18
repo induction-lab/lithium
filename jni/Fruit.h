@@ -54,6 +54,7 @@ public:
     };
     void kill() {
         if (!dead) {
+            alive = false;
             Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Sinusoidal::InOut)
                     ->target(4.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
@@ -64,7 +65,6 @@ public:
     };
     void onDead() {
         dead = true;
-        alive = false;
         if (deadFunction != NULL) deadFunction(index.x, index.y);
     };
     void moveTo(Vector2 location, float delay = 0.0f) {

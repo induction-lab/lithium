@@ -21,7 +21,7 @@ public:
     Sprite* registerSprite(const char* texturePath, int width, int height) {
         int spriteCount = sprites.size();
         // Points to 1st vertex.
-        int index = spriteCount * 4;
+        int index = spriteCount * vertexPerSprite;
         // Precomputes the index buffer.
         indexes.push_back(index+0);
         indexes.push_back(index+1);
@@ -29,7 +29,7 @@ public:
         indexes.push_back(index+2);
         indexes.push_back(index+1);
         indexes.push_back(index+3);
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < vertexPerSprite; ++i) {
             vertices.push_back(Sprite::Vertex());
         }
         // Appends a new sprite to the sprite array.
@@ -44,11 +44,13 @@ public:
             int n = std::distance(sprites.begin(), it);
             SAFE_DELETE(*it);
             sprites.erase(std::remove(sprites.begin(), sprites.end(), *it), sprites.end());
+            vertices.erase(vertices.begin() + n * vertexPerSprite, vertices.begin() + (n+1) * vertexPerSprite);
+            // Recreate indexes.
             indexes.clear();
             for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
                 int n = std::distance(sprites.begin(), it);
                 // Points to 1st vertex.
-                int index = n * 4;
+                int index = n * vertexPerSprite;
                 // Precomputes the index buffer.
                 indexes.push_back(index+0);
                 indexes.push_back(index+1);
@@ -127,7 +129,7 @@ ERROR:
                     break;
                 }
             } while (canDraw == (++currentSprite < spriteCount));
-            // Renders sprites each time texture changes.
+            // Renders sprites each time texture or other values changes.
             glDrawElements(GL_TRIANGLES, (currentSprite - firstSprite) * indexPerSprite, GL_UNSIGNED_SHORT, &indexes[firstSprite * indexPerSprite]);
             firstSprite = currentSprite;
         }

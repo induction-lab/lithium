@@ -148,6 +148,7 @@ public:
             } else if (getFruit(x, y)->sprite->location != getSkrewedLocation(x, y)) {
                 // Move fruits to their location.
                 getFruit(x, y)->moveTo(getSkrewedLocation(x, y));
+                getFruit(x, y)->selected = false;
             }
         }
         switch ((int)frand(3)) {
@@ -217,6 +218,8 @@ public:
         return result;
     };
     void onFruitClick(int X, int Y) {
+        if (!getFruit(X, Y)->alive) return;
+        if (dyingFruits > 0) return;
         bool swaped = false;
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
@@ -259,7 +262,7 @@ public:
     void onFruitDead(int X, int Y) {
         dyingFruits--;
         dropFruits(X, Y);
-        if (dyingFruits == 0) updateBoard();
+        if (dyingFruits <= 0) updateBoard();
     };
     void updateScore(int value) {
         scores += value;
