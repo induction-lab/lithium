@@ -26,6 +26,7 @@ public:
         return STATUS_OK;
     };
     void draw() {
+        if (vertices.size() < 6) return;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         // Selects sprite shader and passes its parameters.
         glUseProgram(shaderProgram);
@@ -43,6 +44,7 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     };
     void addPoint(Vector v) {
+        /// LOG_DEBUG("Add point at %f %f", v.x, v.y);
         points.push_back(v);
         vertices.clear();
         // Draw all segments

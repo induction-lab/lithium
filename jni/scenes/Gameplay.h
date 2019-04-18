@@ -22,15 +22,15 @@ public:
         float halfWidth = renderWidth / 2;
         float halfHeight = renderHeight / 2;
         background = addBackground("textures/Background_temp.png", 360, 640, Location(halfWidth, halfHeight));
-        Line* line = new Line(5);
-        line->color = Vector(1.0f, 0.5f, 0.2f);
-        line->addPoint(Vector(100, 100, 0));
-        line->addPoint(Vector(100, 300, 0));
-        line->addPoint(Vector(200, 350, 0));
-        line->addPoint(Vector(300, 400, 0));
-        line->addPoint(Vector( 50, 500, 0));
-        line->addPoint(Vector(150, 380, 0));
+        line = new Line(5.0f);
+        line->color = Vector(0.2f, 1.0f, 0.4f);
+        created = true;
         return STATUS_OK;
+    };
+    void gestureTapEvent(int x, int y) {
+        if (!created) return;
+        Location point = GraphicsManager::getInstance()->screenToRender(x, y);
+        line->addPoint(Vector(point.x, point.y, 0.0f));
     };
     void update() {
         Scene::update();
@@ -39,6 +39,7 @@ public:
         activity->setStartScene();
     };
     Background* background;
+    Line* line;
 };
 
 #endif

@@ -146,7 +146,8 @@ public:
 
 class Scene: public InputListener {
 public:
-    Scene() {
+    Scene():
+    created(false) {
         LOG_INFO("Scene created.");
     }
     virtual ~Scene() {
@@ -186,6 +187,7 @@ public:
     virtual void pause(void) {};
     virtual void resume(void) {};
     SpriteBatch* spriteBatch;
+    bool created;
 private:
     std::vector<Widget*> widgets;
 };
