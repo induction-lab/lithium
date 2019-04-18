@@ -122,7 +122,7 @@ public:
         // LOG_DEBUG("Creating new fruit.");
         if (fruitType == -1) fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
-        const char* fruitTextures[8] = {
+        const char* fruitTextures[12] = {
             "textures/AppleFruit.png",
             "textures/BannanaFruit.png",
             "textures/CarrotFruit.png",
@@ -130,7 +130,10 @@ public:
             "textures/OrangeFruit.png",
             "textures/PearFruit.png",
             "textures/TomatoFruit.png",
-            "textures/RedishFruit.png"
+            "textures/RedishFruit.png",
+            "textures/CherryFruit.png",
+            "textures/LemonFruit.png",
+            "textures/ChilliFruit.png",
         };
         fruit->sprite = spriteBatch->registerSprite(fruitTextures[fruitType], 64, 64);
         fruit->sprite->location = getSkrewedLocation(x, -1);
@@ -143,11 +146,8 @@ public:
         fruit->setKillFunction(std::bind(&Gameplay::onFruitKill, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setDyingFunction(std::bind(&Gameplay::onFruitDying, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setDeadFunction(std::bind(&Gameplay::onFruitDead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        if (fruitType != 7) {
-            fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
-        } else {
-            fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP_EXTRA);
-        }
+        if (fruitType < FRUITS_COUNT) fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
+        else fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP_EXTRA);
         fruits[x][y] = fruit;
     };
     // Update scene.
@@ -221,16 +221,15 @@ public:
                     n++;
                     int X = (int)frand(GRID_SIZE);
                     int Y = (int)frand(GRID_SIZE);
-                    if (fruits[X][Y]->type != 7 && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
-                        LOG_DEBUG("Redish!!!");
+                    if (fruits[X][Y]->type < 7 && !fruits[X][Y]->dropped && fruits[X][Y]->alive) {
+                        LOG_DEBUG("Bonus!!!");
                         printBoard();
                         Vector2 location = getSkrewedLocation(X, Y);
                         location.y = location.y + 40;                            
                         addAnimation("textures/BonusFruitCreate.png", 64, 96, location, 26, 1.2f, 0.5f);
-                        LOG_DEBUG("Kill %d %d for redish.", X, Y);
+                        LOG_DEBUG("Kill %d %d for bonus.", X, Y);
                         fruits[X][Y]->kill(0.0f, FruitKillType::REPLACE);
                         goodPlace = true;
-                        ///
                     }
                 }
                 stepsComplited = false;
@@ -331,12 +330,17 @@ public:
     // Select fruit.
     void onFruitClick(int X, int Y) {
         LOG_DEBUG("Select %d %d, %d", X, Y, fruits[X][Y]->type);
+        if (fruits[X][Y]->selected) {
+            fruits[X][Y]->selected = false;
+            SoundManager::getInstance()->playSound(clickSound);            
+            return;
+        }
         if (!fruits[X][Y]->alive) return;
         if (dyingFruits > 0) return;
         if (swapedFruits > 0) return;
         if (droppedFruits > 0) return;
         bool swaped = false;
-        if (fruits[X][Y]->type == 7) {
+        if (fruits[X][Y]->type >= FRUITS_COUNT) {
             matchStep = 1;
             fruits[X][Y]->kill(0.0f, FruitKillType::DEAD_EXTRA);
         } else {
@@ -438,7 +442,7 @@ public:
                     Animation* a = addAnimation("textures/BonusFruitKill.png", 128, 128, location, 17, 0.7f);
                     a->sprite->angle = frand(360.0f);
                 }
-                if (fruits[x][y]->type == 7) {
+                if (fruits[x][y]->type >= 7) {
                     LOG_DEBUG("Kill Redish!!!");
                     for (int Y = 0; Y < GRID_SIZE; Y++)
                     for (int X = 0; X < GRID_SIZE; X++) {
@@ -496,7 +500,7 @@ public:
             case FruitKillType::REPLACE: {
                 spriteBatch->unregisterSprite(fruits[x][y]->sprite);
                 SAFE_DELETE(fruits[x][y]);
-                addFruit(x, y, 7);
+                addFruit(x, y, (int)frand(4) + 7);
                 switch ((int)frand(4)) {
                     case 0: SoundManager::getInstance()->playSound(bonus01Sound); break;
                     case 1: SoundManager::getInstance()->playSound(bonus02Sound); break;
