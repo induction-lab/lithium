@@ -220,14 +220,25 @@ public:
         alive(true),
         dies(false),
         dead(false),
+        animated(false),
+        selected(false),
+        xScaleTween(NULL),
+        yScaleTween(NULL),
         clickFunction(NULL) {
         //
     };
     int gestureTapEvent(int x, int y) {
         if (!alive) return false;
         Location point = GraphicsManager::getInstance()->screenToRender(x, y);
-        if (sprite->pointInSprite(point.x, point.y) && clickFunction != NULL) {
-            clickFunction(this);
+        if (sprite->pointInSprite(point.x, point.y)) {
+            if (!animated) {
+                xScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_X, 0.25f, Ease::Sinusoidal::InOut)
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
+                yScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_Y, 0.25f, Ease::Sinusoidal::InOut)
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
+                animated = true;
+            }
+            if (clickFunction != NULL) clickFunction(this);
             return 1;
         }
         return 0;
@@ -236,6 +247,14 @@ public:
         return gestureTapEvent(x, y);
     };
     void update() {
+        if (animated && !selected) {
+            TweenManager::getInstance()->remove(xScaleTween);
+            TweenManager::getInstance()->remove(yScaleTween);
+            xScaleTween = NULL;
+            yScaleTween = NULL;
+            sprite->scale = Vector2(0.9f, 0.9f);
+            animated = false;
+        }
         if (alive) return;
         if (!dies && !dead) {
             sprite->setFrames(0, 5, 7.0f, false);
@@ -253,6 +272,11 @@ public:
     bool alive;
     bool dies;
     bool dead;
+    bool animated;
+    bool selected;
+    Tween* xScaleTween;
+    Tween* yScaleTween;
+    int indexI, indexJ;
     void setClickFunction(std::function<void(Fruit*)> callback) { clickFunction = callback; };
 private:
     std::function<void(Fruit*)> clickFunction;

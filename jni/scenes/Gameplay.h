@@ -50,6 +50,8 @@ public:
                 fruits[i][j] = addFruit(fruitTextures[(int)frand(6)], 64, 64, Location(i * 42 + 78 - dx, renderHeight - j * 42 - 68 - dy));
                 fruits[i][j]->sprite->scale = Vector2(0.9f, 0.9f);
                 fruits[i][j]->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1));
+                fruits[i][j]->indexI = i;
+                fruits[i][j]->indexJ = j;
                 dy += 2.0f;
             }
             dy -= 2.0f * GRID_SIZE;
@@ -78,6 +80,27 @@ public:
         Scene::update();
     };
     void onFruitClick(Fruit* fruit) {
+        bool swaped = false;
+        for (int j = 0; j < GRID_SIZE; j++)
+        for (int i = 0; i < GRID_SIZE; i++) {
+            if (fruits[i][j]->selected) {
+                TweenManager::getInstance()->addTween(fruits[i][j]->sprite, TweenType::POSITION_XY, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(fruit->sprite->getLocation().x, fruit->sprite->getLocation().y)
+                    ->remove(true)->start();
+                TweenManager::getInstance()->addTween(fruit->sprite, TweenType::POSITION_XY, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(fruits[i][j]->sprite->getLocation().x, fruits[i][j]->sprite->getLocation().y)
+                    ->remove(true)->start();
+                std::swap(fruits[i][j], fruits[fruit->indexI][fruit->indexJ]);
+                swaped = true;
+                break;
+            }
+        }
+        for (int j = 0; j < GRID_SIZE; j++)
+        for (int i = 0; i < GRID_SIZE; i++) {
+            fruits[i][j]->selected = false;
+        }
+        if (!swaped) fruit->selected = true;
+        return;
         fruit->alive = false;
         LOG_DEBUG("Kill fruit.");
         switch ((int)frand(4)) {

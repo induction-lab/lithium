@@ -31,11 +31,11 @@ public:
         LOG_INFO("Destructing TweenManager.");
         reset();
     };
-    static Tween* makeTween(Tweenable* target, int tweenType = -1, float duration = 1000, EaseFunc ease=Ease::Linear) {
+    Tween* makeTween(Tweenable* target, int tweenType = -1, float duration = 1000, EaseFunc ease=Ease::Linear) {
         return new Tween(target, tweenType, duration, ease);
     };
     Tween* addTween(Tweenable* target, int tweenType, float duration, EaseFunc ease) {
-        auto t = makeTween(target, tweenType, duration, ease);
+        Tween* t = makeTween(target, tweenType, duration, ease);
         return addTween(t);
     };
     Tween* addTween(Tween* t) {

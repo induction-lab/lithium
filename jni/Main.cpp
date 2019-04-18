@@ -53,14 +53,14 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    int soundVolume = 70;
-    int musicVolume = 50;
+    int soundVolume; // = 70;
+    int musicVolume; // = 50;
 };
 ConfigData* configData;
 
 // Type of ui mode (for Google Wear 2.0 swipe back support).
 #include "android/configuration.h"
-static int32_t uiModeType;
+static int uiModeType;
 
 #include "Geometry.h"
 #include "TimeManager.h"
