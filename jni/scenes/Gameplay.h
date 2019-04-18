@@ -230,6 +230,7 @@ public:
                         LOG_DEBUG("Kill %d %d for redish.", X, Y);
                         fruits[X][Y]->kill(0.0f, FruitKillType::REPLACE);
                         goodPlace = true;
+                        ///
                     }
                 }
                 stepsComplited = false;
@@ -277,14 +278,15 @@ public:
             count = 1;
             for (int x = 0; x < GRID_SIZE; x++) {
                 // If type not match, reset match count.
-                if (fruits[x][y]->type != type || fruits[x][y]->type == 7) {
+                if (fruits[x][y]->type != type) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
                 // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = x - count + 1; p <= x; p++) if (fruits[p][y]->alive) {
-                        fruits[p][y]->kill(0.15f, FruitKillType::DEAD);
+                        if (fruits[p][y]->type < FRUITS_COUNT) fruits[p][y]->kill(0.15f, FruitKillType::DEAD);
+                        else fruits[p][y]->kill(0.15f, FruitKillType::DEAD_EXTRA);
                         result++;
                     }
                 }
@@ -300,14 +302,15 @@ public:
             count = 1;
             for (int y = GRID_SIZE - 1; y >= 0; y--) {
                 // If type not match, reset match count.
-                if (fruits[x][y]->type != type || fruits[x][y]->type == 7) {
+                if (fruits[x][y]->type != type) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
                 // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = y + count - 1; p >= y; p--) if (fruits[x][p]->alive) {
-                        fruits[x][p]->kill(0.15f, FruitKillType::DEAD);
+                        if (fruits[x][p]->type < FRUITS_COUNT) fruits[x][p]->kill(0.15f, FruitKillType::DEAD);
+                        else fruits[x][p]->kill(0.15f, FruitKillType::DEAD_EXTRA);
                         result++;
                     }
                 }
@@ -413,6 +416,7 @@ public:
             }
             case FruitMoveType::DROP_EXTRA: {
                 droppedFruits--;
+                resultCheck();
             }
         }
     };

@@ -53,7 +53,8 @@ public:
         // - test -
         if (configData->firstSrtart) {
             Background* boom = addBackground("textures/StartScreen.png", 360, 640, Vector2(halfWidth, halfHeight));
-            TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)->target(43)->remove(true)->start(5.0f);
+            TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)
+                ->target(43)->remove(true)->start(5.0f);
             configData->firstSrtart = false;
         }
         // --------

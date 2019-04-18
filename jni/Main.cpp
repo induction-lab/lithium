@@ -96,7 +96,6 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - scoresPerSwap text
 // - Add bonus
 // - Bonus random
 // - New logo
