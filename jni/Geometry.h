@@ -108,8 +108,6 @@ inline Vector NormalVector(const Vector v1, const Vector v2) { return Normalize(
 // Returns the normal vector of a triangle or 3 points on a plane (assumes counter-clockwise orientation).
 inline Vector NormalVector(const Vector p1, const Vector p2, const Vector p3) { return NormalVector(p2 - p1, p3 - p1); };
 
-// Returns the direction vector between two points.
-
 // Performs linear interpolation between two vectors.
 inline Vector Lerp(Vector v1, Vector v2, float a) {
     return Vector(
@@ -133,6 +131,7 @@ public:
     inline Vector2(void): x(0.0f), y(0.0f) {};
     inline Vector2(float X, float Y): x(X), y(Y) {};
     inline Vector2(const Vector2 &v): x(v.x), y(v.y) {};
+    inline Vector2(const Vector &v): x(v.x), y(v.y) {};
     
     // Assignment operator.
     inline Vector2& operator = (const Vector2 &v) { this->x = v.x; this->y = v.y; return *this; };
@@ -166,6 +165,10 @@ public:
 
     // Data accessor for easy conversion to float* for OpenGL.
     float* data() { return &x; };
+};
+
+inline void PrintVector(Vector2 v) {
+    LOG_DEBUG("%f\t%f\n", v.x, v.y);
 };
 
 class Vector4 {

@@ -4,6 +4,8 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
+#include <vector>
+
 #include "Singleton.h"
 #include "Resource.h"
 #include "Sound.h"

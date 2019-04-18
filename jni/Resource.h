@@ -108,4 +108,4 @@ void writeConfig() {
     SAFE_DELETE(configData);
 };
 
-#endif
+#endif // __RESOURCE_H__
