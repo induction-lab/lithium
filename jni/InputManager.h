@@ -49,8 +49,7 @@ static const int SWIPE_DIRECTION_RIGHT  = 1 << 3;   // the right direction for a
 
 class InputListener {
 public:
-    InputListener(void);
-    virtual ~InputListener(void);
+    virtual ~InputListener(void) {};
     virtual void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {};
     virtual void gestureDragEvent(int x, int y) {};
     virtual void gestureDropEvent(int x, int y) {};
@@ -68,7 +67,7 @@ public:
     InputManager():
         primaryTouchId(-1),
         gestureDraging(false),
-        gesturePinching(false)  {
+        gesturePinching(false) {
         LOG_INFO("Creating InputManager.");
         //
     };
@@ -88,9 +87,11 @@ public:
     };
 public:
     void registerListener(InputListener *listener) {
+        LOG_DEBUG("Register InputListener.");
         listeners.push_back(listener);
     };
     void unregisterListener(InputListener *listener) {
+        LOG_DEBUG("Unregister InputListener.");
         listeners.erase(std::find(listeners.begin(), listeners.end(), listener));
     };
     int32_t onTouchEvent(AInputEvent* event) {
@@ -373,55 +374,55 @@ public:
     };
 private:
     void onTouchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->touchEvent(event, x, y, pointerId);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->touchEvent(event, x, y, pointerId);
         }
     };
     void onGestureDragEvent(int x, int y) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->gestureDragEvent(x, y);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gestureDragEvent(x, y);
         }
     };
     void onGestureDropEvent(int x, int y) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->gestureDropEvent(x, y);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gestureDropEvent(x, y);
         }
     };
     void onGestureSwipeEvent(int x, int y, int direction) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) if ((*it) != NULL) (*it)->gestureSwipeEvent(x, y, direction);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gestureSwipeEvent(x, y, direction);
         }
     };
     void onGestureTapEvent(int x, int y) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->gestureTapEvent(x, y);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gestureTapEvent(x, y);
         }
     };
     void onGestureLongTapEvent(int x, int y, float time) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->gestureLongTapEvent(x, y, time);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gestureLongTapEvent(x, y, time);
         }
     };
     void onGesturePinchEvent(int x, int y, float scale) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->gesturePinchEvent(x, y, scale);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->gesturePinchEvent(x, y, scale);
         }
     };
     void onBackEvent() {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->backEvent();
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->backEvent();
         }
     };
     void onKeyDownEvent(int keyCode) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->keyDownEvent(keyCode);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->keyDownEvent(keyCode);
         }
     };
     void onKeyUpEvent(int keyCode) {
-        for (std::vector<InputListener*>::reverse_iterator it = listeners.rbegin(); it < listeners.rend(); ++it) {
-            if ((*it) != NULL) (*it)->keyUpEvent(keyCode);
+        for (std::vector<InputListener*>::iterator it = listeners.begin(); it < listeners.end(); ++it) {
+            (*it)->keyUpEvent(keyCode);
         }
-    };    
+    }; 
 private:
     int primaryTouchId;
     TouchPointerData pointer0;
@@ -435,14 +436,6 @@ private:
     std::pair<int, int> gesturePinchCentroid;
     int gesturePointer0Delta, gesturePointer1Delta;
     std::vector<InputListener*> listeners;
-};
-
-InputListener::InputListener(void) {
-    InputManager::getInstance()->registerListener(this);
-};
-
-InputListener::~InputListener(void) {
-    InputManager::getInstance()->unregisterListener(this);
 };
 
 #endif // __INPUTMANAGER_H__

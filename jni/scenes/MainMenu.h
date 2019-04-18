@@ -14,6 +14,7 @@ public:
     };
     status start() {
         LOG_INFO("Start MainMenu scene.");
+        InputManager::getInstance()->registerListener(this);
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
         SpriteBatch *spriteBatch = new SpriteBatch();
@@ -23,15 +24,16 @@ public:
         gameBox->setLocation(renderWidth / 2, renderHeight / 2);
         sprite = spriteBatch->registerSprite("textures/Play.png", 104, 100);
         sprite->setLocation(renderWidth / 2, renderHeight / 2 - 60.0f);
-        Tween* t0 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_X, 0.38f, Ease::Sinusoidal::InOut)
+        Tween* t0 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start();
-        Tween* t1 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_Y, 0.38f, Ease::Sinusoidal::InOut)
+        Tween* t1 = TweenManager::getInstance()->addTween(gameBox, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
-        Tween* t = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.2f, Ease::Sinusoidal::InOut)
-                    ->target(0.1f)->remove(false)->loop()->reverse()->start();
+        Tween* t = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.35f, Ease::Sinusoidal::InOut)
+                    ->target(0.3f)->remove(false)->loop()->reverse()->start();
 		soundPress = SoundManager::getInstance()->registerSound("sounds/SoundPress.wav");
         soundRelease = SoundManager::getInstance()->registerSound("sounds/SoundRelease.wav");
         SoundManager::getInstance()->loadResources();
+        SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
         return STATUS_OK;
     };
     void update() {
@@ -48,6 +50,7 @@ public:
         case Touch::TOUCH_RELEASE:
             if (sprite->pointInSprite(location)) {
                 SoundManager::getInstance()->playSound(soundRelease);
+                InputManager::getInstance()->unregisterListener(this);
                 activity->changeScene(new Gameplay(activity));
             }
             break;

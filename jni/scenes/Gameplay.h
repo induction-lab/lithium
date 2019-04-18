@@ -14,6 +14,7 @@ public:
     };
     status start() {
         LOG_DEBUG("Start Gameplay scene.");
+        InputManager::getInstance()->registerListener(this);
         float renderWidth = (float) GraphicsManager::getInstance()->getRenderWidth();
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
         SpriteBatch* spriteBatch = new SpriteBatch();
@@ -28,6 +29,7 @@ public:
         Location location = GraphicsManager::getInstance()->screenToRender((float)x, (float)y);
         switch (event) {
         case Touch::TOUCH_RELEASE:
+            InputManager::getInstance()->unregisterListener(this);
             activity->setStartScene();
             break;
         default:
