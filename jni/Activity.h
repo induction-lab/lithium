@@ -50,7 +50,9 @@ protected:
             LOG_DEBUG("First start detected ...");
             if (setStartScene() != STATUS_OK) return STATUS_ERROR;
             firstStart = false;
-        }
+        } // TODO:
+        if state saved. Change scene.
+        SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
         return STATUS_OK;
     };
     status onStep() {
@@ -72,12 +74,15 @@ protected:
     };    
     void onDeactivate() {
         LOG_INFO("Dectivating Engine.");
+        SoundManager::getInstance()->stopMusic();
     };
     void onDestroy() {
         if (scene != NULL) SAFE_DELETE(scene);
     };
 };
 
+// Scenes.
+#include "scenes/Sounds.h"
 #include "scenes/Gameplay.h"
 #include "scenes/MainMenu.h"
 

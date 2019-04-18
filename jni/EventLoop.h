@@ -117,6 +117,7 @@ protected:
     void activate() {
         // Enables activity only if a window is available.
         if ((!enabled) && (application->window != NULL)) {
+#ifdef INPUTMANAGER_SENSORS_EVENTS
             // Registers sensor queue.
             sensorPollSource.id = LOOPER_ID_USER;
             sensorPollSource.app = application;
@@ -127,6 +128,7 @@ protected:
                 if (sensorEventQueue == NULL) goto ERROR;
             }
             activateAccelerometer();
+#endif // INPUTMANAGER_SENSORS_EVENTS
             quit = false;
             enabled = true;
             // Starts services.
@@ -146,12 +148,14 @@ ERROR:
     };
     void deactivate() {
         if (enabled) {
+#ifdef INPUTMANAGER_SENSORS_EVENTS
             deactivateAccelerometer();
             if (sensorEventQueue != NULL) {
                 ASensorManager_destroyEventQueue(sensorManager, sensorEventQueue);
                 sensorEventQueue = NULL;
             }
             sensorManager = NULL;
+#endif // INPUTMANAGER_SENSORS_EVENTS
             activityHandler->onDeactivate();
             // Stop services.
             LOG_INFO("Deactivating services ...");
@@ -240,6 +244,7 @@ ERROR:
         }
         return 0;
     };
+#ifdef INPUTMANAGER_SENSORS_EVENTS
     void processSensorEvent() {
         if (sensorEventQueue != NULL) {
             ASensorEvent event;         
@@ -252,6 +257,7 @@ ERROR:
             }
         }
     };
+#endif // INPUTMANAGER_SENSORS_EVENTS
 private:
     // Private callbacks handling events occuring in the thread loop.
     static void callback_event(android_app* application, int32_t command) {
@@ -262,11 +268,11 @@ private:
         EventLoop& eventLoop = *(EventLoop*) application->userData;
         return eventLoop.processInputEvent(event);
     };
+#ifdef INPUTMANAGER_SENSORS_EVENTS
     static void callback_sensor(android_app* application, android_poll_source* source) {
         EventLoop& eventLoop = *(EventLoop*) application->userData;
         eventLoop.processSensorEvent();
     };
-private:
     void activateAccelerometer() {
         accelerometer = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER);
         if (accelerometer != NULL) {
@@ -299,6 +305,7 @@ private:
             accelerometer = NULL;
         }
     };
+#endif // INPUTMANAGER_SENSORS_EVENTS    
 private:
     // Saves application state when application is active/paused.
     bool enabled;

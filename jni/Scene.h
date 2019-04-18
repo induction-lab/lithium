@@ -16,7 +16,7 @@ public:
         upFunction(NULL),
         clickFunction(NULL) {
         //
-    }
+    };
     virtual void update() {};
     bool pointInWidget(Location point) {
         point = GraphicsManager::getInstance()->screenToRender(point.x, point.y);
@@ -26,16 +26,16 @@ public:
                 (point.x < location.x + halfWidth ) &&
                 (point.y > location.y - halfHeight) &&
                 (point.y < location.y + halfHeight));
-    }
+    };
     void setDownFunction(std::function<void()> callback) {
         downFunction = callback;
-    }
+    };
     void setUpFunction(std::function<void()> callback) {
         upFunction = callback;
-    }
+    };
     void setClickFunction(std::function<void()> callback) {
         clickFunction = callback;
-    }
+    };
     void setSprite(Sprite* sprite) {
         this->sprite = sprite;
         sprite->setLocation(location.x, location.y);

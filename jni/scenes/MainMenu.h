@@ -41,13 +41,12 @@ public:
         playButton->setClickFunction(std::bind(&MainMenu::onPlayButtonClick, this));
         TweenManager::getInstance()->addTween(playButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.9f);
-        muteCheckBox = addCheckBox("textures/Mute.png", 80, 78, Location(halfWidth + 85, halfHeight - 80));
-		muteCheckBox->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
-        muteCheckBox->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
-        muteCheckBox->setClickFunction(std::bind(&MainMenu::onMuteCheckBoxClick, this));
-        TweenManager::getInstance()->addTween(muteCheckBox->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
+        soundsButton = addButton("textures/Mute.png", 80, 78, Location(halfWidth + 85, halfHeight - 80));
+		soundsButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
+        soundsButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
+        soundsButton->setClickFunction(std::bind(&MainMenu::onSoundsButtonClick, this));
+        TweenManager::getInstance()->addTween(soundsButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
                     ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5);
-        muteCheckBox->setChecked(configData->musicOn);
 		soundButtonDown = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         soundButtonUp = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
@@ -74,14 +73,8 @@ public:
 	void onPlayButtonClick() {
         activity->changeScene(new Gameplay(activity));
 	};
-	void onMuteCheckBoxClick() {
-        if (muteCheckBox->getChecked()) {
-            SoundManager::getInstance()->playMusic("sounds/Intro.mp3");
-            configData->musicOn = true;
-        } else {
-            SoundManager::getInstance()->stopMusic();
-            configData->musicOn = false;
-        }
+	void onSoundsButtonClick() {
+        activity->changeScene(new Sounds(activity));
 	};
     void backEvent() {
         activity->quit = true;
@@ -94,7 +87,7 @@ public:
     Background* gameBox;
     Button* exitButton;
     Button* playButton;
-    CheckBox* muteCheckBox;
+    Button* soundsButton;
     Sound* soundButtonDown;
     Sound* soundButtonUp;
 };

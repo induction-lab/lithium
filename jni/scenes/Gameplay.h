@@ -21,7 +21,7 @@ public:
         float renderHeight = (float) GraphicsManager::getInstance()->getRenderHeight();
         float halfWidth = renderWidth / 2;
         float halfHeight = renderHeight / 2;
-        background = addBackground("textures/Background_temp.png", 360, 640, Location(halfWidth, halfHeight));
+        background = addBackground("textures/Background.png", 360, 640, Location(halfWidth, halfHeight));
         gameBox = addBackground("textures/GameBox.png", 360, 380, Location(halfWidth, halfHeight));
         gameBox->sprite->opaque = 0.0f;
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::OPAQUE, 0.7f, Ease::Sinusoidal::InOut)
@@ -139,7 +139,6 @@ public:
         activity->setStartScene();
     };
     void gestureSwipeEvent(int x, int y, int direction) {
-        LOG_DEBUG("gestureSwipeEvent detected ...");
         if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return;
         if (direction == SWIPE_DIRECTION_RIGHT) activity->setStartScene();
     };
@@ -162,4 +161,4 @@ public:
     Fruit* carrot;
 };
 
-#endif
+#endif // __GAMEPLAY_H__

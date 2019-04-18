@@ -78,7 +78,7 @@ public:
     Tween* start(float initialDelay = 0) {
         playing = true;
         complited = false;
-        startTime = PlatformGetTime() + delayAmount + initialDelay;
+        startTime = TimeManager::getInstance()->getTime() + delayAmount + initialDelay;
         endTime = startTime + duration;
         if (targetObj != NULL) combinedAttrsCnt = targetObj->getValues(type, startValues);
         return this;

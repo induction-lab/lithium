@@ -58,7 +58,6 @@ public:
     };
     void reset() {
         LOG_INFO("Resetting TimeManager.");
-        running = false;
         totalTimeBeforeLastStart = 0.0f;
         startTime = 0.0f;
         elapsedTime = 0.0f;

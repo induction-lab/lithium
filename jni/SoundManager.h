@@ -105,6 +105,7 @@ ERROR:
         sounds.clear();        
     }
     status playMusic(const char* path) {
+        if (configData->mute) return STATUS_OK;
         stopMusic();
         SLresult result;
         LOG_INFO("Opening music: %s", path);
@@ -166,6 +167,7 @@ ERROR:
         return sound;
     };
     void playSound(Sound* sound) {
+        if (configData->mute) return;
         int32_t currentQueue = ++currentQueue;
         SoundQueue& soundQueue = soundQueues[currentQueue % QUEUE_COUNT];
         soundQueue.playSound(sound);

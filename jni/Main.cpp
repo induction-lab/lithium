@@ -53,7 +53,8 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    bool musicOn = false;
+    // bool mute = false;
+    bool mute = true;
 };
 ConfigData* configData;
 
@@ -71,9 +72,8 @@ static int32_t uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - tween after pause ! ...
+// - onSaveInstanceState ...
 // - music volume screen ...
-// - disable sensors ...
 
 // Android entry point.
 void android_main(android_app* app) {

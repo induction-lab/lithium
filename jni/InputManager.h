@@ -10,6 +10,7 @@
 #include <vector>
 
 // #define INPUTMANAGER_LOG_EVENTS
+// #define INPUTMANAGER_SENSORS_EVENTS
 // #define INPUTMANAGER_LOG_SENSOR_EVENTS
 
 struct TouchPointerData {
@@ -67,6 +68,8 @@ class InputManager: public Singleton<InputManager> {
 public:
     InputManager():
         primaryTouchId(-1),
+        gesturePointer0Delta(0),
+        gesturePointer1Delta(0),
         gestureDraging(false),
         gesturePinching(false) {
         LOG_INFO("Creating InputManager.");
@@ -117,7 +120,7 @@ public:
         LOG_DEBUG("AMotionEvent_getOrientation=%f", AMotionEvent_getOrientation(event, 0));
         LOG_DEBUG("AMotionEvent_getTouchMajor=%f", AMotionEvent_getTouchMajor(event, 0));
         LOG_DEBUG("AMotionEvent_getTouchMinor=%f", AMotionEvent_getTouchMinor(event, 0));
-#endif
+#endif // INPUTMANAGER_LOG_EVENTS
         int32_t action = AMotionEvent_getAction(event);
         size_t pointerIndex;
         size_t pointerId;
@@ -147,10 +150,7 @@ public:
             y = AMotionEvent_getY(event, 0);
             // Gestures.
             gestureDetected = false;
-            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
-                onTouchEvent(Touch::TOUCH_UP, x, y, pointerId);
-            }
-            if (pointer0.pressed &&  pointer0.pointerId == pointerId) {
+            if (pointer0.pressed && pointer0.pointerId == pointerId) {
                 int deltaX = x - pointer0.x;
                 int deltaY = y - pointer0.y;
                 // Test for drop.
@@ -163,7 +163,7 @@ public:
                     onGestureDropEvent(x, y);
                 }
                 // Test for swipe.
-                else if (time - pointer0.time < GESTURE_SWIPE_DURATION_MAX && (abs(deltaX) > GESTURE_SWIPE_DISTANCE_MIN || abs(deltaY) > GESTURE_SWIPE_DISTANCE_MIN) ) {
+                else if (time - pointer0.time < GESTURE_SWIPE_DURATION_MAX && (abs(deltaX) > GESTURE_SWIPE_DISTANCE_MIN || abs(deltaY) > GESTURE_SWIPE_DISTANCE_MIN)) {
                     int direction = 0;
                     if (abs(deltaX) > abs(deltaY)) {
                         if (deltaX > 0) direction = SWIPE_DIRECTION_RIGHT;
@@ -188,6 +188,9 @@ public:
             }
             pointer0.pressed = false;
             primaryTouchId = -1;
+            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
+                onTouchEvent(Touch::TOUCH_UP, x, y, pointerId);
+            }
             break;
         case AMOTION_EVENT_ACTION_POINTER_DOWN:
             pointerIndex = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
@@ -212,9 +215,6 @@ public:
             x = AMotionEvent_getX(event, pointerIndex);
             y = AMotionEvent_getY(event, pointerIndex);
             gestureDetected = false;
-            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId) ) {
-                onTouchEvent(Touch::TOUCH_UP, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
-            }
             if (pointer1.pressed &&  pointer1.pointerId == pointerId) {
                 int deltaX = x - pointer1.x;
                 int deltaY = y - pointer1.y;
@@ -245,6 +245,9 @@ public:
             }
             pointer1.pressed = false;
             if (primaryTouchId == pointerId) primaryTouchId = -1;
+            if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId) ) {
+                onTouchEvent(Touch::TOUCH_UP, AMotionEvent_getX(event, pointerIndex), AMotionEvent_getY(event, pointerIndex), pointerId);
+            }
             break;
         case AMOTION_EVENT_ACTION_MOVE:
             // ACTION_MOVE events are batched, unlike the other events.
@@ -254,9 +257,6 @@ public:
                 x = AMotionEvent_getX(event, i);
                 y = AMotionEvent_getY(event, i);
                 gestureDetected = false;
-                if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
-                    onTouchEvent(Touch::TOUCH_MOVE, AMotionEvent_getX(event, i), AMotionEvent_getY(event, i), pointerId);
-                }
                 if (pointer0.pressed) {
                     // The two pointers are pressed and the event was done by one of it.
                     if (pointer1.pressed && (pointerId == pointer0.pointerId || pointerId == pointer1.pointerId)) {
@@ -305,6 +305,9 @@ public:
                         }
                     }
                 }
+                if (!gestureDetected && (MULTI_TOUTCH || primaryTouchId == pointerId)) {
+                    onTouchEvent(Touch::TOUCH_MOVE, AMotionEvent_getX(event, i), AMotionEvent_getY(event, i), pointerId);
+                }
             }
             break;
         }
@@ -320,7 +323,7 @@ public:
         LOG_DEBUG("AKeyEvent_getRepeatCount=%d", AKeyEvent_getRepeatCount(event));
         LOG_DEBUG("AKeyEvent_getDownTime=%lld", AKeyEvent_getDownTime(event));
         LOG_DEBUG("AKeyEvent_getEventTime=%lld", AKeyEvent_getEventTime(event));
-#endif
+#endif // INPUTMANAGER_LOG_EVENTS
         int32_t action = AMotionEvent_getAction(event);
         int32_t keyCode = AKeyEvent_getKeyCode(event);
         switch (action & AMOTION_EVENT_ACTION_MASK) {
@@ -358,19 +361,18 @@ public:
         LOG_DEBUG("AMotionEvent_getOrientation=%f", AMotionEvent_getOrientation(event, 0));
         LOG_DEBUG("AMotionEvent_getTouchMajor=%f", AMotionEvent_getTouchMajor(event, 0));
         LOG_DEBUG("AMotionEvent_getTouchMinor=%f", AMotionEvent_getTouchMinor(event, 0));
-#endif
+#endif // INPUTMANAGER_LOG_EVENTS
         return 0;
     };
     int32_t onAccelerometerEvent(ASensorEvent* event) {
-#ifdef INPUTMANAGER_LOG_EVENTS
-#ifdef INPUTMANAGER_LOG_SENSOR_EVENTS
+
+    #ifdef INPUTMANAGER_LOG_SENSOR_EVENTS
         LOG_DEBUG("ASensorEvent=%d", event->version);
         LOG_DEBUG("ASensorEvent=%d", event->sensor);
         LOG_DEBUG("ASensorEvent=%lld", event->timestamp);
         LOG_DEBUG("ASensorEvent=%d", event->type);
         LOG_DEBUG("ASensorEvent=%f,%f,%f,%d", event->acceleration.x, event->acceleration.y, event->acceleration.z, event->acceleration.status);
-#endif
-#endif
+#endif // INPUTMANAGER_LOG_SENSOR_EVENTS
         return 0;
     };
 private:
@@ -438,7 +440,8 @@ private:
     std::pair<int, int> gesturePointer0CurrentPosition;
     std::pair<int, int> gesturePointer1CurrentPosition;
     std::pair<int, int> gesturePinchCentroid;
-    int gesturePointer0Delta, gesturePointer1Delta;
+    int gesturePointer0Delta;
+    int gesturePointer1Delta;
     std::vector<InputListener*> listeners;
 };
 

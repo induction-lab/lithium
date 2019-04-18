@@ -55,7 +55,7 @@ public:
         if (started) {
             for (std::list<Tween*>::reverse_iterator it = tweens.rbegin(); it != tweens.rend(); ++it) {
                 // Update the tween.
-                (*it)->update(PlatformGetTime());
+                (*it)->update(TimeManager::getInstance()->getTime());
                 // Remove stopped tweens.
                 if((*it)->getCompleted() && (*it)->getAutoRemove()) {
                     SAFE_DELETE(*it);
