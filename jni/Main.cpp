@@ -51,10 +51,16 @@ const status STATUS_EXIT   = -2;
 #include <android_native_app_glue.h>
 static android_app* application;
 
+// Base 'match three' game params.
+#define GRID_SIZE 6         // optimal for watch screen
+#define MIN_MATCH_COUNT 3   // minimal match fruits
+
 // Application default config.
 struct ConfigData {
     int soundVolume = 70;
-    int musicVolume = 0;
+    int musicVolume = 50;
+    int fruitsType[MIN_MATCH_COUNT][MIN_MATCH_COUNT];
+    int ScorePoints = 0;
 };
 ConfigData* configData;
 
@@ -72,15 +78,15 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// - work on Gameplay
-// - rasterfont
-// - music pause
+// - rasterfont for scores
 // - save state
+// - music pause
 
 // Android entry point.
 void android_main(android_app* app) {
     LOG_INFO("--- Let's go full native! ---");
     LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);
+    srand(time(NULL));
     // Toggle fullscreen.
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
     // Application details provided by Android.

@@ -1,43 +1,38 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
+#include <functional>
+
 #include "InputManager.h"
 #include "GraphicsManager.h"
 #include "SpriteBatch.h"
 
-#include <functional>
-
 // Base Widget.
 class Widget: public InputListener {
 public:
-    Widget(int width, int height, Vector2 location):
-        width(width),
-        height(height),
-        location(location),
-        sprite(NULL) {
+    Widget():
+        sprite(NULL),
+        spriteBatch(NULL) {
         LOG_DEBUG("Create widget.");
     };
     ~Widget() {
         LOG_DEBUG("Delete widget.");
     }
     virtual void update() {};
-    void setSprite(Sprite* sprite) {
+    void setSprite(Sprite* sprite, Vector2 location) {
         this->sprite = sprite;
-        sprite->setLocation(location.x, location.y);
+        sprite->location = location;
     };
     Sprite* sprite;
 protected:
     friend class Scene;
-    int width, height;
-    Vector2 location;
     SpriteBatch* spriteBatch;
 };
 
 // Button Widget.
 class Button: public Widget {
 public:
-    Button(int width, int height, Vector2 location):
-        Widget(width, height, location),
+    Button():
         downFunction(NULL),
         upFunction(NULL),
         clickFunction(NULL) {
@@ -86,8 +81,7 @@ private:
 // CheckBox Widget.
 class CheckBox: public Widget {
 public:
-    CheckBox(int width, int height, Vector2 location):
-        Widget(width, height, location),
+    CheckBox():
         checked(false),
         downFunction(NULL),
         upFunction(NULL),
@@ -140,8 +134,7 @@ private:
 // Slider Widget.
 class Slider: public Widget {
 public:
-    Slider(int width, int height, Vector2 location):
-        Widget(width, height, location),
+    Slider():
         precent(0),
         changed(false),
         slideFunction(NULL),
@@ -151,16 +144,16 @@ public:
     };
     void setSliderHandle(const char* path, int width, int height, int position) {
         this->sliderHandle = spriteBatch->registerSprite(path, width, height);
-        int x = location.x - sprite->getWidth() / 2;
-        float minPosition = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
-        sliderHandle->setLocation(minPosition, location.y);
+        int x = sprite->location.x - sprite->getWidth() / 2;
+        float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+        sliderHandle->location = Vector2(minPosition, sprite->location.y);
     };
     void setPosition(int precent) {
         this->precent = (int)CLAMP(precent, 0.0f, 100.0f);
-        float minPosition = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
-        float maxPosition = sprite->getLocation().x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
+        float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+        float maxPosition = sprite->location.x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
         float position = (maxPosition - minPosition) * precent / 100.0f + minPosition;
-        sliderHandle->setLocation(position, location.y);
+        sliderHandle->location = Vector2(position, sprite->location.y);
     };
     void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
         switch (event) {
@@ -171,13 +164,12 @@ public:
         }
     };
     int gestureTapEvent(int x, int y) {
-        // TODO!
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (sprite->pointInSprite(point.x, point.y)) {
-            float minPosition = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
-            float maxPosition = sprite->getLocation().x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
+            float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+            float maxPosition = sprite->location.x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;
             if (point.x >= minPosition && point.x <= maxPosition) {
-                sliderHandle->setLocation(point.x, location.y);
+                sliderHandle->location = Vector2(point.x, sprite->location.y);
                 float position = CLAMP((float)(point.x - minPosition) / (maxPosition - minPosition), 0.0f, 1.0f);
                 int state = (int)CLAMP((float)(point.x - minPosition) / (maxPosition - minPosition) * 100.0f, 0.0f, 100.0f);
                 changed = (state == precent);
@@ -192,8 +184,8 @@ public:
         return gestureTapEvent(x, y);
     };
     int gestureDragEvent(int x, int y) {
-        float minPosition = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
-        float maxPosition = sprite->getLocation().x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;        
+        float minPosition = sprite->location.x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
+        float maxPosition = sprite->location.x + sprite->getWidth() / 2 - sliderHandle->getWidth() / 4;        
         float clampX = CLAMP(x, minPosition, maxPosition);
         return gestureTapEvent(x, y);
     };    
@@ -208,13 +200,7 @@ private:
 };
 
 // Background Widget.
-class Background: public Widget {
-public:
-    Background(int width, int height, Vector2 location):
-        Widget(width, height, location) {
-        //
-    };
-};
+class Background: public Widget {};
 
 // Base Scene.
 class Scene: public InputListener {
@@ -233,32 +219,32 @@ public:
     };
     Button* addButton(const char* path, int width, int height, Vector2 location) {
         LOG_INFO("Creating new 'Button' widget.");
-        Button* button = (Button*) new Button(width, height, location);
-        button->setSprite(spriteBatch->registerSprite(path, width, height));
+        Button* button = (Button*) new Button();
+        button->setSprite(spriteBatch->registerSprite(path, width, height), location);
         button->spriteBatch = spriteBatch;
         widgets.push_back(button);
         return button;
     };
     CheckBox* addCheckBox(const char* path, int width, int height, Vector2 location) {
         LOG_INFO("Creating new 'CheckBox' widget.");
-        CheckBox* checkBox = new CheckBox(width, height, location);
-        checkBox->setSprite(spriteBatch->registerSprite(path, width, height));
+        CheckBox* checkBox = new CheckBox();
+        checkBox->setSprite(spriteBatch->registerSprite(path, width, height), location);
         checkBox->spriteBatch = spriteBatch;
         widgets.push_back(checkBox);
         return checkBox;
     };
     Slider* addSlider(const char* path, int width, int height, Vector2 location) {
         LOG_INFO("Creating new 'Slider' widget.");
-        Slider* slider = new Slider(width, height, location);
-        slider->setSprite(spriteBatch->registerSprite(path, width, height));
+        Slider* slider = new Slider();
+        slider->setSprite(spriteBatch->registerSprite(path, width, height), location);
         slider->spriteBatch = spriteBatch;
         widgets.push_back(slider);
         return slider;
     };
     Background* addBackground(const char* path, int width, int height, Vector2 location) {
         LOG_INFO("Creating new 'Background' widget.");
-        Background* background = new Background(width, height, location);
-        background->setSprite(spriteBatch->registerSprite(path, width, height));
+        Background* background = new Background();
+        background->setSprite(spriteBatch->registerSprite(path, width, height), location);
         background->spriteBatch = spriteBatch;
         widgets.push_back(background);
         return background;

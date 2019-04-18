@@ -20,12 +20,15 @@ public:
         spriteWidth(width), spriteHeight(height),
         frameCount(0), frameXCount(0), frameYCount(0),
         currentFrame(0) {
-        //
+        // LOG_DEBUG("Create sprite.");
+    };
+    ~Sprite() {
+        // LOG_DEBUG("Delete sprite.");
     };
     void setFrame(int frame) {
         currentFrame = frame;
     };
-    int getValues(int tweenType, float *returnValues) {
+    int getValues(int tweenType, float* returnValues) {
         switch (tweenType) {
         case TweenType::POSITION_X:
             returnValues[0] = location.x;
@@ -65,7 +68,7 @@ public:
         }
         return 0;
     };
-    void setValues(int tweenType, float *newValues) {
+    void setValues(int tweenType, float* newValues) {
         switch (tweenType) {
         case TweenType::POSITION_X:
             location.x = newValues[0];
@@ -100,15 +103,6 @@ public:
             currentFrame = (int)round(newValues[0]);
             break;
         }
-    };
-    void setLocation(float x, float y) {
-        location = Vector2(x, y);
-    };
-    void setLocation(Vector2 location) {
-        this->location = location;
-    };
-    Vector2 getLocation() {
-        return location;
     };
     int getWidth() {
         return spriteWidth;

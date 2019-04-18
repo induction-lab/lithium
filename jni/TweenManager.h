@@ -1,11 +1,11 @@
 #ifndef __TWEENMANAGER_H__
 #define __TWEENMANAGER_H__
 
+#include <list>
+
 #include "Singleton.h"
 #include "TimeManager.h"
 #include "Tween.h"
-
-#include <list>
 
 class TweenType {
 public:

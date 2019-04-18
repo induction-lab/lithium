@@ -10,7 +10,7 @@ public:
         LOG_INFO("Scene SoundSetting created.");
     };
     ~SoundSetting() {
-        LOG_INFO("Scene SoundSetting Destructed.");
+        LOG_INFO("Scene SoundSetting destructed.");
     };
     status start() {
         if (created) return STATUS_OK;
@@ -24,18 +24,18 @@ public:
         gameBox = addBackground("textures/GameBox.png", 360, 380, Vector2(halfWidth, halfHeight));
         gameBox->sprite->opaque = 0.0f;
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::OPAQUE, 0.7f, Ease::Sinusoidal::InOut)
-                    ->target(1.0f)->remove(true)->start();
+            ->target(1.0f)->remove(true)->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start();
+            ->target(1.03f)->remove(false)->loop()->reverse()->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
+            ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         sounds = addBackground("textures/SoundPanel.png", 268, 239, Vector2(halfWidth, halfHeight));
         okButton = addButton("textures/OkButton.png", 80, 78, Vector2(halfWidth + 70, halfHeight - 100));
 		okButton->setDownFunction(std::bind(&SoundSetting::onAnyButtonDown, this));
         okButton->setUpFunction(std::bind(&SoundSetting::onAnyButtonUp, this));
         okButton->setClickFunction(std::bind(&SoundSetting::onOkButtonClick, this));
         TweenManager::getInstance()->addTween(okButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.2f);
+            ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.2f);
 		soundSlider = addSlider("textures/SliderBackground.png", 160, 20, Vector2(halfWidth + 25, halfHeight + 20));
         soundSlider->setSliderHandle("textures/SliderHandle.png", 48, 48, 0);
         soundSlider->setSlideFunction(std::bind(&SoundSetting::onSoundSliderSlide, this, std::placeholders::_1));

@@ -1,9 +1,6 @@
 #ifndef __GAMEPLAY_H__
 #define __GAMEPLAY_H__
 
-#define GRID_SIZE 6         // optimal for watch screen
-#define MIN_MATCH_COUNT 3   // minimal match fruits
-
 #include "Fruit.h"
 
 class Gameplay: public Scene {
@@ -15,7 +12,7 @@ public:
         LOG_INFO("Scene Gameplay created.");
     };
     ~Gameplay() {
-        LOG_INFO("Scene Gameplay Destructed.");
+        LOG_INFO("Scene Gameplay destructed.");
         for (std::vector<Fruit*>::iterator it = fruits.begin(); it < fruits.end(); ++it) {
             SAFE_DELETE(*it);
         }
@@ -33,11 +30,11 @@ public:
         gameBox = addBackground("textures/GameBox.png", 360, 380, Vector2(halfWidth, halfHeight));
         gameBox->sprite->opaque = 0.0f;
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::OPAQUE, 0.7f, Ease::Sinusoidal::InOut)
-                    ->target(1.0f)->remove(true)->start();
+            ->target(1.0f)->remove(true)->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_X, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start();
+            ->target(1.03f)->remove(false)->loop()->reverse()->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
+            ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Load sounds.
         grub01Sound = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
         grub02Sound = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
@@ -49,6 +46,9 @@ public:
         hey03Sound = SoundManager::getInstance()->registerSound("sounds/Hey03.wav");
         hey04Sound = SoundManager::getInstance()->registerSound("sounds/Hey04.wav");
         hey05Sound = SoundManager::getInstance()->registerSound("sounds/Hey05.wav");
+        Lift01Sound = SoundManager::getInstance()->registerSound("sounds/Lift01.wav");
+        Lift02Sound = SoundManager::getInstance()->registerSound("sounds/Lift02.wav");
+        Lift03Sound = SoundManager::getInstance()->registerSound("sounds/Lift03.wav");        
         zipUp01Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp01.wav");
         zipUp02Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp02.wav");
         zipUp03Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp03.wav");
@@ -59,6 +59,11 @@ public:
         // Create fruits.
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) addFruit(x, y);
+        switch ((int)frand(3)) {
+            case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
+            case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
+            case 2: SoundManager::getInstance()->playSound(zipDown03Sound); break;
+        }
         testForMatch();
         created = true;
         return STATUS_OK;
@@ -73,7 +78,7 @@ public:
         float dx = (Y * 2.0f);
         return Vector2(halfWidth + X * 42 - 100 - dx, halfHeight - Y * 42 + 110 - dy);
     };
-    void addFruit(int X, int Y) {
+    void addFruit(int X, int Y, bool loadFromSave = false) {
         LOG_INFO("Creating new fruit.");
         int fruitType = (int)frand(7);
         Fruit* fruit = new Fruit(fruitType);
@@ -87,8 +92,10 @@ public:
             "textures/TomatoFruit.png"
         };
         fruit->sprite = spriteBatch->registerSprite(fruitTextures[fruitType], 64, 64);
-        fruit->sprite->setLocation(getSkrewedLocation(X, -1));
+        fruit->sprite->location = getSkrewedLocation(X, -1);
         fruit->sprite->scale = Vector2(0.9f, 0.9f);
+        fruit->sprite->opaque = 0.0f;
+        TweenManager::getInstance()->addTween(fruit->sprite, TweenType::OPAQUE, 0.1f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
         fruit->setClickFunction(std::bind(&Gameplay::onFruitClick, this, std::placeholders::_1, std::placeholders::_2));
         fruit->setDeadFunction(std::bind(&Gameplay::onFruitDead, this, std::placeholders::_1, std::placeholders::_2));
         fruit->moveTo(getSkrewedLocation(X, Y));
@@ -130,7 +137,7 @@ public:
                     fruits.erase(it);
                 }
                 addFruit(x, y);
-            } else if (getFruit(x, y)->sprite->getLocation() != getSkrewedLocation(x, y)) {
+            } else if (getFruit(x, y)->sprite->location != getSkrewedLocation(x, y)) {
                 // Move fruits to their location.
                 getFruit(x, y)->moveTo(getSkrewedLocation(x, y));
             }
@@ -139,7 +146,7 @@ public:
             case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
             case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
             case 2: SoundManager::getInstance()->playSound(zipDown03Sound); break;
-        }  
+        }
         testForMatch();
     };
     int testForMatch() {
@@ -224,6 +231,7 @@ public:
         }
         if (!swaped) {
             getFruit(X, Y)->selected = true;
+            /*
             switch ((int)frand(5)) {
                 case 0: SoundManager::getInstance()->playSound(hey01Sound); break;
                 case 1: SoundManager::getInstance()->playSound(hey02Sound); break;
@@ -231,11 +239,16 @@ public:
                 case 3: SoundManager::getInstance()->playSound(hey04Sound); break;
                 case 4: SoundManager::getInstance()->playSound(hey05Sound); break;
             }
+            */
+            switch ((int)frand(3)) {
+                case 0: SoundManager::getInstance()->playSound(Lift01Sound); break;
+                case 1: SoundManager::getInstance()->playSound(Lift02Sound); break;
+                case 2: SoundManager::getInstance()->playSound(Lift03Sound); break;
+            }            
         } else testForMatch();
     };
     void onFruitDead(int X, int Y) {
         dyingFruits--;
-        LOG_DEBUG("new dyingFruits=%d", dyingFruits);
         dropFruits(X, Y);
         if (dyingFruits == 0) updateBoard();
     };
@@ -264,6 +277,9 @@ public:
     Sound* hey03Sound;
     Sound* hey04Sound;
     Sound* hey05Sound;
+    Sound* Lift01Sound;
+    Sound* Lift02Sound;
+    Sound* Lift03Sound;
     Sound* zipUp01Sound;
     Sound* zipUp02Sound;
     Sound* zipUp03Sound;

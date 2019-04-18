@@ -5,9 +5,9 @@
 #include <android/input.h>
 #include <android/sensor.h>
 
-#include "Singleton.h"
-
 #include <vector>
+
+#include "Singleton.h"
 
 // #define INPUTMANAGER_LOG_EVENTS
 // #define INPUTMANAGER_SENSORS_EVENTS

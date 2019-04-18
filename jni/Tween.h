@@ -14,8 +14,8 @@ static T lerp(T a, T b, float k) {
 
 class Tweenable {
 public:
-    virtual int getValues(int tweenType, float *returnValues) = 0;
-    virtual void setValues(int tweenType, float *newValues) = 0;
+    virtual int getValues(int tweenType, float* returnValues) = 0;
+    virtual void setValues(int tweenType, float* newValues) = 0;
 };
 
 class Tween {

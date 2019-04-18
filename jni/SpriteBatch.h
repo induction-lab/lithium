@@ -16,10 +16,7 @@ public:
         GraphicsManager::getInstance()->registerComponent(this);
     };
     ~SpriteBatch() {
-        for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
-            SAFE_DELETE(*it);
-        }
-        sprites.clear();
+        reset();
     };
     Sprite* registerSprite(const char* texturePath, int width, int height) {
         int spriteCount = sprites.size();
@@ -39,15 +36,42 @@ public:
         Sprite* sprite = new Sprite(texturePath, width, height);
         sprites.push_back(sprite);
         sprite->load();
+        LOG_DEBUG("3. %d %d %d", indexes.size(), vertices.size(), sprites.size());
         return sprite;
     };
     void unregisterSprite(Sprite* sprite) {
         std::vector<Sprite*>::iterator it = find(sprites.begin(), sprites.end(), sprite);
+        LOG_DEBUG("1. %d %d %d", indexes.size(), vertices.size(), sprites.size());
         if (it != sprites.end()) {
+            int n = std::distance(sprites.begin(), it);
             SAFE_DELETE(*it);
-            sprites.erase(it);
+            sprites.erase(std::remove(sprites.begin(), sprites.end(), *it), sprites.end());
+            vertices.erase(vertices.begin() + n * vertexPerSprite, vertices.begin() + (n+1) * vertexPerSprite);
+            LOG_DEBUG("1.1 %d %d %d", indexes.size(), vertices.size(), sprites.size());
+            indexes.clear();
+            for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
+                int n = std::distance(sprites.begin(), it);
+                // Points to 1st vertex.
+                int index = n * 4;
+                // Precomputes the index buffer.
+                indexes.push_back(index+0);
+                indexes.push_back(index+1);
+                indexes.push_back(index+2);
+                indexes.push_back(index+2);
+                indexes.push_back(index+1);
+                indexes.push_back(index+3);
+            }
         }
+        LOG_DEBUG("2. %d %d %d", indexes.size(), vertices.size(), sprites.size());
     };
+	void reset() {
+		for (std::vector<Sprite*>::iterator it = sprites.begin(); it != sprites.end(); ++it) {
+            SAFE_DELETE(*it);
+		}
+        indexes.clear();
+        vertices.clear();
+		sprites.clear();
+	}
     status load() {
         // Creates and retrieves shader attributes and uniforms.
         Shader* shader = GraphicsManager::getInstance()->loadShader("shaders/Sprite.shader");
@@ -81,8 +105,6 @@ ERROR:
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // Renders all sprites in batch.
-        const int vertexPerSprite = 4;
-        const int indexPerSprite = 6;
         int spriteCount = sprites.size();
         int currentSprite = 0, firstSprite = 0;
         while (bool canDraw = (currentSprite < spriteCount)) {
@@ -121,6 +143,8 @@ ERROR:
         glDisable(GL_BLEND);
     };
 private:
+    const int indexPerSprite = 6;
+    const int vertexPerSprite = 4;
     std::vector<Sprite*> sprites;
     std::vector<Sprite::Vertex> vertices;
     std::vector<GLushort> indexes;

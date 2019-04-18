@@ -1,6 +1,8 @@
 #ifndef __MAINMENU_H__
 #define __MAINMENU_H__
 
+#include "RasterFont.h"
+
 class MainMenu : public Scene {
 private:
     Activity* activity;
@@ -11,7 +13,8 @@ public:
         LOG_INFO("Scene MainMenu created.");
     };
     ~MainMenu() {
-        LOG_INFO("Scene MainMenu Destructed.");
+        LOG_INFO("Scene MainMenu destructed.");
+        if (rasterFont != NULL) SAFE_DELETE(rasterFont);
     };
     status start() {
         if (created) return STATUS_OK;
@@ -35,22 +38,26 @@ public:
         exitButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         exitButton->setClickFunction(std::bind(&MainMenu::onExitButtonClick, this));
         TweenManager::getInstance()->addTween(exitButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.7f);        
+            ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.7f);        
         playButton = addButton("textures/PlayButton.png", 104, 100, Vector2(halfWidth, halfHeight - 100));
 		playButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         playButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         playButton->setClickFunction(std::bind(&MainMenu::onPlayButtonClick, this));
         TweenManager::getInstance()->addTween(playButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.9f);
+            ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.9f);
         soundSettingsButton = addButton("textures/SoundSettingButton.png", 80, 78, Vector2(halfWidth + 85, halfHeight - 80));
 		soundSettingsButton->setDownFunction(std::bind(&MainMenu::onAnyButtonDown, this));
         soundSettingsButton->setUpFunction(std::bind(&MainMenu::onAnyButtonUp, this));
         soundSettingsButton->setClickFunction(std::bind(&MainMenu::onSoundsButtonClick, this));
         TweenManager::getInstance()->addTween(soundSettingsButton->sprite, TweenType::POSITION_Y, 0.35f, Ease::Sinusoidal::InOut)
-                    ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
+            ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
 		buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();
+        
+        rasterFont = new RasterFont("textures/Font.png", 32, 32, Vector2(halfWidth, halfHeight + 100), Justification::MIDDLE);
+        rasterFont->setText("123");
+        
         created = true;
         return STATUS_OK;
     };
@@ -67,8 +74,13 @@ public:
         activity->quit = true;
     }
 	void onPlayButtonClick() {
-        activity->changeScene(new Gameplay(activity));
-	};
+        // activity->changeScene(new Gameplay(activity));
+        switch ((int)frand(3)) {
+            case 0: rasterFont->setText("321"); break;
+            case 1: rasterFont->setText("654321"); break;
+            case 2: rasterFont->setText("8"); break;
+        }
+ 	};
 	void onSoundsButtonClick() {
         activity->changeScene(new SoundSetting(activity));
 	};
@@ -91,6 +103,8 @@ public:
     Button* soundSettingsButton;
     Sound* buttonDownSound;
     Sound* buttonUpSound;
+    
+    RasterFont* rasterFont;
 };
 
 #endif // __MAINMENU_H__

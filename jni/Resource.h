@@ -1,8 +1,8 @@
 #ifndef __RESOURCE_H__
 #define __RESOURCE_H__
 
-#include <fstream>
 #include <sys/stat.h>
+#include <fstream>
 
 struct ResourceDescriptor {
     int32_t descriptor;
