@@ -52,16 +52,17 @@ public:
         if (configData->firstSrtart) {
             Background* boom = addBackground("textures/StartScreen.png", 360, 640, Vector2(halfWidth, halfHeight));
             TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)
-                ->target(43.0f)->remove(true)->start(6.0f);
+                ->target(43.0f)->remove(true)->start(7.0f);
             Background* induction = addBackground("textures/induction.png", 239, 142, Vector2(halfWidth, halfHeight));
-            Tween* t1 = TweenManager::getInstance()->addTween(induction->sprite, TweenType::FRAME, 1.15f, Ease::Linear)
+            Tween* t1 = TweenManager::getInstance()->addTween(induction->sprite, TweenType::FRAME, 1.25f, Ease::Linear)
                 ->target(30.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(induction->sprite, TweenType::OPAQUE, 0.5f, Ease::Linear)
-                ->target(0.0f)->remove(true)->delay(3.0f);
+                ->target(0.0f)->remove(true)->delay(4.7f);
             t1->addChain(t2);
-            t1->start(1.0f);
+            t1->start(0.7f);
             
             configData->firstSrtart = false;
+            
         }
         buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");

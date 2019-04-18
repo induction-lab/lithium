@@ -156,6 +156,12 @@ public:
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
+            if (fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->accempted) {
+                // TODO !!!
+                Vector2 location = getSkrewedLocation(x, y);
+                fruits[x][y]->accempted = true;
+                addAnimation("textures/AccentForBonus.png", 78, 78, location, 20, 1.2f, 0.5f);
+            }
         }
         // It's bad time...
         if (TimeManager::getInstance()->getTime() > lastGoodTime + 5.0f) {

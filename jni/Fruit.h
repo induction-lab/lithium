@@ -34,6 +34,7 @@ public:
         alive(true), dead(false),                              // alive/dead state
         selected(false), animated(false),                      // selected state
         dropped(false),                                        // dropped state
+        accempted(false),                                      // accempted state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
         index(Vector2()),                                      // index on board
         prevIndex(Vector2()),                                  // prevision index on board
@@ -154,6 +155,7 @@ public:
     int type;
     bool alive, dead;
     bool animated, selected, dropped;
+    bool accempted;
     FruitMoveType moveType;
     FruitKillType killType;
     Tween* xScaleTween;
