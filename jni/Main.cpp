@@ -104,7 +104,7 @@ static int uiModeType;
 // - game logo
 // - music pause
 // - tutorial
-// - leafs for phone ui mode
+// ? leafs for phone ui mode (x aspect ratio?)
 // - .. refactoring to c++ best practics
 
 // Android entry point.

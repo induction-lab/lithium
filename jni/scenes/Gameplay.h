@@ -37,6 +37,26 @@ public:
             ->target(1.03f)->remove(false)->loop()->reverse()->start();
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
+        // Animated leafs.
+        leaf01 = addBackground("textures/Leaf01.png", 360, 239, Vector2(halfWidth + 35.0f, renderHeight - 40.0f));
+        TweenManager::getInstance()->addTween(leaf01->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
+        leaf02 = addBackground("textures/Leaf02.png", 159, 157, Vector2(60.0f, renderHeight - 70.0f));
+        TweenManager::getInstance()->addTween(leaf02->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
+        leaf03 = addBackground("textures/Leaf03.png", 239, 211, Vector2(renderWidth - 65.0f, renderHeight - 100.0f));
+        TweenManager::getInstance()->addTween(leaf03->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
+        // -
+        leaf04 = addBackground("textures/Leaf04.png", 286, 225, Vector2(halfWidth, 90.0f));
+        TweenManager::getInstance()->addTween(leaf04->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start();
+        leaf05 = addBackground("textures/Leaf05.png", 230, 210, Vector2(60.0f, 90.0f));
+        TweenManager::getInstance()->addTween(leaf05->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
+        leaf06 = addBackground("textures/Leaf06.png", 164, 223, Vector2(renderWidth - 65.0f, 90.0f));
+        TweenManager::getInstance()->addTween(leaf06->sprite, TweenType::ROTATION_CW, 1.0f, Ease::Sinusoidal::InOut)
+            ->target(frand(5.0f))->remove(false)->loop()->reverse()->start(frand(5.0f));
         // Load sounds.
         clickSound = SoundManager::getInstance()->registerSound("sounds/Click.wav");
         doubleSound = SoundManager::getInstance()->registerSound("sounds/Double.wav");
@@ -598,6 +618,13 @@ private:
     // Decorations.
     Background* background;
     Background* gameBox;
+    // Leafs.
+    Background* leaf01;
+    Background* leaf02;
+    Background* leaf03;
+    Background* leaf04;
+    Background* leaf05;
+    Background* leaf06;
     // Bonus text.
     Background* bonus;
     int matchStep;
