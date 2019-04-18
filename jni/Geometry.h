@@ -101,8 +101,6 @@ inline Vector NormalVector(const Vector v1, const Vector v2) { return Normalize(
 // Returns the normal vector of a triangle or 3 points on a plane (assumes counter-clockwise orientation)
 inline Vector NormalVector(const Vector p1, const Vector p2, const Vector p3) { return NormalVector(p2 - p1, p3 - p1); }
 
-// Returns the direction vector between two points
-
 // Performs linear interpolation between two vectors.
 inline Vector Lerp(Vector v1, Vector v2, float a) {
 	return Vector(
@@ -125,6 +123,8 @@ public:
 	inline Vector2(void): x(0.0f), y(0.0f) {}
 	inline Vector2(float X, float Y): x(X), y(Y) {}
 	inline Vector2(const Vector2 &v): x(v.x), y(v.y) {}
+	// Assignment operator
+	inline Vector2& operator = (const Vector2 &v) { this->x = v.x; this->y = v.y; return *this; };		
 };
 
 class Vector4 {
@@ -134,6 +134,8 @@ public:
 	inline Vector4(void): x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 	inline Vector4(float X, float Y, float Z, float W): x(X), y(Y), z(Z), w(W) {}
 	inline Vector4(const Vector4 &v): x(v.x), y(v.y), z(v.z), w(v.w) {}
+	// Assignment operator
+	inline Vector4& operator = (const Vector4 &v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; return *this; };	
 };
 
 
@@ -185,10 +187,10 @@ inline Matrix OrthographicMatrix(float l, float r, float b, float t, float n, fl
 #define m43 m[14]
 #define m44 m[15]
 
-class Matrix
-{
+class Matrix {
 public:
-
+    
+	// One of variants defenition members...
 	// float m11,m12,m13,m14;
 	// float m21,m22,m23,m24;
 	// float m31,m32,m33,m34;

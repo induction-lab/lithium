@@ -1,7 +1,14 @@
 #ifndef __ACTIVITY_H__
 #define __ACTIVITY_H__
 
+#include "SpriteBatch.h"
+
 class Activity: public ActivityHandler {
+private:	
+	Scene* scene;
+	bool isQuitFlag;
+	// Indicates if application is launched for the first time.
+	bool isFirstStartFlag;
 public:
 	Activity():
 		scene(NULL),
@@ -20,7 +27,6 @@ protected:
 		LOG_DEBUG("Activate Engine.");
 		if (isFirstStartFlag) {
 			LOG_DEBUG("First start detected.");
-			//GraphicsManager::getInstance()->initialize(640, 480);
 			setStartScene();
 			isFirstStartFlag = false;
 		}
@@ -33,11 +39,6 @@ protected:
 	void onDeactivate() {
 		LOG_DEBUG("Dectivating Engine.");
 	}
-private:	
-	Scene* scene;
-	bool isQuitFlag;
-	// Indicates if application is launched for the first time.
-	bool isFirstStartFlag;
  };
 
 #include "scenes\SecondScene.h"
@@ -52,6 +53,7 @@ void Activity::setScene(Scene* nextScene) {
 	LOG_INFO("Set Scene");
 	if (scene != NULL) SAFE_DELETE(scene);
 	scene = nextScene;
+	scene->start();
 };
 
 #endif

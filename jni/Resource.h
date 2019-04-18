@@ -10,6 +10,10 @@ struct ResourceDescriptor {
 };
 
 class Resource {
+private:
+	const char* filePath;
+	AAssetManager* assetManager;
+	AAsset* asset;	
 public:
 	Resource() {};
 	Resource(const char* path) :
@@ -47,10 +51,6 @@ public:
 	off_t getLength() {
 		return AAsset_getLength(asset);
 	}
-private:
-	const char* filePath;
-	AAssetManager* assetManager;
-	AAsset* asset;
 };
 
 #endif

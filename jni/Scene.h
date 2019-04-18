@@ -12,6 +12,7 @@ public:
 	virtual ~Scene() {
 		LOG_INFO("Scene delete");
 	}
+	virtual status start() = 0;	
 	Activity* activity;
 };
 

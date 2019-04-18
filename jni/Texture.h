@@ -7,6 +7,10 @@
 #include "Resource.h"
 
 class Texture {
+private:
+    GLuint textureId;
+    int32_t width, height;
+    GLint format;	
 public:
     Texture():
         textureId(0),
@@ -27,35 +31,41 @@ public:
     int32_t getWidth() {
         return width;
     }
-    status loadFromFile(const char* path, int filter, int mode) {
-        uint8_t* pixelData = loadImage(path);
-        if (pixelData == NULL) return STATUS_ERROR;
-        // Creates a new OpenGL texture.
+	status createFromData(unsigned char* pixelData, int textureWidth, int textureHeight, GLint format, int filter, int wrapMode) {
+        width = textureWidth;
+		height = textureHeight;
+		// Creates a new OpenGL texture.
         glGenTextures(1, &textureId);
         glBindTexture(GL_TEXTURE_2D, textureId);
         // Set-up texture properties.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
         // Loads image data into OpenGL.
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixelData);
-        SAFE_DELETE(pixelData);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, (format == 0) ? GL_RGBA : format, GL_UNSIGNED_BYTE, pixelData);
         if (glGetError() != GL_NO_ERROR) {
-            LOG_ERROR("Error loading texture into OpenGL.");
+            LOG_ERROR("Error creating OpenGL texture.");
             return STATUS_ERROR;
-        }
-        return STATUS_OK;
+        }		
+		return STATUS_OK;
+	}	
+    status loadFromFile(const char* path, int filter, int wrapMode) {
+        unsigned char* pixelData = loadPNGImage(path);
+        if (pixelData == NULL) return STATUS_ERROR;
+		status result = createFromData(pixelData, width, height, format, filter, wrapMode);
+		SAFE_DELETE(pixelData);
+		return result;
     }
     void apply() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
     }
-    GLuint getId() {
+    GLuint getTextureId() {
         return textureId;
     }
 protected:
-    uint8_t* loadImage(const char* path) {
+    unsigned char* loadPNGImage(const char* path) {
         Resource resource(path);
         LOG_INFO("Loading texture: %s", resource.getPath());
         png_byte header[8];
@@ -77,7 +87,7 @@ protected:
         // Prepares reading operation by setting-up a read callback.
         png_set_read_fn(pngPtr, &resource, callback_read);
         // Set-up error management. If an error occurs while reading,
-        // code will come back here and jump
+        // code will come back here and jump.
         if (setjmp(png_jmpbuf(pngPtr))) goto ERROR;
         // Ignores first 8 bytes already read and processes header.
         png_set_sig_bytes(pngPtr, 8);
@@ -145,16 +155,16 @@ protected:
         // Frees memory and resources.
         resource.close();
         png_destroy_read_struct(&pngPtr, &infoPtr, NULL);
-        delete[] rowPtrs;
+        SAFE_DELETE(rowPtrs);
         LOG_INFO("Texture size: %d x %d", width, height);
         return imageBuffer;
 ERROR:
         LOG_ERROR("Error while reading PNG file");
         resource.close();
-        delete[] rowPtrs;
-        delete[] imageBuffer;
+        SAFE_DELETE(rowPtrs);
+        SAFE_DELETE(imageBuffer);
         if (pngPtr != NULL) {
-            png_infop* infoPtrP = infoPtr != NULL ? &infoPtr: NULL;
+            png_infop* infoPtrP = (infoPtr != NULL) ? &infoPtr : NULL;
             png_destroy_read_struct(&pngPtr, infoPtrP, NULL);
         }
         return NULL;
@@ -164,10 +174,6 @@ private:
         Resource* resource = ((Resource*) png_get_io_ptr(pngPtr));
         if (resource->read(data, length) != STATUS_OK) resource->close();
     }
-public:
-    GLuint textureId;
-    int32_t width, height;
-    GLint format;
 };
 
 #endif

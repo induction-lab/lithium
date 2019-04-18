@@ -13,7 +13,7 @@
 #define SAFE_DELETE(x) { delete x; x = NULL; }
 
 // Array deletion macro
-#define SAFE_DELETE_ARRAY(x) { delete[] x; x = NULL; } 
+#define SAFE_DELETE_ARRAY(x) { delete[] x; x = NULL; }
 
 // Stuff for status state
 typedef unsigned long int status;
@@ -35,13 +35,11 @@ static android_app* application;
 
 // Android entry point
 void android_main(android_app* app) {
-	LOG_INFO("--- Let's go full native! ---");
-	LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);	
-    // Toggle fullscreen.
-    ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
-	// Application details provided by Android.
-	application = app;
+    LOG_INFO("--- Let's go full native! ---");
+    LOG_INFO("Build date: %s %s", GetBuildDate(), __TIME__);
+    // Application details provided by Android.
+    application = app;
     // Starts the game loop.
-	EventLoop().run(new Activity);
-	LOG_INFO("--- Bye! ---");
+    EventLoop().run(new Activity);
+    LOG_INFO("--- Bye! ---");
 }

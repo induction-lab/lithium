@@ -38,6 +38,9 @@ public:
 };
 
 class InputManager: public Singleton<InputManager> {
+private:
+	int primaryTouchId;
+	std::vector<InputListener*> listeners;
 public:
 	InputManager() :
 		primaryTouchId(-1) {
@@ -187,8 +190,6 @@ private:
 			(*it)->touchEvent(event, x, y, pointerId);
 		}
 	}
-	int primaryTouchId;
-	std::vector<InputListener*> listeners;
 };
 
 InputListener::InputListener(void) {

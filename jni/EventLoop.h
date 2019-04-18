@@ -29,6 +29,16 @@ public:
 };
 
 class EventLoop {
+private:
+    // Saves application state when application is active/paused.
+    bool isEnabledFlag;
+    // Activity event observer.
+    ActivityHandler* activityHandler;
+    // Sensors.
+    ASensorManager* sensorManager;
+    ASensorEventQueue* sensorEventQueue;
+    android_poll_source sensorPollSource;
+    const ASensor* accelerometer;
 public:
     EventLoop():
         isEnabledFlag(false),
@@ -40,15 +50,16 @@ public:
         application->onAppCmd = callback_event;
         application->onInputEvent = callback_input;
         LOG_DEBUG("Creating Services:");
-		//TimeManager::getInstance();
-		//InputManager::getInstance();
-		//GraphicsManager::getInstance();
+		TimeManager::getInstance();
+		InputManager::getInstance();
+		GraphicsManager::getInstance();
 	}
 	~EventLoop() {
 		if (activityHandler != NULL) SAFE_DELETE(activityHandler);
 		LOG_DEBUG("Destructing Services:");
-
-		//GraphicsManager::freeInstance();
+		TimeManager::freeInstance();
+		InputManager::freeInstance();
+		GraphicsManager::freeInstance();
 	}
     void run(ActivityHandler* activity) {
         int32_t result;
@@ -82,6 +93,7 @@ public:
 protected:
 	status update() {
 		TimeManager::getInstance()->update();
+		//GraphicsManager::getInstance()->update();
 		return activityHandler->onStep();
 	}
     void activate() {
@@ -125,6 +137,7 @@ ERROR:
             break;
         case APP_CMD_INIT_WINDOW:
 			LOG_DEBUG("[onCreateWindow]");
+			GraphicsManager::getInstance()->initialize();
             activityHandler->onCreateWindow();
             break;
         case APP_CMD_DESTROY:
@@ -132,12 +145,14 @@ ERROR:
             activityHandler->onDestroy();
             break;
         case APP_CMD_GAINED_FOCUS:
-			LOG_DEBUG("[onGainFocus]");		
+			LOG_DEBUG("[onGainFocus]");
+			GraphicsManager::getInstance()->resume();			
             activate();
             activityHandler->onGainFocus();
             break;
         case APP_CMD_LOST_FOCUS:
-			LOG_DEBUG("[onLostFocus]");		
+			LOG_DEBUG("[onLostFocus]");
+			GraphicsManager::getInstance()->suspend();			
             activityHandler->onLostFocus();
             deactivate();
             break;
@@ -146,11 +161,11 @@ ERROR:
             activityHandler->onLowMemory();
             break;
         case APP_CMD_PAUSE:
-			LOG_DEBUG("[onPause]");		
+			LOG_DEBUG("[onPause]");
             activityHandler->onPause();
             break;
         case APP_CMD_RESUME:
-			LOG_DEBUG("[onResume]");		
+			LOG_DEBUG("[onResume]");
             activityHandler->onResume();
             break;
         case APP_CMD_SAVE_STATE:
@@ -167,6 +182,7 @@ ERROR:
             break;
         case APP_CMD_TERM_WINDOW:
 			LOG_DEBUG("[onDestroyWindow]");
+			GraphicsManager::getInstance()->terminate();
             activityHandler->onDestroyWindow();
             break;
         default:
@@ -253,18 +269,6 @@ private:
             accelerometer = NULL;
         }
     }
-private:
-    // Saves application state when application is active/paused.
-    bool isEnabledFlag;
-    // Activity event observer.
-    ActivityHandler* activityHandler;
-    // Sensors.
-    ASensorManager* sensorManager;
-    ASensorEventQueue* sensorEventQueue;
-    android_poll_source sensorPollSource;
-    const ASensor* accelerometer;
-	TimeManager timeManager;
-	InputManager inputManager;
 };
 
 #endif

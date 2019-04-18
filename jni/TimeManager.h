@@ -27,6 +27,14 @@ double PlatformGetTime() {
 }
 
 class TimeManager: public Singleton<TimeManager> {
+private:
+	bool running;
+	float elapsedTime;
+	double lastTime;
+	char frameRate[20];
+	float fps;
+	float frameRateTime;
+	unsigned int frame;
 public:
 	TimeManager() {
 		LOG_DEBUG("Creating TimeManager.");
@@ -65,15 +73,6 @@ public:
 		sprintf(frameRate, "%3.0f fps\n", getFrameRate());
 		return frameRate;
 	}
-private:
-	bool running;
-	float elapsedTime;
-	double startTime;
-	double lastTime;
-	char frameRate[20];
-	float fps;
-	float frameRateTime;
-	unsigned int frame;
 };
 
 #endif

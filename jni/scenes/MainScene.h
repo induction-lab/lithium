@@ -28,13 +28,22 @@ public:
 	MainScene(Activity* activity):
 		Scene(activity) {	
 		LOG_INFO("MainScene create.");
-		mainScene = this;
-		temp.set(&call);
-		//Texture* texture = GraphicsManager::getInstance()->loadTexture("textures/Play.png", GL_NEAREST, GL_CLAMP_TO_EDGE);
 	}
 	~MainScene() {
 		LOG_INFO("MainScene delete.");
 	}
+	status start() {
+		LOG_INFO("Start MainScene.");
+		//mainScene = this;
+		//temp.set(&call);
+		
+		//SpriteBatch *spriteBatch = new SpriteBatch();
+		//Sprite* sprite = spriteBatch->registerSprite("textures/Play.png", 104, 100);
+		//sprite->setLocation(180, 190);
+		
+		return STATUS_OK;
+		//Texture* texture = GraphicsManager::getInstance()->loadTexture("textures/Play.png", GL_NEAREST, GL_CLAMP_TO_EDGE);
+	}	
 	static void call(void) {
 		LOG_INFO("GO!");
 		mainScene->call2();

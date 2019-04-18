@@ -9,6 +9,10 @@ public:
 	}
 	~SecondScene() {
 		LOG_INFO("SecondScene delete.");
+	}
+	status start() {
+		LOG_INFO("Start SecondScene.");		
+		return STATUS_OK;
 	}	
 };
 
