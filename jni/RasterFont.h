@@ -102,7 +102,7 @@ public:
                 sprite->setFrame(text[count]);
                 sprite->location = l;
                 sprite->scale = scale;
-                sprite->order = 1;
+                sprite->order = (text[count] == 43)? 1 : 3; // set "+" to back
                 sprite->opaque = 0.0f;
                 // Add animation.
                 Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)

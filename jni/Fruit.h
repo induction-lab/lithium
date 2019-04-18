@@ -23,7 +23,7 @@ enum class FruitMoveType {
 };
 
 enum class FruitKillType {
-    UNKNOWN, DEAD, REPLACE, DEAD_EXTRA
+    UNKNOWN, DEAD, DEAD_EXTRA, REPLACE
 };
 
 // Fruit.
@@ -35,7 +35,6 @@ public:
         selected(false), animated(false),                      // selected state
         dropped(false),                                        // dropped state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
-        moveTween(NULL),                                       // move animation tween
         index(Vector2()),                                      // index on board
         prevIndex(Vector2()),                                  // prevision index on board
         // Callback functions.
@@ -85,35 +84,41 @@ public:
         prevIndex = index;
         index = Vector2(x, y);
         Vector2 location = getSkrewedLocation(x, y);
-        moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
+        TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.5f, Ease::Back::Out)
             ->target(location.x, location.y)->remove(true)
             ->onComplete(std::bind(&Fruit::onMoved, this, std::placeholders::_1))
             ->start(delay);
         selected = false;
     };
     void kill(float delay = 0.0f, FruitKillType fruitkillType = FruitKillType::DEAD) {
+        // Start kill
         killType = fruitkillType;
         if (alive) {
             alive = false;
             if (killFunction != NULL) killFunction(index.x, index.y, killType);
         }
-        if (type >= FRUITS_COUNT) {
-            TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.7f, Ease::Linear)
-                ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
-                ->target(0.0f)->remove(true)
-                ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1))
-                ->start(delay);
-            onDead(sprite);
-            return;
-        }
-        if (!dead) {
-            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
-                ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
-                ->target(4.0f)->remove(true);
-            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
-                ->target(0.0f)->remove(true)
-                ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1));
-            t1->addChain(t2)->start(delay);
+        if (dead) return;
+        // Start dying
+        switch(killType) {
+            case FruitKillType::REPLACE:
+            case FruitKillType::DEAD: {
+                Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
+                    ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
+                    ->target(4.0f)->remove(true);
+                Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
+                    ->target(0.0f)->remove(true)
+                    ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1));
+                t1->addChain(t2)->start(delay);
+                break;
+            }                
+            case FruitKillType::DEAD_EXTRA: {
+                TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.65f, Ease::Linear)
+                    ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
+                    ->target(0.0f)->remove(true)
+                    ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1))
+                    ->start(delay);
+                break;
+            }
         }
     };
     // Tween callbacks.
@@ -153,7 +158,6 @@ public:
     FruitKillType killType;
     Tween* xScaleTween;
     Tween* yScaleTween;
-    Tween* moveTween;
     Vector2 index, prevIndex;
     Sprite* sprite;    
 private:

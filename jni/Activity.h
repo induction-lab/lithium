@@ -50,8 +50,8 @@ protected:
             if (setStartScene() != STATUS_OK) return STATUS_ERROR;
             firstStart = false;
         }
-        SoundManager::getInstance()->setMusicVolume((float)configData->musicVolume / 100.0f);
         SoundManager::getInstance()->setSoundVolume((float)configData->soundVolume / 100.0f);
+        SoundManager::getInstance()->setMusicVolume((float)configData->musicVolume / 100.0f);
         if (SoundManager::getInstance()->playMusic("sounds/Intro.mp3") != STATUS_OK) return STATUS_ERROR;
         return STATUS_OK;
     };

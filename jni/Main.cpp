@@ -57,15 +57,16 @@ static android_app* application;
 #define FRUITS_COUNT 7              // number base type fruits
 #define MIN_MATCH_COUNT 3           // minimal match fruits
 // Bonus match count fruits.
-#define MIN_MATCH_WONDERFUL_COUNT 5
-#define MIN_MATCH_EXELENT_COUNT 9
-#define MIN_MATCH_WOW_COUNT 15
+#define MIN_MATCH_FINE_COUNT 5
+#define MIN_MATCH_WONDERFUL_COUNT 9
+#define MIN_MATCH_EXELENT_COUNT 15
 #define MIN_MATCH_UNBELIEVABLE_COUNT 25
 
 // Application default config.
+
 struct ConfigData {
-    int soundVolume = 70;
-    int musicVolume = 80;
+    int soundVolume = 25;
+    int musicVolume = 50;
     int fruitsType[GRID_SIZE][GRID_SIZE] = {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1},
@@ -76,6 +77,7 @@ struct ConfigData {
     };
     int ScorePoints = 0;
     int missStep = 0;
+    int lostScores = 0;
 };
 ConfigData* configData;
 
@@ -93,8 +95,8 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
-// font to widget...
-// particles to spriteBatch...
+// - Add bonus
+// - Bonus random
 // - New logo
 // - Music pause
 // - .. Refactoring to C++ best practics
