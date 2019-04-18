@@ -59,7 +59,7 @@ static android_app* application;
 // Application default config.
 struct ConfigData {
     int soundVolume = 70;
-    int musicVolume = 50;
+    int musicVolume = 30;
     int fruitsType[GRID_SIZE][GRID_SIZE] = {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1},

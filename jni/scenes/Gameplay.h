@@ -41,30 +41,34 @@ public:
         TweenManager::getInstance()->addTween(gameBox->sprite, TweenType::SCALE_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(1.03f)->remove(false)->loop()->reverse()->start(0.5f);
         // Load sounds.
-        grub01Sound = SoundManager::getInstance()->registerSound("sounds/Grub01.wav");
-        grub02Sound = SoundManager::getInstance()->registerSound("sounds/Grub02.wav");
-        grub03Sound = SoundManager::getInstance()->registerSound("sounds/Grub03.wav");
-        grub04Sound = SoundManager::getInstance()->registerSound("sounds/Grub04.wav");
-        grub05Sound = SoundManager::getInstance()->registerSound("sounds/Grub05.wav");
-        Lift01Sound = SoundManager::getInstance()->registerSound("sounds/Lift01.wav");
-        Lift02Sound = SoundManager::getInstance()->registerSound("sounds/Lift02.wav");
-        Lift03Sound = SoundManager::getInstance()->registerSound("sounds/Lift03.wav");
-        zipUp01Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp01.wav");
-        zipUp02Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp02.wav");
-        zipUp03Sound = SoundManager::getInstance()->registerSound("sounds/ZipUp03.wav");
-        zipDown01Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown01.wav");
-        zipDown02Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown02.wav");
-        zipDown03Sound = SoundManager::getInstance()->registerSound("sounds/ZipDown03.wav");
-        hurt01Sound = SoundManager::getInstance()->registerSound("sounds/Hurt01.wav");
-        hurt02Sound = SoundManager::getInstance()->registerSound("sounds/Hurt02.wav");
-        hurt03Sound = SoundManager::getInstance()->registerSound("sounds/Hurt03.wav");
-        hurt04Sound = SoundManager::getInstance()->registerSound("sounds/Hurt04.wav");
-        hurt05Sound = SoundManager::getInstance()->registerSound("sounds/Hurt05.wav");
-        wowSound = SoundManager::getInstance()->registerSound("sounds/Wow.wav");
-        hahaSound = SoundManager::getInstance()->registerSound("sounds/Haha.wav");
-        squishy01Sound = SoundManager::getInstance()->registerSound("sounds/Squishy01.wav");
-        squishy02Sound = SoundManager::getInstance()->registerSound("sounds/Squishy02.wav");
-        squishy03Sound = SoundManager::getInstance()->registerSound("sounds/Squishy03.wav");
+        clickSound = SoundManager::getInstance()->registerSound("sounds/click.wav");
+        doubleSound = SoundManager::getInstance()->registerSound("sounds/double.wav");
+        fall_1Sound = SoundManager::getInstance()->registerSound("sounds/fall_1.wav");
+        fall_2Sound = SoundManager::getInstance()->registerSound("sounds/fall_2.wav");
+        fall_3Sound = SoundManager::getInstance()->registerSound("sounds/fall_3.wav");
+        fruits_startSound = SoundManager::getInstance()->registerSound("sounds/fruits_start.wav");
+        match_1Sound = SoundManager::getInstance()->registerSound("sounds/match_1.wav");
+        match_2Sound = SoundManager::getInstance()->registerSound("sounds/match_2.wav");
+        match_3Sound = SoundManager::getInstance()->registerSound("sounds/match_3.wav");
+        moveSound = SoundManager::getInstance()->registerSound("sounds/move.wav");
+        no_moveSound = SoundManager::getInstance()->registerSound("sounds/no_move.wav");
+        scoreSound = SoundManager::getInstance()->registerSound("sounds/score.wav");
+        vo_aha_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_aha_1.wav");
+        vo_aha_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_aha_2.wav");
+        vo_aha_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_aha_3.wav");
+        vo_excellent_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_excellent_1.wav");
+        vo_excellent_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_excellent_2.wav");
+        vo_excellent_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_excellent_3.wav");
+        vo_fine_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_fine_1.wav");
+        vo_unbelievable_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_1.wav");
+        vo_unbelievable_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_2.wav");
+        vo_unbelievable_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_unbelievable_3.wav");
+        vo_wonderful_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_wonderful_1.wav");
+        vo_wonderful_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_wonderful_2.wav");
+        vo_wonderful_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_wonderful_3.wav");
+        vo_wow_1Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_1.wav");
+        vo_wow_2Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_2.wav");
+        vo_wow_3Sound = SoundManager::getInstance()->registerSound("sounds/vo_wow_3.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = new RasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
@@ -77,11 +81,7 @@ public:
         for (int x = 0; x < GRID_SIZE; x++) {
             addFruit(x, y, configData->fruitsType[x][y]);
         }
-        switch ((int)frand(3)) {
-            case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
-            case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
-            case 2: SoundManager::getInstance()->playSound(zipDown03Sound); break;
-        }
+        SoundManager::getInstance()->playSound(fruits_startSound);
         printBoard();
         // Create bonus text.
         bonus = addBackground("textures/BonusText.png", 214, 75, Vector2(halfWidth, halfHeight));
@@ -135,11 +135,7 @@ public:
             if (TimeManager::getInstance()->getTime() > lastBadTime + 1.0f && scores > 0) {
                 lastBadTime = TimeManager::getInstance()->getTime();
                 updateScore(-1);
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(squishy01Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(squishy02Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(squishy03Sound); break;
-                }
+                SoundManager::getInstance()->playSound(scoreSound);
             }
         }
         if (scoreText != NULL) scoreText->update();
@@ -185,11 +181,7 @@ public:
                 addFruit(x, y, -1);
             }
         }
-        switch ((int)frand(3)) {
-            case 0: SoundManager::getInstance()->playSound(zipDown01Sound); break;
-            case 1: SoundManager::getInstance()->playSound(zipDown02Sound); break;
-            case 2: SoundManager::getInstance()->playSound(zipDown03Sound); break;
-        }
+        SoundManager::getInstance()->playSound(moveSound);
         testForMatch();
     };
     // Test for match equals fruits in line.
@@ -206,12 +198,12 @@ public:
             type = -1;
             count = 1;
             for (int x = 0; x < GRID_SIZE; x++) {
-                // If type not mutch, reset match count.
+                // If type not match, reset match count.
                 if (fruits[x][y]->type != type) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
-                // Mutch count 3 or great, kill it fruits.
+                // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = x - count + 1; p <= x; p++) if (fruits[p][y]->alive) {
                         fruits[p][y]->kill();
@@ -229,12 +221,12 @@ public:
             type = -1;
             count = 1;
             for (int y = GRID_SIZE - 1; y >= 0; y--) {
-                // If type not mutch, reset match count.
+                // If type not match, reset match count.
                 if (fruits[x][y]->type != type) {
                     count = 1;
                     type = fruits[x][y]->type;
                 } else count++;
-                // Mutch count 3 or great, kill it fruits.
+                // Match count 3 or great, kill it fruits.
                 if (count >= MIN_MATCH_COUNT) {
                     for (int p = y + count - 1; p >= y; p--) if (fruits[x][p]->alive) {
                         fruits[x][p]->kill();
@@ -245,12 +237,10 @@ public:
         }
         // Result check.
         if (result >= MIN_MATCH_COUNT) {
-            switch ((int)frand(5)) {
-                case 0: SoundManager::getInstance()->playSound(grub01Sound); break;
-                case 1: SoundManager::getInstance()->playSound(grub02Sound); break;
-                case 2: SoundManager::getInstance()->playSound(grub03Sound); break;
-                case 3: SoundManager::getInstance()->playSound(grub04Sound); break;
-                case 4: SoundManager::getInstance()->playSound(grub05Sound); break;
+            switch ((int)frand(3)) {
+                case 0: SoundManager::getInstance()->playSound(match_1Sound); break;
+                case 1: SoundManager::getInstance()->playSound(match_2Sound); break;
+                case 2: SoundManager::getInstance()->playSound(match_3Sound); break;
             }
             // Show bonus text.
             if (result >= MIN_MATCH_WOW_COUNT) {
@@ -282,12 +272,7 @@ public:
                 fruits[X][Y]->moveTo(x, y);
                 std::swap(fruits[x][y], fruits[X][Y]);
                 swaped = true;
-                switch ((int)frand(3)) {
-                    case 0: SoundManager::getInstance()->playSound(zipUp01Sound); break;
-                    case 1: SoundManager::getInstance()->playSound(zipUp02Sound); break;
-                    case 2: SoundManager::getInstance()->playSound(zipUp03Sound); break;
-                }
-                break;
+                SoundManager::getInstance()->playSound(moveSound);
             }
             if (swaped) break;
         }
@@ -296,11 +281,7 @@ public:
             fruits[x][y]->selected = false;
         }
         if (!swaped) {
-            switch ((int)frand(3)) {
-                case 0: SoundManager::getInstance()->playSound(Lift01Sound); break;
-                case 1: SoundManager::getInstance()->playSound(Lift02Sound); break;
-                case 2: SoundManager::getInstance()->playSound(Lift03Sound); break;
-            }
+            SoundManager::getInstance()->playSound(clickSound);
             fruits[X][Y]->selected = true;
             matchStep = 1;
         } else if (testForMatch() < MIN_MATCH_COUNT) {
@@ -326,14 +307,8 @@ public:
         if (missStep > 0) {
             lastGoodTime = lastBadTime = TimeManager::getInstance()->getTime();
             // Come back miss fruits.
-            fruits[x][y]->moveBack(0.15f);
-            switch ((int)frand(5)) {
-                case 0: SoundManager::getInstance()->playSound(hurt01Sound); break;
-                case 1: SoundManager::getInstance()->playSound(hurt02Sound); break;
-                case 2: SoundManager::getInstance()->playSound(hurt03Sound); break;
-                case 3: SoundManager::getInstance()->playSound(hurt04Sound); break;
-                case 4: SoundManager::getInstance()->playSound(hurt05Sound); break;
-            }
+            SoundManager::getInstance()->playSound(no_moveSound);
+            fruits[x][y]->moveBack(0.05f);
         }
     };
     // Bonus text.
@@ -345,10 +320,14 @@ public:
             case 5: bonus->sprite->setFrame(4); break;
             default: {
                 bonus->sprite->setFrame(0);
-                SoundManager::getInstance()->playSound(wowSound);
+                switch ((int)frand(3)) {
+                    case 0: SoundManager::getInstance()->playSound(vo_wow_1Sound); break;
+                    case 1: SoundManager::getInstance()->playSound(vo_wow_2Sound); break;
+                    case 2: SoundManager::getInstance()->playSound(vo_wow_3Sound); break;
+                }                
             }
         }
-        if (step > 1 && step < 6) SoundManager::getInstance()->playSound(hahaSound);
+        if (step > 1 && step < 6) SoundManager::getInstance()->playSound(doubleSound);
         Tween* t1 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
         Tween* t2 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
         Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.15f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
@@ -419,30 +398,34 @@ private:
     float lastGoodTime;
     float lastBadTime;    
     // Sounds.
-    Sound* grub01Sound;
-    Sound* grub02Sound;
-    Sound* grub03Sound;
-    Sound* grub04Sound;
-    Sound* grub05Sound;
-    Sound* Lift01Sound;
-    Sound* Lift02Sound;
-    Sound* Lift03Sound;
-    Sound* zipUp01Sound;
-    Sound* zipUp02Sound;
-    Sound* zipUp03Sound;
-    Sound* zipDown01Sound;
-    Sound* zipDown02Sound;
-    Sound* zipDown03Sound;
-    Sound* wowSound;
-    Sound* hahaSound;
-    Sound* hurt01Sound;
-    Sound* hurt02Sound;
-    Sound* hurt03Sound;
-    Sound* hurt04Sound;
-    Sound* hurt05Sound;
-    Sound* squishy01Sound;
-    Sound* squishy02Sound;
-    Sound* squishy03Sound;
+    Sound* clickSound;
+    Sound* doubleSound;
+    Sound* fall_1Sound;
+    Sound* fall_2Sound;
+    Sound* fall_3Sound;
+    Sound* fruits_startSound;
+    Sound* match_1Sound;
+    Sound* match_2Sound;
+    Sound* match_3Sound;
+    Sound* moveSound;
+    Sound* no_moveSound;
+    Sound* scoreSound;
+    Sound* vo_aha_1Sound;
+    Sound* vo_aha_2Sound;
+    Sound* vo_aha_3Sound;
+    Sound* vo_excellent_1Sound;
+    Sound* vo_excellent_2Sound;
+    Sound* vo_excellent_3Sound;
+    Sound* vo_fine_1Sound;
+    Sound* vo_unbelievable_1Sound;
+    Sound* vo_unbelievable_2Sound;
+    Sound* vo_unbelievable_3Sound;
+    Sound* vo_wonderful_1Sound;
+    Sound* vo_wonderful_2Sound;
+    Sound* vo_wonderful_3Sound;
+    Sound* vo_wow_1Sound;
+    Sound* vo_wow_2Sound;
+    Sound* vo_wow_3Sound;
 };
 
 #endif // __GAMEPLAY_H__
