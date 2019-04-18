@@ -28,7 +28,7 @@ public:
         callbackFunc = NULL;
     };
     void call(Tweenable* t) {
-        if (callbackFunc != NULL) callbackFunc(t);
+        if (callbackFunc != NULL && t != NULL) callbackFunc(t);
     };
 };
 

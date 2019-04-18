@@ -256,34 +256,6 @@ public:
     bool started;
 };
 
-// BonusText class.
-class BonusText: public Widget {
-public:
-    BonusText(int frame):
-        started(false) {
-        //
-    };
-    void update() {
-        if (!started) {
-            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
-            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
-            Tween* t3 = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_XY, 0.5f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.5f);
-            Tween* t4 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.5f);
-            t2->addChain(t3);
-            t2->addChain(t4);
-            t3->onComplete(std::bind(&Widget::onDead, this, std::placeholders::_1));
-            t2->start();
-            started = true;
-        }
-    };
-    void onDead(Tweenable* t) {
-        // !!! LOG_DEBUG("!!! %s", ((Sprite*)(t))->texturePath);
-        Widget::onDead(t);
-        // ??? ...
-    };
-    bool started;
-};
-
 // Base Scene.
 class Scene: public InputListener {
 public:
@@ -340,18 +312,49 @@ public:
         widgets.push_back(animation);
         return animation;
     };
-    BonusText* addBonusText(const char* path, int width, int height, Vector2 location, int frame) {
+    Background* addBonusText(const char* path, int width, int height, Vector2 location, int frame) {
         LOG_DEBUG("Creating new 'BonusText' widget.");
-        BonusText* bonusText = new BonusText(frame);
+        Background* bonusText = new Background();
         bonusText->setSprite(spriteBatch->registerSprite(path, width, height), location);
         bonusText->sprite->order = 1;
         bonusText->sprite->scale = Vector2(0.5f, 0.5f);
         bonusText->sprite->opaque = 0.0f;
-        bonusText->sprite->setFrame(frame);            
+        bonusText->sprite->setFrame(frame);
+        Tween* t1 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
+        Tween* t2 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
+        Tween* t3 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::SCALE_XY, 0.5f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.5f);
+        Tween* t4 = TweenManager::getInstance()->addTween(bonusText->sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)->target(0.0f)->remove(true)->delay(0.5f);
+        t2->addChain(t3);
+        t2->addChain(t4);
+        t3->onComplete(std::bind(&Widget::onDead, bonusText, std::placeholders::_1));
+        t2->start();        
         bonusText->spriteBatch = spriteBatch;
         widgets.push_back(bonusText);
         return bonusText;
     };
+    Background* addSuperText(const char* path, int width, int height, Vector2 location, int frames) {
+        LOG_DEBUG("Creating new 'SuperText' widget.");
+        for (int n = 0; n < frames; n++) {
+            Background* superText = new Background();
+            superText->setSprite(spriteBatch->registerSprite(path, width, height), location);
+            superText->sprite->order = 1;
+            superText->sprite->scale = Vector2(0.3f, 0.3f);
+            superText->sprite->opaque = 0.0f;
+            superText->sprite->setFrame(n);
+            Tween* t1 = TweenManager::getInstance()->addTween(superText->sprite, TweenType::OPAQUE, 1.0f, Ease::Exponential::Out)
+                ->target(1.0f)->remove(true);
+            Tween* t2 = TweenManager::getInstance()->addTween(superText->sprite, TweenType::OPAQUE, 1.0f, Ease::Exponential::In)
+                ->target(0.0f)->remove(true)->onComplete(std::bind(&Widget::onDead, superText, std::placeholders::_1));
+            Tween* t3 = TweenManager::getInstance()->addTween(superText->sprite, TweenType::SCALE_XY, 0.5f, Ease::Back::Out)
+                ->target(1.0f, 1.0f)->remove(true);
+            t1->addChain(t2);
+            t1->start((float)n / 50.0f);
+            t3->start((float)n / 30.0f);
+            superText->spriteBatch = spriteBatch;
+            widgets.push_back(superText);
+        }
+        return NULL;
+    };    
     RasterFont* addRasterFont(const char* path, int width, int height, Vector2 location, Justification just, TextAnimation animation = TextAnimation::NONE) {
         RasterFont* rasterFont = new RasterFont(path, width, height, location, just, animation);
         rasterFont->spriteBatch = spriteBatch;

@@ -58,8 +58,8 @@ static android_app* application;
 #define MIN_MATCH_COUNT 3           // minimal match fruits
 // Bonus match count fruits.
 #define MIN_MATCH_FINE_COUNT 5
-#define MIN_MATCH_WONDERFUL_COUNT 9
-#define MIN_MATCH_EXELENT_COUNT 15
+#define MIN_MATCH_WONDERFUL_COUNT 12
+#define MIN_MATCH_EXELENT_COUNT 16
 #define MIN_MATCH_UNBELIEVABLE_COUNT 25
 
 // Application default config.
@@ -95,6 +95,7 @@ static int uiModeType;
 #include "Activity.h"
 
 // TODO:
+// - scoresPerSwap text
 // - Add bonus
 // - Bonus random
 // - New logo

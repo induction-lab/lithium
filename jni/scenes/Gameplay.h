@@ -43,13 +43,13 @@ public:
         fall01Sound = SoundManager::getInstance()->registerSound("sounds/Fall01.wav");
         fall02Sound = SoundManager::getInstance()->registerSound("sounds/Fall02.wav");
         fall03Sound = SoundManager::getInstance()->registerSound("sounds/Fall03.wav");
-        fruitsStartSound = SoundManager::getInstance()->registerSound("sounds/fruitsStart.wav");
+        fruitsStartSound = SoundManager::getInstance()->registerSound("sounds/FruitsStart.wav");
         match01Sound = SoundManager::getInstance()->registerSound("sounds/Match01.wav");
         match02Sound = SoundManager::getInstance()->registerSound("sounds/Match02.wav");
         match03Sound = SoundManager::getInstance()->registerSound("sounds/Match03.wav");
         moveSound = SoundManager::getInstance()->registerSound("sounds/Move.wav");
         noMoveSound = SoundManager::getInstance()->registerSound("sounds/NoMove.wav");
-        scoreSound = SoundManager::getInstance()->registerSound("sounds/score.wav");
+        scoreSound = SoundManager::getInstance()->registerSound("sounds/Score.wav");
         aha01Sound = SoundManager::getInstance()->registerSound("sounds/Aha01.wav");
         aha02Sound = SoundManager::getInstance()->registerSound("sounds/Aha02.wav");
         aha03Sound = SoundManager::getInstance()->registerSound("sounds/Aha03.wav");
@@ -167,27 +167,36 @@ public:
         particleSystem->update();
         // Add bonus redich fruit to empty place.
         if (matchStep == 0 && swapedFruits == 0 && droppedFruits == 0) {
+            float renderWidth = (float)GraphicsManager::getInstance()->getRenderWidth();
+            float renderHeight = (float)GraphicsManager::getInstance()->getRenderHeight();
+            float halfWidth = renderWidth / 2;
+            float halfHeight = renderHeight / 2;
+            Vector2 location = Vector2(halfWidth, halfHeight);
             if (needBonusFruit) {
-                LOG_WARN("scoresPerSwap=%d", scoresPerSwap);
+                LOG_WARN("scoresPerSwap=%d matchStep=%d", scoresPerSwap, matchStep);
                 if (scoresPerSwap >= MIN_MATCH_UNBELIEVABLE_COUNT) {
+                    addSuperText("textures/Unbelievable.png", 360, 80, location, 15);
                     switch ((int)frand(3)) {
                         case 0: SoundManager::getInstance()->playSound(unbelievable01Sound); break;
                         case 1: SoundManager::getInstance()->playSound(unbelievable02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(unbelievable03Sound); break;                    
                     }
                 } else if (scoresPerSwap >= MIN_MATCH_EXELENT_COUNT) {
+                    addSuperText("textures/Excellent.png", 360, 80, location, 10);
                     switch ((int)frand(3)) {
                         case 0: SoundManager::getInstance()->playSound(excellent01Sound); break;
                         case 1: SoundManager::getInstance()->playSound(excellent02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(excellent03Sound); break;                    
                     }
                 } else if (scoresPerSwap >= MIN_MATCH_WONDERFUL_COUNT) {
+                    addSuperText("textures/Wonderful.png", 360, 80, location, 12);
                     switch ((int)frand(3)) {
                         case 0: SoundManager::getInstance()->playSound(wonderful01Sound); break;
                         case 1: SoundManager::getInstance()->playSound(wonderful02Sound); break;
                         case 2: SoundManager::getInstance()->playSound(wonderful03Sound); break;                    
                     }
                 } else if (scoresPerSwap >= MIN_MATCH_FINE_COUNT) {
+                    addSuperText("textures/Fine.png", 360, 80, location, 5);
                     SoundManager::getInstance()->playSound(fineSound);
                 }
                 scoresPerSwap = 0;
@@ -510,13 +519,14 @@ public:
     }    
     // Scores.
     void updateScore(int value) {
+        // LOG_DEBUG("updateScore value=%d", value);
         if (scores < 0) return;
         if (missStep > 0) value *= missStep;
         if (matchStep > 1) value *= matchStep;
         if (scores + value < 0) value = -scores;
-        scores += value;
+        scores += value;        
         if (created) {
-            scoresPerSwap += value;
+            if (value > 0) scoresPerSwap += value;
             std::string changedStr = (value > 0) ? "+" + std::to_string(value) : std::to_string(value);
             if (value != 0) changedScoreText->setText(changedStr.c_str());        
         } else scores = value;
