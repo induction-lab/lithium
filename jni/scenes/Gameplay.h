@@ -46,11 +46,6 @@ public:
         grub03Sound = SoundManager::getInstance()->registerSound("sounds/Grub03.wav");
         grub04Sound = SoundManager::getInstance()->registerSound("sounds/Grub04.wav");
         grub05Sound = SoundManager::getInstance()->registerSound("sounds/Grub05.wav");
-        hey01Sound = SoundManager::getInstance()->registerSound("sounds/Hey01.wav");
-        hey02Sound = SoundManager::getInstance()->registerSound("sounds/Hey02.wav");
-        hey03Sound = SoundManager::getInstance()->registerSound("sounds/Hey03.wav");
-        hey04Sound = SoundManager::getInstance()->registerSound("sounds/Hey04.wav");
-        hey05Sound = SoundManager::getInstance()->registerSound("sounds/Hey05.wav");
         Lift01Sound = SoundManager::getInstance()->registerSound("sounds/Lift01.wav");
         Lift02Sound = SoundManager::getInstance()->registerSound("sounds/Lift02.wav");
         Lift03Sound = SoundManager::getInstance()->registerSound("sounds/Lift03.wav");
@@ -353,7 +348,7 @@ public:
                 SoundManager::getInstance()->playSound(wowSound);
             }
         }
-        if (step > 1) SoundManager::getInstance()->playSound(hahaSound);
+        if (step > 1 && step < 6) SoundManager::getInstance()->playSound(hahaSound);
         Tween* t1 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::OPAQUE, 0.25f, Ease::Sinusoidal::InOut)->target(1.0f)->remove(true)->start();
         Tween* t2 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.25f, Ease::Back::Out)->target(1.0f, 1.0f)->remove(true);
         Tween* t3 = TweenManager::getInstance()->addTween(bonus->sprite, TweenType::SCALE_XY, 0.15f, Ease::Back::Out)->target(0.5f, 0.5f)->remove(true)->delay(0.7f);
@@ -429,11 +424,6 @@ private:
     Sound* grub03Sound;
     Sound* grub04Sound;
     Sound* grub05Sound;
-    Sound* hey01Sound;
-    Sound* hey02Sound;
-    Sound* hey03Sound;
-    Sound* hey04Sound;
-    Sound* hey05Sound;
     Sound* Lift01Sound;
     Sound* Lift02Sound;
     Sound* Lift03Sound;

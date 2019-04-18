@@ -69,7 +69,7 @@ public:
     void kill() {
         if (!dead) {
             alive = false;
-            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Sinusoidal::InOut)
+            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
                 ->target(4.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
                 ->target(0.0f)->remove(true);
