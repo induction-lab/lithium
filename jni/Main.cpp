@@ -38,14 +38,19 @@ const status STATUS_OK         =  0;
 const status STATUS_ERROR      = -1;
 const status STATUS_EXIT       = -2;
 
+// Base native app glue.
 #include <android_native_app_glue.h>
 static android_app* application;
 
 // Application default config.
 struct ConfigData {
-     bool musicOn = false;
+    bool musicOn = false;
 };
 ConfigData* configData;
+
+// Type of ui mode.
+#include "android/configuration.h"
+static int32_t uiModeType;
 
 #include "Geometry.h"
 #include "TimeManager.h"
@@ -57,10 +62,11 @@ ConfigData* configData;
 #include "Activity.h"
 
 // TODO:
-// - draw line ...
 // - besier ...
 // - game object implemennt ...
 // - render batch ? ...
+// - disable sensors ...
+// - stop sound queue due shange scene ...
 
 // Android entry point.
 void android_main(android_app* app) {
@@ -70,6 +76,11 @@ void android_main(android_app* app) {
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, AWINDOW_FLAG_FULLSCREEN);
 	// Application details provided by Android.
 	application = app;
+    // Get ui type.
+    AConfiguration* configuration = AConfiguration_new();
+    AConfiguration_fromAssetManager(configuration, application->activity->assetManager);
+    uiModeType = AConfiguration_getUiModeType(configuration);
+    AConfiguration_delete(configuration);
     // Read config data.
     readConfig();
     // Starts the game loop.

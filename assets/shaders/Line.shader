@@ -6,6 +6,7 @@ void main() {
 }
 #endif
 #ifdef FRAGMENT
+precision mediump float;
 uniform vec3 uColor;
 uniform float uOpaque;
 void main() {

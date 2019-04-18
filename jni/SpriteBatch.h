@@ -57,7 +57,7 @@ public:
         }
         return STATUS_OK;
 ERROR:
-        LOG_ERROR("Error loading sprite batch");
+        LOG_ERROR("Error loading sprite batch.");
         return STATUS_ERROR;
     };
     void draw() {
@@ -85,7 +85,7 @@ ERROR:
             GLuint currentTextureId = sprite->textureId;
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, sprite->textureId);
-            // Sprite color & opaque.
+            // Sprite color and opaque.
             Vector currentColor = sprite->color;
             float currentOpaque = sprite->opaque;
             glUniform3fv(uColor, 1, sprite->color.data());

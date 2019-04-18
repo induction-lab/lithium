@@ -4,6 +4,8 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
+#include <sys/system_properties.h>
+
 #include "Singleton.h"
 #include "Texture.h"
 #include "Shader.h"
@@ -66,15 +68,25 @@ public:
         EGLint format, numConfigs;
         EGLConfig config;
         EGLint majorVersion, minorVersion;
+        // Detect if we are in emulator.
+        char prop[PROP_VALUE_MAX];
+        __system_property_get("ro.kernel.qemu", prop);
+        bool in_emulator = strtol(prop, nullptr, 0) == 1;
+        LOG_INFO("ro.kernel.qemu = %s", prop);
+        if (in_emulator) LOG_INFO("In emulator! Enabling some hacks :(");
         // Defines display requirements. 16bits mode here.
         const EGLint attributes[] = {
-            EGL_LEVEL,           0,
-            EGL_SURFACE_TYPE,    EGL_WINDOW_BIT,
-            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-            EGL_BLUE_SIZE,       5,
-            EGL_GREEN_SIZE,      6,
-            EGL_RED_SIZE,        5,
-            EGL_DEPTH_SIZE,      16,
+            EGL_CONFIG_CAVEAT,          EGL_NONE,
+            EGL_RENDERABLE_TYPE,        EGL_OPENGL_ES2_BIT,
+            EGL_SURFACE_TYPE,           EGL_WINDOW_BIT,
+            EGL_BUFFER_SIZE,            16,
+            EGL_RED_SIZE,               5,
+            EGL_GREEN_SIZE,             6,
+            EGL_BLUE_SIZE,              5,
+            EGL_DEPTH_SIZE,             16,
+            EGL_STENCIL_SIZE,           8,
+            (in_emulator ? EGL_NONE : EGL_CONFORMANT), EGL_OPENGL_ES2_BIT,      // emulator does not support this, in here, but will return conformant anyway, what?
+            (in_emulator ? EGL_NONE : EGL_COLOR_BUFFER_TYPE), EGL_RGB_BUFFER,   // emulator does not support this, what?
             EGL_NONE
         };
         // Request an OpenGL ES 2 context.
@@ -109,7 +121,6 @@ public:
                 || (screenWidth <= 0) || (screenHeight <= 0)) goto ERROR;
         // Set vsync.
         eglSwapInterval(display, 0);
-        LOG_INFO("Screen dimensions: %d x %d", screenWidth, screenHeight);
         // Defines and initializes offscreen surface.
         if (initializeRenderBuffer() != STATUS_OK) goto ERROR;
         glViewport(0, 0, renderWidth, renderHeight);
@@ -182,6 +193,8 @@ ERROR:
         return STATUS_OK;
     };
     void unloadResources() {
+        // If already released.
+        if (textures.size() == 0 && shaders.size() == 0) return;
         // Releases textures.
         LOG_DEBUG("Found %d textures.", textures.size());
         for (std::map<const char*, Texture*>::iterator it = textures.begin(); it != textures.end(); ++it) {

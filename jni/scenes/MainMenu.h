@@ -86,6 +86,10 @@ public:
     void backEvent() {
         activity->quit = true;
     };
+    void gestureSwipeEvent(int x, int y, int direction) {
+        if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return;
+        if (direction == SWIPE_DIRECTION_RIGHT) activity->quit = true;
+    };    
     Background* background;
     Background* gameBox;
     Button* exitButton;

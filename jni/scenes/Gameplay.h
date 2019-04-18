@@ -38,6 +38,10 @@ public:
     void backEvent() {
         activity->setStartScene();
     };
+    void gestureSwipeEvent(int x, int y, int direction) {
+        if (uiModeType != ACONFIGURATION_UI_MODE_TYPE_WATCH) return;
+        if (direction == SWIPE_DIRECTION_RIGHT) activity->setStartScene();
+    };
     Background* background;
     Line* line;
 };

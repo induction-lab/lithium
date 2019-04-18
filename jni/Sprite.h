@@ -53,7 +53,7 @@ public:
         case TweenType::SCALE_XY:
             returnValues[0] = scale.x;
             returnValues[1] = scale.y;
-            return 1;
+            return 2;
         case TweenType::OPAQUE:
             returnValues[0] = opaque;
             return 1;

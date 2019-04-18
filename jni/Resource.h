@@ -1,8 +1,6 @@
 #ifndef __RESOURCE_H__
 #define __RESOURCE_H__
 
-#include <android_native_app_glue.h>
-
 #include <fstream>
 #include <sys/stat.h>
 
@@ -62,7 +60,7 @@ void readConfig() {
     // internalDataPath points directly to the files/ directory.
     char configFile[255];
     sprintf(configFile, "%s/app_config.xml", internalPath);
-    // Ssometimes if this is the first time we run the app
+    // Sometimes if this is the first time we run the app
     // then we need to create the internal storage "files" directory.
     struct stat sb;
     int32_t result = stat(internalPath, &sb);
@@ -83,7 +81,7 @@ void readConfig() {
             fread((char*)configData, 1, size, appConfigFile);
             std::fclose(appConfigFile);
         } else {
-            LOG_INFO("Application config file does not exist. Using default values ...");
+            LOG_INFO("Application config file does not exist. Using default values.");
         }
     }
 };

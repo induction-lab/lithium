@@ -24,7 +24,7 @@ private:
 public:
     // Status flages.
     bool quit;              // exit requested
-    bool firstStart;        // indicates if application is launched for the first time.
+    bool firstStart;        // indicates if application is launched for the first time
     bool paused;            // activity paused state
     Activity():
         quit(false),
@@ -47,7 +47,7 @@ protected:
     status onActivate() {
         LOG_INFO("Activate Engine.");
         if (firstStart) {
-            LOG_DEBUG("First start detected.");
+            LOG_DEBUG("First start detected ...");
             if (setStartScene() != STATUS_OK) return STATUS_ERROR;
             firstStart = false;
         }
@@ -55,7 +55,7 @@ protected:
     };
     status onStep() {
         if (quit) return STATUS_EXIT;
-        // change scene
+        // Change scene.
         if (sceneChanged) {
             sceneChanged = false;
             if (setScene(nextScene) != STATUS_OK) return STATUS_ERROR;

@@ -563,8 +563,7 @@ inline void PrintMatrix(Matrix m) {
 //  a rotation 2 * acos(w) about the axis (x,y,z).
 //-----------------------------------------------------------------------------
 
-class Quaternion
-{
+class Quaternion {
 public:
 
     float w;        // w component of quaternion
@@ -580,8 +579,8 @@ public:
 
 
     // Construct quaternion from angle-axis.
-    inline Quaternion(float angle, const Vector &axis)
-    {
+    inline Quaternion(float angle, const Vector &axis) {
+        
         const float a = angle * 0.5f;
         const float s = (float) sin(a);
         const float c = (float) cos(a);
@@ -753,8 +752,7 @@ inline void PrintQuaternion(Quaternion q) {
 // Describes a plane form of the general plane equation. They fit into the
 // general plane equation so that ax + by + cz + dw = 0.
 // ----------------------------------------------------------------------------
-class Plane
-{
+class Plane {
 public:
     float a, b, c, d;
 

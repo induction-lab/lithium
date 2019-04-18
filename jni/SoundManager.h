@@ -54,7 +54,9 @@ public:
         for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
-        if (loadResources() != STATUS_OK) goto ERROR;
+        if (sounds.size() > 0) {
+            if (loadResources() != STATUS_OK) goto ERROR;
+        }
         if (musicPath != NULL && playMusic(musicPath) != STATUS_OK) goto ERROR;
         return STATUS_OK;
 ERROR:
@@ -116,7 +118,6 @@ ERROR:
         SLDataSource dataSource = { &dataLocatorIn, &dataFormat };
         SLDataLocator_OutputMix dataLocatorOut = { SL_DATALOCATOR_OUTPUTMIX, outputMixObj };
         SLDataSink dataSink = { &dataLocatorOut, NULL };
-        // Creates Music player and retrieves its interfaces.
         const SLuint32 musicPlayerIIDCount = 2;
         const SLInterfaceID musicPlayerIIDs[] = { SL_IID_PLAY, SL_IID_SEEK };
         const SLboolean musicPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };

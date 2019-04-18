@@ -258,7 +258,7 @@ public:
                     onTouchEvent(Touch::TOUCH_MOVE, AMotionEvent_getX(event, i), AMotionEvent_getY(event, i), pointerId);
                 }
                 if (pointer0.pressed) {
-                    //The two pointers are pressed and the event was done by one of it.
+                    // The two pointers are pressed and the event was done by one of it.
                     if (pointer1.pressed && (pointerId == pointer0.pointerId || pointerId == pointer1.pointerId)) {
                         if (pointer0.pointerId == pointer1.pointerId) {
                             gesturePinching = false;
@@ -296,7 +296,7 @@ public:
                     }
                     // Only the primary pointer is done and the event was done by it.
                     else if (!gestureDetected && pointerId == pointer0.pointerId) {
-                        //Test for drag.
+                        // Test for drag.
                         int delta = sqrt(pow((float)(x - pointer0.x), 2) + pow((float)(y - pointer0.y), 2));
                         if (gestureDraging || ((time - pointer0.time >= GESTURE_DRAG_START_DURATION_MIN) && (delta >= GESTURE_DRAG_DISTANCE_MIN))) {
                             onGestureDragEvent(x, y);
@@ -374,6 +374,7 @@ public:
         return 0;
     };
 private:
+    // Send event to listeners ...
     void onTouchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
         for (std::vector<InputListener*>::const_iterator it = listeners.begin(); it < listeners.end(); ++it) {
             (*it)->touchEvent(event, x, y, pointerId);

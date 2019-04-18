@@ -28,26 +28,21 @@ public:
     void draw() {
         if (vertices.size() < 6) return;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        // Selects sprite shader and passes its parameters.
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, GraphicsManager::getInstance()->getProjectionMatrix());
-        // Indicates to OpenGL how position and uv coordinates are stored.
         glEnableVertexAttribArray(aPosition);
         glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
         glUniform3fv(uColor, 1, color.data());
         glUniform1fv(uOpaque, 1, &opaque);
-        // Renders sprites each time texture changes.
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-        // Cleans up OpenGL state.
         glUseProgram(0);
         glDisableVertexAttribArray(aPosition);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     };
     void addPoint(Vector v) {
-        /// LOG_DEBUG("Add point at %f %f", v.x, v.y);
+        LOG_DEBUG("Add line point at %f %f", v.x, v.y);
         points.push_back(v);
         vertices.clear();
-        // Draw all segments
         for(int i = 0; i < points.size();++i) {
             int a = ((i-1) < 0) ? 0 : (i-1);
             int b = i;
@@ -70,8 +65,8 @@ public:
         // 3) Find the tangent vector at both the end points:
         //	  - if there are no segments before or after this one, use the line itself.
         //    - otherwise, add the two normalized lines and average them by normalizing again.
-        Vector tangent1 = (p0 == p1) ? line : Normalize(Normalize(p1-p0) + line);
-        Vector tangent2 = (p2 == p3) ? line : Normalize(Normalize(p3-p2) + line);
+        Vector tangent1 = (p0 == p1) ? line : Normalize(Normalize(p1 - p0) + line);
+        Vector tangent2 = (p2 == p3) ? line : Normalize(Normalize(p3 - p2) + line);
         // 4) Find the miter line, which is the normal of the tangent.
         Vector miter1 = Vector(-tangent1.y, tangent1.x, 0.0f);
         Vector miter2 = Vector(-tangent2.y, tangent2.x, 0.0f);

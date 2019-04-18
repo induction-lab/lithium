@@ -49,7 +49,6 @@ public:
     EventLoop() :
         enabled(false),
         quit(false),
-        firstStart(true),
         activityHandler(NULL),
         sensorPollSource(),
         sensorManager(NULL),
@@ -305,8 +304,6 @@ private:
     bool enabled;
     // Indicates if the event handler wants to exit.
     bool quit;
-    // Indicates if application is launched for the first time.
-    bool firstStart;
     // Activity event observer.
     ActivityHandler* activityHandler;
     // Sensors
