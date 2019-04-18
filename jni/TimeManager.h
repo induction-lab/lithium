@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "Singleton.h"
 
@@ -53,7 +54,7 @@ public:
         float timeSinceLastStart = PlatformGetTime() - startTime;
         totalTimeBeforeLastStart += timeSinceLastStart;
         startTime = 0.0f;
-        elapsedTime = 0.0f;        
+        elapsedTime = 0.0f;
     };
     void reset() {
         LOG_INFO("Resetting TimeManager.");

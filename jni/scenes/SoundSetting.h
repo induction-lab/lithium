@@ -6,6 +6,7 @@ private:
     Activity* activity;
 public:
     SoundSetting(Activity* activity):
+        Scene(),
         activity(activity) {
         LOG_INFO("Create SoundSetting scene.");
     };
@@ -34,7 +35,7 @@ public:
             //  ____
             // |   |
             // |__·|
-            //           
+            //
             leaf01 = addBackground("textures/Leafs.png", 327, 287, Vector2(renderWidth - 105.0f, 90.0f));
             leaf01->sprite->setFrame(0);
             leaf01->sprite->order = 1;
@@ -43,7 +44,7 @@ public:
             //  ____
             // |   |
             // |·__|
-            //      
+            //
             leaf02 = addBackground("textures/Leafs.png", 327, 287, Vector2(30.0f, 30.0f));
             leaf02->sprite->setFrame(1);
             leaf02->sprite->order = 1;
@@ -61,7 +62,7 @@ public:
             //  ____
             // |·  |
             // |___|
-            //            
+            //
             leaf04 = addBackground("textures/Leafs.png", 327, 287, Vector2(130.0f, renderHeight - 120.0f));
             leaf04->sprite->setFrame(3);
             leaf04->sprite->order = 1;
@@ -70,7 +71,7 @@ public:
             //  ____
             // |  ·|
             // |___|
-            //            
+            //
             leaf05 = addBackground("textures/Leafs.png", 327, 287, Vector2(renderWidth - 10.0f, renderHeight - 60.0f));
             leaf05->sprite->setFrame(4);
             leaf05->sprite->order = 1;
@@ -79,7 +80,7 @@ public:
             //  ____
             // | · |
             // |___|
-            //            
+            //
             leaf06 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 50.0f, renderHeight - 120.0f));
             leaf06->sprite->setFrame(5);
             leaf06->sprite->order = 0;

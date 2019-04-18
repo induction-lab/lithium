@@ -86,6 +86,7 @@ public:
                 startedTweens--;
                 break;
             }
+            default: break;
         }
     };
     void setText(const char* text) {
@@ -97,7 +98,7 @@ public:
                 // Get shift.
                 Vector2 l = Vector2(location.x + (width - (float)CHAR_PADDING * 1.05f) * n * scale.x, location.y + frand(4) - 2.0f);
                 if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
-                else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;            
+                else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;
                 // Create new sprite.
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
                 sprite->setFrame(text[n]);
@@ -130,7 +131,7 @@ public:
                 // Get shift.
                 Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * n * scale.x, location.y + frand(4) - 2.0f);
                 if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
-                else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;            
+                else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;
                 // Create new sprite.
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
                 sprite->setFrame(text[n]);

@@ -7,8 +7,11 @@
 #include "ParticleSystem.h"
 
 class Gameplay: public Scene {
+private:
+    Activity* activity;
 public:
     Gameplay(Activity* activity):
+        Scene(),
         activity(activity) {
         LOG_INFO("Create Gameplay scene.");
     };
@@ -499,6 +502,7 @@ public:
                 droppedFruits++;
                 break;
             }
+            default: break;
         }
     };
     void onFruitMoved(int x, int y, FruitMoveType moveType) {
@@ -545,6 +549,7 @@ public:
                 droppedFruits--;
                 resultCheck();
             }
+            default: break;
         }
     };
     // Fruit callbacks.
@@ -564,6 +569,7 @@ public:
                 a->sprite->angle = Deg(frand(360.0f));
                 break;
             }
+            default: break;
         }
     };
     void onFruitDying(int x, int y, FruitKillType killType) {
@@ -632,6 +638,7 @@ public:
                 if (SLOW_DOWN == 1) particleSystem->emit(3, getSkrewedLocation(x, y));
                 break;
             }
+            default: break;
         }
     };
     void onFruitDead(int x, int y, FruitKillType killType) {
@@ -667,6 +674,7 @@ public:
                 }
                 break;
             }
+            default: break;
         }
     };
     // Xn bonus text.
@@ -745,7 +753,6 @@ public:
         configData->firstSrtart = false;
     };
 private:
-    Activity* activity;
     // Decorations.
     Background* background;
     Background* gameBox;

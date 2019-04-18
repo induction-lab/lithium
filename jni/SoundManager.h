@@ -34,7 +34,6 @@ public:
     };
     status start() {
         LOG_INFO("Starting SoundManager.");
-        SLresult result;
         const SLuint32      engineMixIIDCount = 1;
         const SLInterfaceID engineMixIIDs[]   = { SL_IID_ENGINE };
         const SLboolean     engineMixReqs[]   = { SL_BOOLEAN_TRUE };
@@ -42,15 +41,13 @@ public:
         const SLInterfaceID outputMixIIDs[]   = { SL_IID_VOLUME };
         const SLboolean     outputMixReqs[]   = { SL_BOOLEAN_FALSE };
         // Creates OpenSL ES engine and dumps its capabilities.
-        result = slCreateEngine(&engineObj, 0, NULL, engineMixIIDCount, engineMixIIDs, engineMixReqs);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*engineObj)->Realize(engineObj, SL_BOOLEAN_FALSE);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*engineObj)->GetInterface(engineObj, SL_IID_ENGINE, &engine);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        if (slCreateEngine(&engineObj, 0, NULL, engineMixIIDCount, engineMixIIDs, engineMixReqs) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*engineObj)->Realize(engineObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*engineObj)->GetInterface(engineObj, SL_IID_ENGINE, &engine) != SL_RESULT_SUCCESS) goto ERROR;
         // Creates audio output.
-        result = (*engine)->CreateOutputMix(engine, &outputMixObj, outputMixIIDCount, outputMixIIDs, outputMixReqs);
-        result = (*outputMixObj)->Realize(outputMixObj, SL_BOOLEAN_FALSE);
+        if ((*engine)->CreateOutputMix(engine, &outputMixObj, outputMixIIDCount, outputMixIIDs, outputMixReqs) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*outputMixObj)->Realize(outputMixObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) goto ERROR;
+
         // Set-up sound player.
         LOG_DEBUG("Starting sound player with %d SoundQueue.", QUEUE_COUNT);
         for (int i= 0; i < QUEUE_COUNT; ++i) {
@@ -126,23 +123,16 @@ ERROR:
         const SLuint32 musicPlayerIIDCount = 3;
         const SLInterfaceID musicPlayerIIDs[] = { SL_IID_PLAY, SL_IID_SEEK, SL_IID_VOLUME };
         const SLboolean musicPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
-        result = (*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, musicPlayerIIDCount, musicPlayerIIDs, musicPlayerReqs);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_PLAY, &playerPlay);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_SEEK, &playerSeek);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, musicPlayerIIDCount, musicPlayerIIDs, musicPlayerReqs) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_PLAY, &playerPlay) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_SEEK, &playerSeek) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume) != SL_RESULT_SUCCESS) goto ERROR;
         // Set music volume.
         setMusicVolume(musicVolume);
         // Enables looping and starts playing.
-        result = (*playerSeek)->SetLoop(playerSeek, SL_BOOLEAN_TRUE, 0, SL_TIME_UNKNOWN);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerSeek)->SetLoop(playerSeek, SL_BOOLEAN_TRUE, 0, SL_TIME_UNKNOWN) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING) != SL_RESULT_SUCCESS) goto ERROR;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error playing music.");
@@ -167,14 +157,12 @@ ERROR:
     void setMusicVolume(float volume) {
         musicVolume = volume;
         if (playerVolume == NULL) return;
-        SLresult result;
         // Millibels from linear amplification.
         int millibels = lroundf(2000.f * log10f(volume));
         if (millibels < SL_MILLIBEL_MIN) millibels = SL_MILLIBEL_MIN;
         // Maximum supported level could be higher: GetMaxVolumeLevel.
         else if (millibels > 0) millibels = 0;
-        result = (*playerVolume)->SetVolumeLevel(playerVolume, millibels);
-        if (result != SL_RESULT_SUCCESS) LOG_ERROR("Error setting music volume level.");
+        if ((*playerVolume)->SetVolumeLevel(playerVolume, millibels) != SL_RESULT_SUCCESS) LOG_ERROR("Error setting music volume level.");
     };
     void setSoundVolume(float volume) {
         soundVolume = volume;

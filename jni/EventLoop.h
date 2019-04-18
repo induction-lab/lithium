@@ -78,7 +78,6 @@ public:
         int32_t events;
         android_poll_source* source;
         // Makes sure native glue is not stripped by the linker.
-        app_dummy();
         activityHandler = activity;
         LOG_INFO("Starting event loop.");
         while (true) {

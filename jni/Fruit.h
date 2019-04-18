@@ -40,7 +40,7 @@ public:
         // Callback functions.
         clickFunction(NULL),
         moveFunction(NULL),
-        movedFunction(NULL),        
+        movedFunction(NULL),
         killFunction(NULL),
         dyingFunction(NULL),
         deadFunction(NULL),
@@ -110,7 +110,7 @@ public:
                     ->onComplete(std::bind(&Fruit::onDead, this, std::placeholders::_1));
                 t1->addChain(t2)->start(delay);
                 break;
-            }                
+            }
             case FruitKillType::DEAD_EXTRA: {
                 TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.65f, Ease::Linear)
                     ->onStart(std::bind(&Fruit::onDying, this, std::placeholders::_1))
@@ -119,6 +119,7 @@ public:
                     ->start(delay);
                 break;
             }
+            default: break;
         }
     };
     // Tween callbacks.
@@ -138,7 +139,7 @@ public:
     };
     void setMoveFunction(std::function<void(int, int, FruitMoveType)> callback) {
         moveFunction = callback;
-    };    
+    };
     void setMovedFunction(std::function<void(int, int, FruitMoveType)> callback) {
         movedFunction = callback;
     };

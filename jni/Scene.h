@@ -105,6 +105,7 @@ public:
             case Touch::TOUCH_UP:
                 if (inSprite && upFunction != NULL) upFunction();
                 break;
+            default: break;
         }
     };
     int gestureTapEvent(int x, int y) {
@@ -164,10 +165,12 @@ public:
     };
     void touchEvent(Touch::TouchEvent event, int x, int y, size_t pointerId) {
         switch (event) {
-        case Touch::TOUCH_UP:
-            Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
-            if ((sprite->pointInSprite(point.x, point.y) || changed) && upFunction != NULL) upFunction();
-            break;
+            case Touch::TOUCH_UP: {
+                Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
+                if ((sprite->pointInSprite(point.x, point.y) || changed) && upFunction != NULL) upFunction();
+                break;
+            }
+            default: break;
         }
     };
     int gestureTapEvent(int x, int y) {
@@ -236,7 +239,7 @@ private:
 class Scene: public InputListener {
 public:
     Scene():
-    created(false) {
+        created(false) {
         LOG_DEBUG("Create scene.");
     }
     virtual ~Scene() {

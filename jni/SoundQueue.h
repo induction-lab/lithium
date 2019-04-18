@@ -15,7 +15,6 @@ public:
     };
     status initialize(SLEngineItf engine, SLObjectItf outputMixObj) {
         LOG_DEBUG("Starting SoundQueue.");
-        SLresult result;
         // Set-up sound audio source.
         SLDataLocator_AndroidSimpleBufferQueue dataLocatorIn;
         dataLocatorIn.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
@@ -42,19 +41,13 @@ public:
         const SLuint32 soundPlayerIIDCount = 3;
         const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
         const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
-        result = (*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, soundPlayerIIDCount, soundPlayerIIDs, soundPlayerReqs);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_PLAY, &playerPlay);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
-        result = (*playerObj)->GetInterface(playerObj, SL_IID_BUFFERQUEUE, &playerQueue);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, soundPlayerIIDCount, soundPlayerIIDs, soundPlayerReqs) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_PLAY, &playerPlay) != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerObj)->GetInterface(playerObj, SL_IID_BUFFERQUEUE, &playerQueue) != SL_RESULT_SUCCESS) goto ERROR;
         // Starts the sound player. Nothing can be heard while the sound queue remains empty.
-        result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
-        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        if ((*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING) != SL_RESULT_SUCCESS) goto ERROR;
         return STATUS_OK;
 ERROR:
         LOG_ERROR("Error while starting SoundQueue.");
@@ -77,18 +70,15 @@ ERROR:
         if (playerState == SL_OBJECT_STATE_REALIZED) (*playerQueue)->Clear(playerQueue);
     };
     void playSound(Sound* sound) {
-        SLresult result;
         SLuint32 playerState;
         (*playerObj)->GetState(playerObj, &playerState);
         if (playerState == SL_OBJECT_STATE_REALIZED) {
             int16_t* buffer = (int16_t*) sound->getBuffer();
             off_t length = sound->getLength();
             // Removes any sound from the queue.
-            result = (*playerQueue)->Clear(playerQueue);
-            if (result != SL_RESULT_SUCCESS) goto ERROR;
+            if ((*playerQueue)->Clear(playerQueue) != SL_RESULT_SUCCESS) goto ERROR;
             // Plays the new sound.
-            result = (*playerQueue)->Enqueue(playerQueue, buffer, length);
-            if (result != SL_RESULT_SUCCESS) goto ERROR;
+            if ((*playerQueue)->Enqueue(playerQueue, buffer, length) != SL_RESULT_SUCCESS) goto ERROR;
         }
         return;
 ERROR:
@@ -96,14 +86,12 @@ ERROR:
     };
     void setVolume(float volume) {
         if (playerVolume == NULL) return;
-        SLresult result;
         // Millibels from linear amplification.
         int millibels = lroundf(2000.f * log10f(volume));
         if (millibels < SL_MILLIBEL_MIN) millibels = SL_MILLIBEL_MIN;
         // Maximum supported level could be higher: GetMaxVolumeLevel.
         else if (millibels > 0) millibels = 0;
-        result = (*playerVolume)->SetVolumeLevel(playerVolume, millibels);
-        if (result != SL_RESULT_SUCCESS) LOG_ERROR("Error setting queue volume level.");
+        if ((*playerVolume)->SetVolumeLevel(playerVolume, millibels) != SL_RESULT_SUCCESS) LOG_ERROR("Error setting queue volume level.");
     };
 private:
     // Sound player.
