@@ -52,16 +52,16 @@ public:
         chains.clear();
         return this;
     };
-    Tween* onStart(void(*onStartFunc)(void* ptr), void* user_ptr) {
-        onStartCallback.set(onStartFunc, user_ptr);
+    Tween* onStart(std::function<void()> onStartFunc) {
+        onStartCallback.set(onStartFunc);
         return this;
     };
-    Tween* onUpdate(void(*onUpdateFunc)(void* ptr), void* user_ptr) {
-        onUpdateCallback.set(onUpdateFunc, user_ptr);
+    Tween* onUpdate(std::function<void()> onUpdateFunc) {
+        onUpdateCallback.set(onUpdateFunc);
         return this;
     };
-    Tween* onComplete(void(*onCompleteFunc)(void* ptr), void* user_ptr) {
-        onCompleteCallback.set(onCompleteFunc, user_ptr);
+    Tween* onComplete(std::function<void()> onCompleteFunc) {
+        onCompleteCallback.set(onCompleteFunc);
         return this;
     };
     Tween* setEase(EaseFunc ease) {
@@ -158,7 +158,7 @@ public:
                     startTime = endTime + delayAmount;
                     endTime = startTime + duration;
                 }
-                // reverse.
+                // Reverse.
                 if (isReverseFlag) {
                     for (int i = 0; i < combinedAttrsCnt; i++) {
                         float tmp = startValues[i];

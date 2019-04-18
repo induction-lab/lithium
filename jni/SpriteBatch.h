@@ -17,7 +17,7 @@ public:
     };
     ~SpriteBatch() {
         for (std::vector<Sprite*>::iterator it = sprites.begin(); it < sprites.end(); ++it) {
-            delete (*it);
+            SAFE_DELETE(*it);
         }
         sprites.clear();
     };
@@ -40,6 +40,13 @@ public:
         sprites.push_back(sprite);
         sprite->load();
         return sprite;
+    };
+    void unregisterSprite(Sprite* sprite) {
+        std::vector<Sprite*>::iterator it = find(sprites.begin(), sprites.end(), sprite);
+        if (it != sprites.end()) {
+            SAFE_DELETE(*it);
+            sprites.erase(it);
+        }
     };
     status load() {
         // Creates and retrieves shader attributes and uniforms.

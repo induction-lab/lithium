@@ -74,8 +74,8 @@ public:
     int gestureLongTapEvent(int x, int y, float time) {
         return gestureTapEvent(x, y);
     };
-    void setDownFunction(std::function<void()> callback)  { downFunction  = callback; };
-    void setUpFunction(std::function<void()> callback)    { upFunction    = callback; };
+    void setDownFunction(std::function<void()> callback) { downFunction = callback; };
+    void setUpFunction(std::function<void()> callback) { upFunction = callback; };
     void setClickFunction(std::function<void()> callback) { clickFunction = callback; };    
 private:
     std::function<void()> downFunction;
@@ -127,8 +127,8 @@ public:
         else sprite->setFrame(0);
         if (clickFunction != NULL) clickFunction();
     };
-    void setDownFunction(std::function<void()> callback)  { downFunction  = callback; };
-    void setUpFunction(std::function<void()> callback)    { upFunction    = callback; };
+    void setDownFunction(std::function<void()> callback)  { downFunction = callback; };
+    void setUpFunction(std::function<void()> callback) { upFunction = callback; };
     void setClickFunction(std::function<void()> callback) { clickFunction = callback; };
 private:
     bool checked;
@@ -171,6 +171,7 @@ public:
         }
     };
     int gestureTapEvent(int x, int y) {
+        // TODO!
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (sprite->pointInSprite(point.x, point.y)) {
             float minPosition = sprite->getLocation().x - sprite->getWidth() / 2 + sliderHandle->getWidth() / 4;
@@ -198,7 +199,7 @@ public:
     };    
     int precent;
     void setSlideFunction(std::function<void(float)> callback) { slideFunction = callback; };
-    void setUpFunction(std::function<void()> callback)         { upFunction    = callback; };
+    void setUpFunction(std::function<void()> callback) { upFunction = callback; };
 private:
     Sprite* sliderHandle;
     bool changed;
@@ -213,79 +214,6 @@ public:
         Widget(width, height, location) {
         //
     };
-};
-
-// Fruit Widget.
-class Fruit: public Widget {
-public:
-    Fruit(int width, int height, Vector2 location):
-        Widget(width, height, location),
-        type(0),                                               // fruit type
-        alive(true), dead(false),                              // dead state
-        animated(false), selected(false),                      // selected state
-        xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
-        index(Vector2(0.0f, 0.0f)),                            // index on board
-        clickFunction(NULL) {
-        //
-    };
-    ~Fruit() {
-        LOG_DEBUG("Delete Fruit widget.");
-    };
-    int gestureTapEvent(int x, int y) {
-        if (!alive) return false;
-        Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
-        if (sprite->pointInSprite(point.x, point.y)) {
-            if (!animated) {
-                xScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_X, 0.25f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-                yScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_Y, 0.25f, Ease::Sinusoidal::InOut)
-                    ->target(1.1f)->remove(false)->loop()->reverse()->start(frand());
-                LOG_DEBUG("Fruit selected.");
-                animated = true;
-            }
-            if (clickFunction != NULL) clickFunction((int)index.x, (int)index.y);
-            return 1;
-        }
-        return 0;
-    };  
-    int gestureLongTapEvent(int x, int y, float time) {
-        return gestureTapEvent(x, y);
-    };
-    void update() {
-        if (animated && !selected) {
-            if (xScaleTween != NULL) TweenManager::getInstance()->remove(xScaleTween);
-            if (yScaleTween != NULL) TweenManager::getInstance()->remove(yScaleTween);
-            xScaleTween = NULL;
-            yScaleTween = NULL;
-            sprite->scale = Vector2(0.9f, 0.9f);
-            animated = false;
-        }
-        if (!alive && !dead) {
-            LOG_DEBUG("Kill fruit. Index x=%d y=%d", (int)index.x, (int)index.y);
-            Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Sinusoidal::InOut)
-                    ->target(4.0f)->remove(true);
-            Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.5f, Ease::Sinusoidal::InOut)
-                    ->target(0.0f)->remove(true);
-            t1->addChain(t2)->start(0.3f);
-            // TODO!
-            // t2->onComplete(&dies, this);
-            dead = true;
-        } // else if (dead) LOG_DEBUG("Fruit is already dead.");
-    };
-    void dies() {
-        dead = true;
-    }
-    int type;
-    bool alive;
-    bool dead;
-    bool animated;
-    bool selected;
-    Tween* xScaleTween;
-    Tween* yScaleTween;
-    Vector2 index;
-    void setClickFunction(std::function<void(int, int)> callback) { clickFunction = callback; };
-private:
-    std::function<void(int, int)> clickFunction;
 };
 
 // Base Scene.
@@ -335,15 +263,7 @@ public:
         widgets.push_back(background);
         return background;
     };
-    Fruit* addFruit(const char* path, int width, int height, Vector2 location) {
-        LOG_INFO("Creating new 'Fruit' widget.");
-        Fruit* fruit = new Fruit(width, height, location);
-        fruit->setSprite(spriteBatch->registerSprite(path, width, height));
-        fruit->spriteBatch = spriteBatch;
-        widgets.push_back(fruit);
-        return fruit;
-    };
-    void update() {
+    virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();
         }

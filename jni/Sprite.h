@@ -104,6 +104,9 @@ public:
     void setLocation(float x, float y) {
         location = Vector2(x, y);
     };
+    void setLocation(Vector2 location) {
+        this->location = location;
+    };
     Vector2 getLocation() {
         return location;
     };
