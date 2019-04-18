@@ -6,6 +6,8 @@
 #include <android/input.h>
 #include <android/sensor.h>
 
+#define FPS_COUNTER
+
 void showUI() {
     JNIEnv *jni;
     application->activity->vm->AttachCurrentThread(&jni, NULL);
@@ -109,7 +111,9 @@ protected:
         if (GraphicsManager::getInstance()->update() != STATUS_OK) return STATUS_ERROR;
         if (TweenManager::getInstance()->update() != STATUS_OK) return STATUS_ERROR;
         if (activityHandler->onStep() != STATUS_OK) return STATUS_ERROR;
+#ifdef FPS_COUNTER
         updateFPS(TimeManager::getInstance()->getFrameRate());
+#endif // FPS_COUNTER
         return STATUS_OK;
     };
     void activate() {
@@ -173,7 +177,9 @@ ERROR:
             break;
         case APP_CMD_INIT_WINDOW:
             LOG_DEBUG("[onCreateWindow]");
+#ifdef FPS_COUNTER
             showUI();
+#endif // FPS_COUNTER
             activityHandler->onCreateWindow();
             break;
         case APP_CMD_DESTROY:

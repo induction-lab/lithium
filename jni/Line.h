@@ -1,6 +1,8 @@
 #ifndef __LINE_H__
 #define __LINE_H__
 
+/* Simple OpenGL rounded corner line */
+
 #include <vector>
 
 class Line: public GraphicsComponent {

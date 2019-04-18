@@ -23,12 +23,13 @@ class Fruit: public InputListener {
 public:
     Fruit(int type):
         type(type),                                            // fruit type
-        alive(true), dead(false),                              // dead state
-        animated(false), selected(false),                      // selected state
+        alive(true), dead(false),                              // alive/dead state
+        selected(false), animated(false),                      // selected state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
         moveTween(NULL),                                       // move animation tween
         index(Vector2()),                                      // index on board
         prevIndex(Vector2()),                                  // prevision index on board
+        // Callback functions.
         clickFunction(NULL),
         killFunction(NULL),
         deadFunction(NULL),
@@ -44,12 +45,11 @@ public:
         if (sprite->pointInSprite(point.x, point.y)) {
             if (!animated) {
                 xScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_X, 0.25f, Ease::Sinusoidal::InOut)
-                              ->target(1.1f)->remove(false)->loop()->reverse()->start();
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start();
                 yScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_Y, 0.25f, Ease::Sinusoidal::InOut)
-                              ->target(1.1f)->remove(false)->loop()->reverse()->start(0.2f);
+                    ->target(1.1f)->remove(false)->loop()->reverse()->start(0.2f);
                 animated = true;
             }
-            //selected = true;
             if (clickFunction != NULL) clickFunction((int)index.x, (int)index.y);
             return 1;
         }
@@ -62,8 +62,6 @@ public:
         if (animated && !selected) {
             if (xScaleTween != NULL) TweenManager::getInstance()->remove(xScaleTween);
             if (yScaleTween != NULL) TweenManager::getInstance()->remove(yScaleTween);
-            xScaleTween = NULL;
-            yScaleTween = NULL;
             sprite->scale = Vector2(0.9f, 0.9f);
             animated = false;
         }
@@ -93,14 +91,14 @@ public:
         index = Vector2(x, y);
         Vector2 location = getSkrewedLocation(x, y);
         moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
-                    ->target(location.x, location.y)->remove(true)->start(delay)
-                    ->onComplete(std::bind(&Fruit::onMoved, this));
+            ->target(location.x, location.y)->remove(true)->start(delay)
+            ->onComplete(std::bind(&Fruit::onMoved, this));
         selected = false;
     };
     void moveBack(float delay = 0.0f) {
         Vector2 location = getSkrewedLocation((int)prevIndex.x, (int)prevIndex.y);
         moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
-                    ->target(location.x, location.y)->remove(true)->start(delay);
+            ->target(location.x, location.y)->remove(true)->start(delay);
     };
     int type;
     bool alive, dead;

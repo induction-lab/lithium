@@ -3,7 +3,7 @@
 
 #include "SpriteBatch.h"
 
-// For text justification
+// For text justification.
 enum class Justification {
     LEFT, MIDDLE, RIGHT
 };
@@ -41,16 +41,13 @@ public:
         int textWidth = textLength * (width - CHAR_PADDING);
         // Recreate only changed sprite.
         for (int count = 0; count < textLength; count++) {
-            // Test if char are not equal.
+            // Test if char changed.
             bool q = ((count < lastTextLength) && (text[count] != lastText.c_str()[count]));
             if (q) spriteBatch->unregisterSprite(sprites.at(count));
             // Get shift.
             Vector2 l = Vector2(location.x + (width - CHAR_PADDING) * count * scale.x, location.y + frand(4) - 2.0f);
-            if (just == Justification::MIDDLE) {
-                l.x = l.x - textWidth / 2 * scale.x;
-            } else if (just == Justification::RIGHT) {
-                l.x = l.x - textWidth * scale.x;
-            }
+            if (just == Justification::MIDDLE) l.x = l.x - textWidth / 2 * scale.x;
+            else if (just == Justification::RIGHT) l.x = l.x - textWidth * scale.x;
             // Create new sprite.
             if (q || (count >= lastTextLength)) {
                 Sprite* sprite = spriteBatch->registerSprite(path, width, height);
@@ -67,11 +64,8 @@ public:
                     startedTweens++;
                     t1->addChain(t2)->start();
                 }
-                if (q) {
-                    sprites.at(count) = sprite;
-                } else {
-                    sprites.push_back(sprite);
-                }
+                if (q) sprites.at(count) = sprite;
+                else sprites.push_back(sprite);
             } else sprites.at(count)->location.x = l.x;
         }
         // Delete tail.

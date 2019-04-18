@@ -5,8 +5,9 @@
 
 class TweenCallback {
 private:
-    //void (*callbackFunc)(void*);
-    //void* pointer;
+    // Depricated ...
+    // void (*callbackFunc)(void*);
+    // void* pointer;
     std::function<void()> callbackFunc;
 public:
     TweenCallback(std::function<void()> callback = NULL):
