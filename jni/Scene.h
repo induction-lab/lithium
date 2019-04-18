@@ -13,10 +13,10 @@ public:
     Widget():
         sprite(NULL),
         spriteBatch(NULL) {
-        LOG_DEBUG("Create widget.");
+        // LOG_DEBUG("Create widget.");
     };
     ~Widget() {
-        LOG_DEBUG("Delete widget.");
+        // LOG_DEBUG("Delete widget.");
     }
     virtual void update() {};
     void setSprite(Sprite* sprite, Vector2 location) {
@@ -225,23 +225,6 @@ private:
     std::function<void()> clickFunction;
 };
 
-// Bonus Widget.
-class Bonus: public Widget {
-public:
-    Bonus():
-        t1(NULL),
-        t2(NULL),
-        t3(NULL),
-        t4(NULL) {
-        //
-    };
-    // Animation tweens.
-    Tween* t1;
-    Tween* t2;
-    Tween* t3;
-    Tween* t4;
-};
-
 // Base Scene.
 class Scene: public InputListener {
 public:
@@ -289,6 +272,7 @@ public:
         widgets.push_back(background);
         return background;
     };
+    /*
     Bonus* addBonus(const char* path, int width, int height, Vector2 location) {
         LOG_INFO("Creating new 'Bonus' widget.");
         Bonus* bonus = new Bonus();
@@ -296,7 +280,8 @@ public:
         bonus->spriteBatch = spriteBatch;
         widgets.push_back(bonus);
         return bonus;
-    };    
+    };
+    */
     virtual void update() {
         for (std::vector<Widget*>::iterator it = widgets.begin(); it < widgets.end(); ++it) {
             (*it)->update();

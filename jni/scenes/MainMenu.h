@@ -49,10 +49,12 @@ public:
         soundSettingsButton->setClickFunction(std::bind(&MainMenu::onSoundsButtonClick, this));
         TweenManager::getInstance()->addTween(soundSettingsButton->sprite, TweenType::POSITION_Y, 0.37f, Ease::Sinusoidal::InOut)
             ->target(halfHeight - 70)->remove(false)->loop()->reverse()->start(0.5f);
+        /*
         // - test -
         Background* boom = addBackground("textures/_boom.png", 360, 640, Vector2(halfWidth, halfHeight));
         TweenManager::getInstance()->addTween(boom->sprite, TweenType::FRAME, 2.3f, Ease::Linear)->target(43)->remove(true)->start(5.0f);
         // --------
+        */
         buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
         SoundManager::getInstance()->loadResources();

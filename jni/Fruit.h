@@ -18,6 +18,14 @@ Vector2 getSkrewedLocation(int X, int Y) {
     return Vector2(halfWidth + X * 42 - 100 - dx, halfHeight - Y * 42 + 110 - dy);
 };
 
+enum class FruitMoveType {
+    UNKNOWN, SWAP, SWAP_BACK, DROP, DROP_EXTRA
+};
+
+enum class FruitKillType {
+    UNKNOWN, DEAD, REPLACE
+};
+
 // Fruit.
 class Fruit: public InputListener {
 public:
@@ -25,6 +33,7 @@ public:
         type(type),                                            // fruit type
         alive(true), dead(false),                              // alive/dead state
         selected(false), animated(false),                      // selected state
+        dropped(true),                                         // dropped state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
         moveTween(NULL),                                       // move animation tween
         index(Vector2()),                                      // index on board
@@ -33,7 +42,9 @@ public:
         clickFunction(NULL),
         killFunction(NULL),
         deadFunction(NULL),
-        movedFunction(NULL) {
+        movedFunction(NULL),
+        moveType(FruitMoveType::UNKNOWN),
+        killType(FruitKillType::UNKNOWN) {
         // LOG_DEBUG("Create Fruit.");
     };
     ~Fruit() {
@@ -43,7 +54,7 @@ public:
         if (!alive) return 0;
         Vector2 point = GraphicsManager::getInstance()->screenToRender(x, y);
         if (sprite->pointInSprite(point.x, point.y)) {
-            if (!animated) {
+            if (!animated && !selected) {
                 xScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_X, 0.25f, Ease::Sinusoidal::InOut)
                     ->target(1.1f)->remove(false)->loop()->reverse()->start();
                 yScaleTween = TweenManager::getInstance()->addTween(sprite, TweenType::SCALE_Y, 0.25f, Ease::Sinusoidal::InOut)
@@ -66,28 +77,43 @@ public:
             animated = false;
         }
     };
-    void kill() {
+    void kill(FruitKillType fruitkillType = FruitKillType::DEAD) {
+        killType = fruitkillType;
+        if (type >= FRUITS_COUNT) {
+            LOG_DEBUG("Bonus kill! %d %d", (int)index.x, (int)index.y);
+            if (alive) {
+                alive = false;
+                onKill();
+                onDead();
+            }
+            alive = false;
+            return;
+        }
         if (!dead) {
             alive = false;
             Tween* t1 = TweenManager::getInstance()->addTween(sprite, TweenType::FRAME, 0.5f, Ease::Linear)
                 ->target(4.0f)->remove(true);
             Tween* t2 = TweenManager::getInstance()->addTween(sprite, TweenType::OPAQUE, 0.15f, Ease::Sinusoidal::InOut)
                 ->target(0.0f)->remove(true);
+            t1->onStart(std::bind(&Fruit::onKill, this));
             t2->onComplete(std::bind(&Fruit::onDead, this));
-            t1->addChain(t2)->onStart(std::bind(&Fruit::onKill, this))->start(0.3f);
+            t1->addChain(t2)->start(0.3f);
         }
     };
+    void onMoved() {
+        if (movedFunction != NULL) movedFunction(index.x, index.y, moveType);
+    };
     void onKill() {
-        if (killFunction != NULL) killFunction(index.x, index.y);
+        this->killType = killType;
+        if (killFunction != NULL) killFunction(index.x, index.y, killType);
     }
     void onDead() {
         dead = true;
-        if (deadFunction != NULL) deadFunction(index.x, index.y);
+        if (deadFunction != NULL) deadFunction(index.x, index.y, killType);
     };
-    void onMoved() {
-        if (movedFunction != NULL) movedFunction(index.x, index.y);
-    };
-    void moveTo(int x, int y, float delay = 0.0f) {
+    void moveTo(int x, int y, float delay = 0.0f, FruitMoveType fruitMoveType = FruitMoveType::UNKNOWN) {
+        moveType = fruitMoveType;
+        prevIndex = index;
         index = Vector2(x, y);
         Vector2 location = getSkrewedLocation(x, y);
         moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
@@ -95,36 +121,33 @@ public:
             ->onComplete(std::bind(&Fruit::onMoved, this));
         selected = false;
     };
-    void moveBack(float delay = 0.0f) {
-        Vector2 location = getSkrewedLocation((int)prevIndex.x, (int)prevIndex.y);
-        moveTween = TweenManager::getInstance()->addTween(sprite, TweenType::POSITION_XY, 0.35f, Ease::Back::Out)
-            ->target(location.x, location.y)->remove(true)->start(delay);
+    void setClickFunction(std::function<void(int, int)> callback) {
+        clickFunction = callback;
+    };
+    void setMovedFunction(std::function<void(int, int, FruitMoveType)> callback) {
+        movedFunction = callback;
+    };
+    void setKillFunction(std::function<void(int, int, FruitKillType)> callback) {
+        killFunction = callback;
+    };
+    void setDeadFunction(std::function<void(int, int, FruitKillType)> callback) {
+        deadFunction = callback;
     };
     int type;
     bool alive, dead;
-    bool animated, selected;
+    bool animated, selected, dropped;
+    FruitMoveType moveType;
+    FruitKillType killType;
     Tween* xScaleTween;
     Tween* yScaleTween;
     Tween* moveTween;
     Vector2 index, prevIndex;
-    Sprite* sprite;
-    void setClickFunction(std::function<void(int, int)> callback) {
-        clickFunction = callback;
-    };    
-    void setKillFunction(std::function<void(int, int)> callback) {
-        killFunction = callback;
-    };
-    void setDeadFunction(std::function<void(int, int)> callback) {
-        deadFunction = callback;
-    };
-    void setMovedFunction(std::function<void(int, int)> callback) {
-        movedFunction = callback;
-    };
+    Sprite* sprite;    
 private:
     std::function<void(int, int)> clickFunction;
-    std::function<void(int, int)> killFunction;
-    std::function<void(int, int)> deadFunction;
-    std::function<void(int, int)> movedFunction;
+    std::function<void(int, int, FruitMoveType)> movedFunction;
+    std::function<void(int, int, FruitKillType)> killFunction;
+    std::function<void(int, int, FruitKillType)> deadFunction;
 };
 
 #endif

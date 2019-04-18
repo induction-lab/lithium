@@ -64,7 +64,7 @@ public:
     float getTime() {
         if(running) {
             float timeSinceLastStart = PlatformGetTime() - startTime;
-            return totalTimeBeforeLastStart + timeSinceLastStart;
+            return (totalTimeBeforeLastStart + timeSinceLastStart) / SLOW_DOWN;
         }
         return totalTimeBeforeLastStart;
     };

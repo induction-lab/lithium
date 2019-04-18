@@ -6,7 +6,7 @@
 class Particle {
 public:
     Particle() {
-        LOG_DEBUG("Create Particle.");
+        // LOG_DEBUG("Create Particle.");
         // Setup properties of the particle.
         speed = Vector2(frandRange(-X_SPEED_RANGE, X_SPEED_RANGE), frandRange(0.0f, Y_SPEED_RANGE));
         // Set the initial framesToLive count (this counts down to 0 - at 0 the particle is removed).

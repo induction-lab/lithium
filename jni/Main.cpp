@@ -2,6 +2,7 @@
 
 #define APP_TITLE "lithium"
 #define DEBUG_MODE
+#define SLOW_DOWN 1
 
 // Stuff for recieve log message.
 #include <stdio.h>
@@ -10,26 +11,26 @@
 #define LOG_INFO(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s: %s", __FILE__, buf); \
+    __android_log_print(ANDROID_LOG_INFO, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
 } while (0)
 // Warn.
 #define LOG_WARN(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s: %s", __FILE__, buf); \
+    __android_log_print(ANDROID_LOG_WARN, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
 } while (0)
 // Error.
 #define LOG_ERROR(x...) do { \
     char buf[512]; \
     sprintf(buf, x); \
-    __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s: %s", __FILE__, buf); \
+    __android_log_print(ANDROID_LOG_ERROR, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
 } while (0)
 // Debug.
 #ifdef DEBUG_MODE
     #define LOG_DEBUG(x...) do { \
         char buf[512]; \
         sprintf(buf, x); \
-        __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s: %s", __FILE__, buf); \
+        __android_log_print(ANDROID_LOG_DEBUG, APP_TITLE, "%s:%d %s", __FILE__, __LINE__, buf); \
     } while (0)
 #else
     #define LOG_DEBUG(x...) {}
@@ -52,14 +53,19 @@ const status STATUS_EXIT   = -2;
 static android_app* application;
 
 // Base 'match three' game params.
-#define GRID_SIZE 6             // optimal for watch screen
-#define MIN_MATCH_COUNT 3       // minimal match fruits
-#define MIN_MATCH_WOW_COUNT 5   // minimal match fruits for "wow" bonus
+#define GRID_SIZE 6                 // optimal for watch screen
+#define FRUITS_COUNT 7              // number base type fruits
+#define MIN_MATCH_COUNT 3           // minimal match fruits
+// Bonus match count fruits.
+#define MIN_MATCH_WONDERFUL_COUNT 5
+#define MIN_MATCH_EXELENT_COUNT 9
+#define MIN_MATCH_WOW_COUNT 15
+#define MIN_MATCH_UNBELIEVABLE_COUNT 25
 
 // Application default config.
 struct ConfigData {
     int soundVolume = 70;
-    int musicVolume = 30;
+    int musicVolume = 80;
     int fruitsType[GRID_SIZE][GRID_SIZE] = {
         {-1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1},
@@ -89,8 +95,6 @@ static int uiModeType;
 // TODO:
 // - New logo
 // - Music pause
-// - TimeManager test
-// - Anton, where my music?
 // - .. Refactoring to C++ best practics
 
 // Android entry point.
