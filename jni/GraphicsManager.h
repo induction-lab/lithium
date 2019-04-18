@@ -58,10 +58,10 @@ public:
     int getScreenHeight() {
         return screenHeight;
     };
-    Location screenToRender(int x, int y) {
+    Vector2 screenToRender(int x, int y) {
         float nx = x * ((float)renderWidth / (float)screenWidth);
         float ny = ((float)screenHeight - y) * ((float)renderHeight / (float)screenHeight);
-        return Location(nx, ny);
+        return Vector2(nx, ny);
     };
     status start() {
         LOG_INFO("Starting GraphicsManager.");
@@ -209,6 +209,7 @@ ERROR:
         shaders.clear();
     };
     void registerComponent(GraphicsComponent* component) {
+        LOG_DEBUG("Register GraphicsComponent %d", components.size() + 1);
         components.push_back(component);
         component->load();
     };

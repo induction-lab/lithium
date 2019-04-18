@@ -76,7 +76,6 @@ ERROR:
         // Renders all sprites in batch.
         const int vertexPerSprite = 4;
         const int indexPerSprite = 6;
-        float timeStep = TimeManager::getInstance()->getFrameElapsedTime();
         int spriteCount = sprites.size();
         int currentSprite = 0, firstSprite = 0;
         while (bool canDraw = (currentSprite < spriteCount)) {
@@ -99,7 +98,7 @@ ERROR:
                     sprite->textureId == currentTextureId
                 ) {
                     Sprite::Vertex* spriteVertices = (&vertices[currentSprite * 4]);
-                    sprite->draw(spriteVertices, timeStep);
+                    sprite->draw(spriteVertices);
                 } else {
                     break;
                 }

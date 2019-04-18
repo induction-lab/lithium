@@ -11,9 +11,11 @@ public:
         opaque(1.0f),
         shaderProgram(0),
         aPosition(0), uProjection(0) {
+        LOG_DEBUG("Create Line.");
         GraphicsManager::getInstance()->registerComponent(this);
     };
     ~Line() {
+        LOG_DEBUG("Delete Line.");
         glDeleteBuffers(1, &vbo);
     }
     status load() {

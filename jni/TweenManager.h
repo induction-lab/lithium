@@ -19,6 +19,7 @@ public:
     static const int ROTATION_CCW = 0x80;
     static const int OPAQUE = 0x0F;
     static const int COLOR = 0xF0;
+    static const int FRAME = 0xF2;
 };
 
 class TweenManager: public Singleton<TweenManager> {

@@ -191,7 +191,7 @@ ERROR:
         return sound;
     };
     void playSound(Sound* sound) {
-        int currentQueue = ++currentQueue;
+        currentQueue = ++currentQueue;
         SoundQueue& soundQueue = soundQueues[currentQueue % QUEUE_COUNT];
         soundQueue.setVolume(soundVolume);
         soundQueue.playSound(sound);

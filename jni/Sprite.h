@@ -19,14 +19,11 @@ public:
         sheetWidth(0), sheetHeight(0),
         spriteWidth(width), spriteHeight(height),
         frameCount(0), frameXCount(0), frameYCount(0),
-        animStartFrame(0), animFrameCount(1),
-        animSpeed(0.0f), animFrame(0.0f), animLoop(false) {
+        currentFrame(0) {
         //
     };
-    void setFrames(int startFrame, int frameCount, float speed, bool loop) {
-        animStartFrame = startFrame;
-        animFrame = 0.0f, animSpeed = speed, animLoop = loop;
-        animFrameCount = frameCount;
+    void setFrame(int frame) {
+        currentFrame = frame;
     };
     int getValues(int tweenType, float *returnValues) {
         switch (tweenType) {
@@ -62,6 +59,9 @@ public:
             returnValues[1] = color.y; // g
             returnValues[2] = color.z; // b
             return 3;
+        case TweenType::FRAME:
+            returnValues[0] = currentFrame;
+            return 1;
         }
         return 0;
     };
@@ -96,15 +96,15 @@ public:
         case TweenType::COLOR:
             color = Vector(newValues[0], newValues[1], newValues[2]);
             break;
+        case TweenType::FRAME:
+            currentFrame = (int)round(newValues[0]);
+            break;
         }
     };
-    bool animationEnded() {
-        return animFrame > (animFrameCount-1);
-    };
     void setLocation(float x, float y) {
-        location = Location(x, y);
+        location = Vector2(x, y);
     };
-    Location getLocation() {
+    Vector2 getLocation() {
         return location;
     };
     int getWidth() {
@@ -142,21 +142,9 @@ protected:
         frameCount = (sheetHeight / spriteHeight) * (sheetWidth / spriteWidth);
         return STATUS_OK;
     };
-    void draw(Vertex vertices[4], float timeStep) {
+    void draw(Vertex vertices[4]) {
         if (sheetWidth == 0 || sheetHeight == 0) return;
-        int currentFrame, currentFrameX, currentFrameY;
-        // Updates animation in loop mode.
-        animFrame += timeStep * animSpeed;
-        if (animLoop) {
-            currentFrame = (animStartFrame + int(animFrame) % animFrameCount);
-        } else {
-            // Updates animation in one-shot mode.
-            if (animationEnded()) {
-                currentFrame = animStartFrame + (animFrameCount-1);
-            } else {
-                currentFrame = animStartFrame + int(animFrame);
-            }
-        };
+        int currentFrameX, currentFrameY;
         // Computes frame X and Y indexes from its id.
         currentFrameX = currentFrame % frameXCount;
         // currentFrameY is converted from OpenGL coordinates to top-left coordinates.
@@ -176,7 +164,7 @@ protected:
     };
 public:
     // Tratsormations.
-    Location location;
+    Vector2 location;
     Vector2 scale;
     float angle;
     Vector color;
@@ -201,10 +189,7 @@ private:
     int spriteWidth, spriteHeight;
     int sheetWidth, sheetHeight;
     int frameXCount, frameYCount, frameCount;
-    // Animation.
-    int animStartFrame, animFrameCount;
-    float animSpeed, animFrame;
-    bool animLoop;
+    int currentFrame;
 };
 
 #endif // __SPRITE_H__

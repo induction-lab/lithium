@@ -53,8 +53,8 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    int soundVolume; // = 70;
-    int musicVolume; // = 50;
+    int soundVolume = 70;
+    int musicVolume = 0;
 };
 ConfigData* configData;
 
