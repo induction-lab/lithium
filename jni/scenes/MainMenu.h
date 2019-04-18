@@ -71,7 +71,7 @@ public:
             // |   |
             // |_·_|
             //
-            leaf03 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 45.0f, 20.0f));
+            leaf03 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 35.0f, 40.0f));
             leaf03->sprite->setFrame(2);
             leaf03->sprite->order = 0;
             leaf03->sprite->pivot = Vector(0.0f, -142.0f, 0.0f);

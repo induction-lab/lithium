@@ -34,7 +34,6 @@ public:
         alive(true), dead(false),                              // alive/dead state
         selected(false), animated(false),                      // selected state
         dropped(false),                                        // dropped state
-        accenpted(false),                                      // accenpted state
         xScaleTween(NULL), yScaleTween(NULL),                  // select animation tweens
         index(Vector2()),                                      // index on board
         prevIndex(Vector2()),                                  // prevision index on board
@@ -155,13 +154,13 @@ public:
     int type;
     bool alive, dead;
     bool animated, selected, dropped;
-    bool accenpted;
     FruitMoveType moveType;
     FruitKillType killType;
     Tween* xScaleTween;
     Tween* yScaleTween;
     Vector2 index, prevIndex;
-    Sprite* sprite;    
+    Sprite* sprite;
+    float lastAccentTime;
 private:
     std::function<void(int, int)> clickFunction;
     std::function<void(int, int, FruitMoveType)> moveFunction;

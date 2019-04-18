@@ -99,7 +99,7 @@ static int uiModeType;
 // - redraw cherry bonus
 // + fix upper kill animation
 // - add bonus kill type
-// - accent random time
+// + accent random time
 // + bonus random time
 // - game logo
 // - music pause

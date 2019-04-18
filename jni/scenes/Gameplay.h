@@ -61,7 +61,7 @@ public:
             // |   |
             // |_·_|
             //
-            leaf03 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 45.0f, 20.0f));
+            leaf03 = addBackground("textures/Leafs.png", 327, 287, Vector2(halfWidth + 35.0f, 40.0f));
             leaf03->sprite->setFrame(2);
             leaf03->sprite->order = 0;
             leaf03->sprite->pivot = Vector(0.0f, -142.0f, 0.0f);
@@ -123,7 +123,10 @@ public:
         bonus01Sound = SoundManager::getInstance()->registerSound("sounds/Bonus01.wav");
         bonus02Sound = SoundManager::getInstance()->registerSound("sounds/Bonus02.wav");
         bonus03Sound = SoundManager::getInstance()->registerSound("sounds/Bonus03.wav");
-        bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");        
+        bonus04Sound = SoundManager::getInstance()->registerSound("sounds/Bonus04.wav");
+        accept01Sound = SoundManager::getInstance()->registerSound("sounds/Accept01.wav");
+        accept02Sound = SoundManager::getInstance()->registerSound("sounds/Accept02.wav");
+        accept03Sound = SoundManager::getInstance()->registerSound("sounds/Accept03.wav");
         SoundManager::getInstance()->loadResources();
         // Create score points text.
         scoreText = addRasterFont("textures/Font.png", 64, 64, Vector2(halfWidth, halfHeight - 150), Justification::MIDDLE, TextAnimation::SCALE);
@@ -207,6 +210,7 @@ public:
         fruit->setKillFunction(std::bind(&Gameplay::onFruitKill, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
         fruit->setDyingFunction(std::bind(&Gameplay::onFruitDying, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         fruit->setDeadFunction(std::bind(&Gameplay::onFruitDead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        fruit->lastAccentTime = TimeManager::getInstance()->getTime();
         if (fruitType < FRUITS_COUNT) fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP);
         else fruit->moveTo(x, y, 0.0f, FruitMoveType::DROP_EXTRA);
         fruits[x][y] = fruit;
@@ -217,11 +221,24 @@ public:
         for (int y = 0; y < GRID_SIZE; y++)
         for (int x = 0; x < GRID_SIZE; x++) {
             if (fruits[x][y] != NULL) fruits[x][y]->update();
-            if (fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->accenpted) {
-                // TODO !!!
-                Vector2 location = getSkrewedLocation(x, y);
-                fruits[x][y]->accenpted = true;
-                addAnimation("textures/AccentForBonus.png", 78, 78, location, 20, 1.2f, 0.5f);
+            if (created && fruits[x][y]->type >= FRUITS_COUNT && !fruits[x][y]->dropped) {
+                if (TimeManager::getInstance()->getTime() > fruits[x][y]->lastAccentTime + 5.0f) {
+                    Tween* t1= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
+                        ->remove(true)->target(1.2f, 1.2f);
+                    Tween* t2= TweenManager::getInstance()->addTween(fruits[x][y]->sprite, TweenType::SCALE_XY, 0.37f, Ease::Sinusoidal::InOut)
+                        ->remove(true)->target(1.0f, 1.0f);
+                    t1->addChain(t2)->start();
+                    if ((int)frand(0) == 0) {
+                        Vector2 location = getSkrewedLocation(x, y);
+                        switch ((int)frand(3)) {
+                            case 0: SoundManager::getInstance()->playSound(accept01Sound); break;
+                            case 1: SoundManager::getInstance()->playSound(accept02Sound); break;
+                            case 2: SoundManager::getInstance()->playSound(accept03Sound); break;
+                        }
+                        addAnimation("textures/AccentForBonus.png", 78, 78, Vector2(location.x, location.y + 2.5f), 20, 1.2f, 0.5f);
+                    }
+                    fruits[x][y]->lastAccentTime = TimeManager::getInstance()->getTime();
+                }
             }
         }
         // It's bad time...
@@ -281,7 +298,7 @@ public:
                 }
                 scoresPerSwap = 0;
                 // Add bonus fruit (shance 5).
-                if ((int)frand(5) == 0) {
+                if ((int)frand(0) == 0) {
                     int n = 0;
                     bool goodPlace = false;
                     while (!goodPlace || n == GRID_SIZE * GRID_SIZE) {
@@ -689,7 +706,7 @@ private:
     int scoresPerSwap;
     // Particle system.
     ParticleSystem* particleSystem;
-    // For decrase points if player long time stupid.
+    // Time stamps.
     float lastGoodTime;
     float lastBadTime;
     float lastBonusTime;
@@ -723,6 +740,9 @@ private:
     Sound* bonus02Sound;
     Sound* bonus03Sound;
     Sound* bonus04Sound;
+    Sound* accept01Sound;
+    Sound* accept02Sound;
+    Sound* accept03Sound;
 };
 
 #endif // __GAMEPLAY_H__
