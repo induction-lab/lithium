@@ -92,13 +92,13 @@ void writeConfig() {
     sprintf(configFile, "%s/app_config.xml", internalPath);
     LOG_INFO("Write application config file it ...");
     // Save the config file contents in the application's internal storage.
-    FILE* appConfigFile = std::fopen(configFile, "w+");
+    FILE* appConfigFile = std::fopen(configFile, "wb");
     if (appConfigFile == NULL) {
         LOG_ERROR("Could not create app configuration file.");
     } else {
         LOG_INFO("App config file created successfully. Writing config data ...");
-        int32_t result = std::fwrite(configData, sizeof(char), sizeof(configData), appConfigFile);
-        if (result != sizeof(configData)) {
+        int32_t result = std::fwrite((char*)configData, sizeof(char), sizeof(ConfigData), appConfigFile);
+        if (result != sizeof(ConfigData)) {
             LOG_ERROR("Error generating app configuration file.");
         }
     }

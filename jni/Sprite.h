@@ -114,11 +114,17 @@ public:
         return spriteHeight;
     };
     bool pointInSprite(int x, int y) {
-        Vector points[4];
-        transform(points);
+        Vector points[4];  // sprite polygon with 4 points
+        transform(points); // tansform it ...
+        // This method counts the number of times a ray starting from a point (x, y) crosses
+        // a polygon boundary edge separating it's inside and outside.
         std::swap(points[2], points[3]);
+        // Before   After
+        // 3---2    2---3
+        // | / |    |·/·|
+        // 1---4    1---4
         bool inside = false;
-        int size = sizeof(points)/sizeof(points[0]);
+        int size = sizeof(points)/sizeof(points[0]); // just for support more points poly
         for (int i = 0, j = size - 1; i < size; j = i++) {
             if (((points[i].y > y) != (points[j].y >= y)) && (x < (points[j].x - points[i].x) * (y - points[i].y) / (points[j].y - points[i].y) + points[i].x)) inside = !inside;
         }
@@ -188,7 +194,7 @@ private:
         points[1] = matrix * Vector(-halfWidth,  halfHeight, 0.0f);
         points[2] = matrix * Vector( halfWidth, -halfHeight, 0.0f);
         points[3] = matrix * Vector( halfWidth,  halfHeight, 0.0f);
-    }
+    };
     const char* texturePath;
     GLuint textureId;
     // Frame.

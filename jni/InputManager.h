@@ -62,7 +62,6 @@ public:
     virtual int backEvent() { return 0; };
     virtual void keyDownEvent(int keyCode) {};
     virtual void keyUpEvent(int keyCode) {};
-    int n;
 };
 
 class InputManager: public Singleton<InputManager> {
@@ -93,7 +92,6 @@ public:
 public:
     void registerListener(InputListener *listener) {
         LOG_DEBUG("Register InputListener %d.", listeners.size() + 1);
-        listener->n = listeners.size();
         listeners.push_back(listener);
     };
     void unregisterListener(InputListener *listener) {

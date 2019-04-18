@@ -37,10 +37,16 @@ public:
                     ->target(halfHeight - 90)->remove(false)->loop()->reverse()->start(0.2f);
 		soundSlider = addSlider("textures/SliderBackground.png", 160, 20, Location(halfWidth + 25, halfHeight + 20));
         soundSlider->setSliderHandle("textures/SliderHandle.png", 48, 48, 0);
+        soundSlider->setSlideFunction(std::bind(&SoundSetting::onSoundSliderSlide, this, std::placeholders::_1));
+        soundSlider->setPosition(configData->soundVolume);
+        soundSlider->setUpFunction(std::bind(&SoundSetting::onSoundSliderUp, this));
         musicSlider = addSlider("textures/SliderBackground.png", 160, 20, Location(halfWidth + 25, halfHeight - 35));
         musicSlider->setSliderHandle("textures/SliderHandle.png", 48, 48, 0);
+        musicSlider->setSlideFunction(std::bind(&SoundSetting::onMusicSliderSlide, this, std::placeholders::_1));
+        musicSlider->setPosition(configData->musicVolume);
         buttonDownSound = SoundManager::getInstance()->registerSound("sounds/ButtonDown.wav");
         buttonUpSound = SoundManager::getInstance()->registerSound("sounds/ButtonUp.wav");
+        volumeSound = SoundManager::getInstance()->registerSound("sounds/SoundVolume.wav");
         SoundManager::getInstance()->loadResources();
         created = true;
         return STATUS_OK;
@@ -56,6 +62,19 @@ public:
 	};
     void onOkButtonClick() {
         activity->setStartScene();
+    };
+    void onSoundSliderSlide(int volume) {
+        LOG_DEBUG("Set sound volume to %d%%", soundSlider->precent);
+        SoundManager::getInstance()->setSoundVolume((float)volume / 100.0f);
+        configData->soundVolume = volume;
+    };
+    void onSoundSliderUp() {
+        SoundManager::getInstance()->playSound(volumeSound);
+    };
+    void onMusicSliderSlide(int volume) {
+        LOG_DEBUG("Set music volume to %d%%", musicSlider->precent);
+        SoundManager::getInstance()->setMusicVolume((float)volume / 100.0f);
+        configData->musicVolume = volume;
     };
     int backEvent() {
         activity->setStartScene();
@@ -77,6 +96,7 @@ public:
     Slider* musicSlider;
     Sound* buttonDownSound;
     Sound* buttonUpSound;
+    Sound* volumeSound;
 };
 
 #endif // __SOUND_SETTING_H__

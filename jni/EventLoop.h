@@ -213,6 +213,8 @@ ERROR:
         case APP_CMD_STOP:
             LOG_DEBUG("[onStop]");
             activityHandler->onStop();
+            // QUIck and diRty hacK!
+            ANativeActivity_finish(application->activity);
             break;
         case APP_CMD_TERM_WINDOW:
             LOG_DEBUG("[onDestroyWindow]");

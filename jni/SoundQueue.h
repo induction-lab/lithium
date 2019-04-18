@@ -8,6 +8,7 @@ class SoundQueue {
 public:
     SoundQueue():
         playerObj(NULL),
+        playerVolume(NULL),
         playerPlay(NULL),
         playerQueue() {
         //
@@ -38,13 +39,15 @@ public:
         dataSink.pLocator = &dataLocatorOut;
         dataSink.pFormat = NULL;
         // Creates the sounds player and retrieves its interfaces.
-        const SLuint32 soundPlayerIIDCount = 2;
-        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE };
-        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
+        const SLuint32 soundPlayerIIDCount = 3;
+        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
+        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
         result = (*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, soundPlayerIIDCount, soundPlayerIIDs, soundPlayerReqs);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
+        result = (*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume);
+        if (result != SL_RESULT_SUCCESS) goto ERROR;        
         result = (*playerObj)->GetInterface(playerObj, SL_IID_PLAY, &playerPlay);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerObj)->GetInterface(playerObj, SL_IID_BUFFERQUEUE, &playerQueue);
@@ -63,6 +66,7 @@ ERROR:
         if (playerObj != NULL) {
             (*playerObj)->Destroy(playerObj);
             playerObj = NULL;
+            playerVolume = NULL;
             playerPlay = NULL;
             playerQueue = NULL;
         }
@@ -90,10 +94,22 @@ ERROR:
 ERROR:
         LOG_ERROR("Error trying to play sound.");
     };
+    void setVolume(float volume) {
+        if (playerVolume == NULL) return;
+        SLresult result;
+        // Millibels from linear amplification.
+        int millibels = lroundf(2000.f * log10f(volume));
+        if (millibels < SL_MILLIBEL_MIN) millibels = SL_MILLIBEL_MIN;
+        // Maximum supported level could be higher: GetMaxVolumeLevel.
+        else if (millibels > 0) millibels = 0;
+        result = (*playerVolume)->SetVolumeLevel(playerVolume, millibels);
+        if (result != SL_RESULT_SUCCESS) LOG_ERROR("Error setting queue volume level.");
+    };
 private:
     // Sound player.
     SLObjectItf playerObj;
     SLPlayItf playerPlay;
+    SLVolumeItf playerVolume;
     SLBufferQueueItf playerQueue;
 };
 

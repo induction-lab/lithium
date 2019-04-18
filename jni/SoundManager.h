@@ -18,11 +18,14 @@ public:
         engine(NULL),
         outputMixObj(NULL),
         playerObj(NULL),
+        playerVolume(NULL),
         playerPlay(NULL),
         playerSeek(NULL),
         soundQueues(),
         currentQueue(0),
-        sounds() {
+        sounds(),
+        musicVolume(0),
+        soundVolume(0) {
         LOG_INFO("Creating SoundManager.");
     };
     ~SoundManager() {
@@ -50,7 +53,7 @@ public:
         result = (*outputMixObj)->Realize(outputMixObj, SL_BOOLEAN_FALSE);
         // Set-up sound player.
         LOG_DEBUG("Starting sound player with %d SoundQueue.", QUEUE_COUNT);
-        for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
+        for (int i= 0; i < QUEUE_COUNT; ++i) {
             if (soundQueues[i].initialize(engine, outputMixObj) != STATUS_OK) goto ERROR;
         }
         if (sounds.size() > 0) {
@@ -75,7 +78,7 @@ ERROR:
         // Stops and destroys Music player.
         stopMusic();
         // Destroys sound player.
-        for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
+        for (int i = 0; i < QUEUE_COUNT; ++i) {
             soundQueues[i].finalize();
         }
         // Destroys audio output and engine.
@@ -95,7 +98,7 @@ ERROR:
     };
     void reset() {
         if (engine == NULL) return;
-        for (int32_t i= 0; i < QUEUE_COUNT; ++i) {
+        for (int i= 0; i < QUEUE_COUNT; ++i) {
             soundQueues[i].reset();
         }
         for (std::vector<Sound*>::iterator it = sounds.begin(); it < sounds.end(); ++it) {
@@ -105,7 +108,6 @@ ERROR:
         sounds.clear();        
     }
     status playMusic(const char* path) {
-        if (configData->mute) return STATUS_OK;
         stopMusic();
         SLresult result;
         LOG_INFO("Opening music: %s", path);
@@ -121,9 +123,9 @@ ERROR:
         SLDataSource dataSource = { &dataLocatorIn, &dataFormat };
         SLDataLocator_OutputMix dataLocatorOut = { SL_DATALOCATOR_OUTPUTMIX, outputMixObj };
         SLDataSink dataSink = { &dataLocatorOut, NULL };
-        const SLuint32 musicPlayerIIDCount = 2;
-        const SLInterfaceID musicPlayerIIDs[] = { SL_IID_PLAY, SL_IID_SEEK };
-        const SLboolean musicPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
+        const SLuint32 musicPlayerIIDCount = 3;
+        const SLInterfaceID musicPlayerIIDs[] = { SL_IID_PLAY, SL_IID_SEEK, SL_IID_VOLUME };
+        const SLboolean musicPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
         result = (*engine)->CreateAudioPlayer(engine, &playerObj, &dataSource, &dataSink, musicPlayerIIDCount, musicPlayerIIDs, musicPlayerReqs);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerObj)->Realize(playerObj, SL_BOOLEAN_FALSE);
@@ -132,6 +134,10 @@ ERROR:
         if (result != SL_RESULT_SUCCESS) goto ERROR;
         result = (*playerObj)->GetInterface(playerObj, SL_IID_SEEK, &playerSeek);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
+        result = (*playerObj)->GetInterface(playerObj, SL_IID_VOLUME, &playerVolume);
+        if (result != SL_RESULT_SUCCESS) goto ERROR;
+        // Set music volume.
+        setMusicVolume(musicVolume);
         // Enables looping and starts playing.
         result = (*playerSeek)->SetLoop(playerSeek, SL_BOOLEAN_TRUE, 0, SL_TIME_UNKNOWN);
         if (result != SL_RESULT_SUCCESS) goto ERROR;
@@ -151,10 +157,28 @@ ERROR:
                 (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PAUSED);
                 (*playerObj)->Destroy(playerObj);
                 playerObj = NULL;
+                playerVolume = NULL;
                 playerPlay = NULL;
                 playerSeek = NULL;
             }
         }
+    };
+    // Set volume level. [0.0f to 1.0f]
+    void setMusicVolume(float volume) {
+        musicVolume = volume;
+        if (playerVolume == NULL) return;
+        SLresult result;
+        // Millibels from linear amplification.
+        int millibels = lroundf(2000.f * log10f(volume));
+        if (millibels < SL_MILLIBEL_MIN) millibels = SL_MILLIBEL_MIN;
+        // Maximum supported level could be higher: GetMaxVolumeLevel.
+        else if (millibels > 0) millibels = 0;
+        result = (*playerVolume)->SetVolumeLevel(playerVolume, millibels);
+        if (result != SL_RESULT_SUCCESS) LOG_ERROR("Error setting music volume level.");
+    };
+    void setSoundVolume(float volume) {
+        soundVolume = volume;
+        for (int i = 0; i < QUEUE_COUNT; ++i) soundQueues[i].setVolume(volume);
     };
     Sound* registerSound(const char* path) {
         // Finds out if sound already loaded.
@@ -167,9 +191,9 @@ ERROR:
         return sound;
     };
     void playSound(Sound* sound) {
-        if (configData->mute) return;
-        int32_t currentQueue = ++currentQueue;
+        int currentQueue = ++currentQueue;
         SoundQueue& soundQueue = soundQueues[currentQueue % QUEUE_COUNT];
+        soundQueue.setVolume(soundVolume);
         soundQueue.playSound(sound);
     };
 private:
@@ -181,13 +205,17 @@ private:
     // Background music player.
     SLObjectItf playerObj;
     SLPlayItf playerPlay;
+    SLVolumeItf playerVolume;
     SLSeekItf playerSeek;
     // Sound players.
-    static const int32_t QUEUE_COUNT = 4;
+    static const int QUEUE_COUNT = 4;
     SoundQueue soundQueues[QUEUE_COUNT];
-    int32_t currentQueue;
+    int currentQueue;
     // Sounds.
     std::vector<Sound*> sounds;
+    // Volumes.
+    float musicVolume;
+    float soundVolume;
 };
 
 #endif // __SOUNDMANAGER_H__

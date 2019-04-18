@@ -53,8 +53,8 @@ static android_app* application;
 
 // Application default config.
 struct ConfigData {
-    bool mute = false;
-    // bool mute = true;
+    int soundVolume;// = 70;
+    int musicVolume;// = 50;
 };
 ConfigData* configData;
 
@@ -72,8 +72,9 @@ static int32_t uiModeType;
 #include "Activity.h"
 
 // TODO:
+// - organize App Life Time! ...
 // - onSaveInstanceState ...
-// - music volume screen ...
+// - Activity -> Scenes(name) ?
 
 // Android entry point.
 void android_main(android_app* app) {
