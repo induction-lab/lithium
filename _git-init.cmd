@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-if "%ROOT%" == "" set ROOT=%~p0\..\..
+if "%ROOT%" == "" set ROOT=%~p0..\..
 pushd !ROOT!
 set ROOT=!CD!
 popd
@@ -13,6 +13,7 @@ echo ROOT: !ROOT!
 echo APP: !APP!
 
 set PATH=%PATH%;%ROOT%\GIT\bin
+cd %~p0
 
 git init
 git add .
