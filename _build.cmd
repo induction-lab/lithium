@@ -32,6 +32,7 @@ if not exist AndroidManifest*.xml (
         --path "%PROJECT%" ^
         --activity %ACTIVITY% ^
         --package %PACKAGE%
+	echo java.compilerargs=-Xlint:-options -Xlint:deprecation -Xdiags:verbose >> ant.properties
 ) else (
     echo --^> Update Project...
     if exist "android\bin" rd "android\bin" /Q
