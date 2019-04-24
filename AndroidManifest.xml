@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.induction.lithium"
-        android:versionCode="0"
-        android:versionName="lithium.0.2.81">
+          package="com.induction.lithium"
+          android:versionCode="0"
+          android:versionName="lithium.0.2.81">
     <uses-sdk android:targetSdkVersion="26"
               android:minSdkVersion="23" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />

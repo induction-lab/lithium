@@ -137,11 +137,11 @@ public:
         glDisable(GL_DEPTH_TEST);
         // Displays information about OpenGL.
         LOG_DEBUG("OpenGL render context information:");
-        LOG_DEBUG("Renderer       : %s\n", (const char*)glGetString(GL_RENDERER));
-        LOG_DEBUG("Vendor         : %s\n", (const char*)glGetString(GL_VENDOR));
-        LOG_DEBUG("Version        : %s\n", (const char*)glGetString(GL_VERSION));
-        LOG_DEBUG("GLSL version   : %s\n", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-        LOG_DEBUG("OpenGL version : %d.%d\n", majorVersion, minorVersion);
+        LOG_DEBUG("Renderer       : %s", (const char*)glGetString(GL_RENDERER));
+        LOG_DEBUG("Vendor         : %s", (const char*)glGetString(GL_VENDOR));
+        LOG_DEBUG("Version        : %s", (const char*)glGetString(GL_VERSION));
+        LOG_DEBUG("GLSL version   : %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOG_DEBUG("OpenGL version : %d.%d", majorVersion, minorVersion);
         LOG_DEBUG("Viewport       : %d x %d", screenWidth, screenHeight);
         LOG_DEBUG("Offscreen      : %d x %d", renderWidth, renderWidth);
         if (components.size() > 0) {
