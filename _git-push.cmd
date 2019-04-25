@@ -17,12 +17,16 @@ git config --global core.autocrlf false
 
 git add .
 git status
+
+echo Last commit is:
+git log -1 --oneline
+echo.
+
 set /p comment=Commit comment: 
 
 if "%comment%" == "" goto:end
 git commit -m "%comment%"
 
-git pull https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --allow-unrelated-histories
-git push --force https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git
+git push https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --progress --force 
 
 :end

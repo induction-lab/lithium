@@ -15,7 +15,11 @@ git config --global user.email "induction.lab@gmail.com"
 git config --global user.name "induction.lab"
 git config --global core.autocrlf false
 
+echo Last commit is:
+git log -1 --oneline
+echo.
+
 git clean -f
-git pull https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --allow-unrelated-histories
+git pull https://%credentials1%:%credentials2%@github.com/induction-lab/%APP%.git --progress -v --no-rebase
 
 :end
