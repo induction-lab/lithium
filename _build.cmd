@@ -3,9 +3,9 @@
 setlocal enableextensions
 
 echo --^> Start build toolchain...
-set RELEASE=all
+::set RELEASE=all
 ::set RELEASE=debug
-::set RELEASE=release
+set RELEASE=release
 
 set ACTIVITY=MainActivity
 set PACKAGE=com.induction.%APP%
